@@ -24,15 +24,16 @@ Missing→Phase 0 `team-orchestra` skill.
 3. Never wait for input. Decide→DECISIONS.md→move.
 4. Non-interactive: CI=true, --yes, no watch, timeouts on all.
 5. Zero comments. Clean code. Conventional commits.
-6. Evidence: claims need output (`tail -5`/`grep`).
-7. Secure: strict types, server validation, parameterized queries, authz@handler, env secrets, no PII in logs, UTC ISO 8601.
-8. UI: project's design system only. States(loading/empty/error). i18n es primary.
-9. UI Data-Binding: ALWAYS check database schema / API types when building forms. If a field is a foreign key or relation, you MUST build a smart dropdown/select UI, NEVER a simple text input.
-10. Linked Entities (skill). 11. ip-protection before deploy.
-12. Commit always; push when possible. 13. Product before polish (rule 15+18).
-13. **Patterns>rediscovery.** Check DECISIONS.md Patterns FIRST.
+6. **TEST WRAPPER CRITICAL**: NEVER run tests directly (e.g. `npm run test`). ALWAYS use the wrapper: `bash .claude/skills/verification-gate/run-tests.sh "your command"` to prevent brain rot from terminal noise.
+7. Evidence: claims need output (`tail -5`/`grep`) unless using the run-tests wrapper.
+8. Secure: strict types, server validation, parameterized queries, authz@handler, env secrets, no PII in logs, UTC ISO 8601.
+9. UI: project's design system only. States(loading/empty/error). i18n es primary.
+10. UI Data-Binding: ALWAYS check database schema / API types when building forms. If a field is a foreign key or relation, you MUST build a smart dropdown/select UI, NEVER a simple text input.
+11. Linked Entities (skill). 12. ip-protection before deploy.
+13. Commit always; push when possible. 14. Product before polish (rule 16+19).
+15. **Patterns>rediscovery.** Check DECISIONS.md Patterns FIRST.
     ROADMAP STALENESS: run `roadmap-sync` if: missing | >10 cycles stale | count unchanged 5+ cycles | stats differ >20% from ORCHESTRA_REPORT | ratio<30% for 3+ cycles.
-14. **FOCUS MIXER=HARD CONTRACT.** `.claude/orchestra.json` weights=BINDING.
+16. **FOCUS MIXER=HARD CONTRACT.** `.claude/orchestra.json` weights=BINDING.
     **`product`=SPECIAL: MINIMUM PERCENTAGE of cycle units for ROADMAP.md features.** Not competing with others. Remaining categories share leftover slots only. Tag each unit `[category]`. Budget exhausted→STOP. Weight=0→ZERO work. Re-read mixer every cycle+boot.
 15. STATUS DIGEST: `▸`-prefixed, Spanish, <90 chars (see loop.md).
 16. Reviewer subagent: product/security units=mandatory. Quality units+gate≥10 checks=skip.
