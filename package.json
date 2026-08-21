@@ -7,9 +7,12 @@
   "license": "AGPL-3.0",
   "author": "René Antonio Casaña Amaya <reatcas@protonmail.com>",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build:mac": "electron-packager . Director --platform=darwin --out=dist --overwrite",
+    "build:linux": "electron-packager . Director --platform=linux --out=dist --overwrite"
   },
   "devDependencies": {
+    "@electron/packager": "^20.3.0",
     "electron": "^43.4.1"
   }
 }

@@ -46,17 +46,37 @@ Upon stopping the execution, the analysis engine generates a comprehensive text 
 - **macOS / Linux** (Requires bash environment support)
 - **Claude CLI** accessible in the system PATH with valid authentication.
 
-### Installation
+### Installation & Placement
+
+Because Director manages multiple local repositories, it is recommended to place the `director` folder in a permanent and accessible location, such as `~/Development/` or `~/Applications/`.
 
 ```bash
-# Clone repository
+# Clone the repository into your preferred workspace
+cd ~/Development
 git clone https://github.com/reatcas/director.git
-# Enter directory
 cd director
+
 # Install dependencies
 npm install
-# Execute application
+```
+
+### Running from Source
+To start the application directly in development mode, run:
+```bash
 npm start
+```
+
+### Compiling to an Executable
+If you prefer to compile Director into a standalone desktop application (`.app` for Mac or an executable for Linux), you can use the included build scripts. The compiled application will be placed in the `dist/` directory.
+
+**For macOS:**
+```bash
+npm run build:mac
+```
+
+**For Linux:**
+```bash
+npm run build:linux
 ```
 
 ## Licensing
