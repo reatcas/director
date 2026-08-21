@@ -90,6 +90,12 @@ while :; do
 
   echo "[orchestra v$VERSION] movement $ITER — $(date '+%H:%M:%S')" | tee -a "$MASTER_LOG"
 
+  # ── Auto-capture DB Schema ──────────────────────────────────────────────────
+  DB_VISION_DIR=".claude/skills/db-vision"
+  if [ -x "$DB_VISION_DIR/db-extract.sh" ]; then
+    bash "$DB_VISION_DIR/db-extract.sh" >/dev/null 2>&1 || true
+  fi
+
   # ── Auto-capture A11Y Tree if local server is running ───────────────────
   ACTIVE_PORT=""
   for PORT in 3000 5173 8080 4200 4321; do

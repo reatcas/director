@@ -861,6 +861,8 @@ const UPGRADE_FILES = [
   '.claude/skills/verification-gate/run-tests.sh',
   '.claude/skills/browser-vision/SKILL.md',
   '.claude/skills/browser-vision/a11y.js',
+  '.claude/skills/db-vision/SKILL.md',
+  '.claude/skills/db-vision/db-extract.sh',
   '.claude/ORCHESTRA_VERSION',
 ]
 
