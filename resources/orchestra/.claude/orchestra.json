@@ -1,0 +1,24 @@
+{
+  "version": "3.0.0",
+  "mode": "perpetual",
+  "maxIterations": 0,
+  "caveman": true,
+  "model": "sonnet",
+  "modelComplex": "opus",
+  "compactAt": 50,
+  "quietFlags": true,
+  "focus": {
+    "product": 90,
+    "backend": 80,
+    "frontend": 80,
+    "business_logic": 60,
+    "security": 10,
+    "quality_tests": 0,
+    "devops_infra": 5,
+    "performance": 5,
+    "ux_accessibility": 15,
+    "data_db": 40,
+    "documentation": 0,
+    "i18n": 5
+  }
+}

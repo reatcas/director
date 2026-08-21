@@ -1,0 +1,15 @@
+{
+  "name": "director",
+  "productName": "Director",
+  "version": "6.0.0",
+  "description": "Podium for the Perpetual Dev Orchestra — run, tune and stop infinite Claude orchestration on any project",
+  "main": "main.js",
+  "license": "AGPL-3.0",
+  "author": "René Antonio Casaña Amaya <reatcas@protonmail.com>",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^43.4.1"
+  }
+}

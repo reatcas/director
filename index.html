@@ -1,0 +1,305 @@
+<!-- Copyright (c) 2026 René Antonio Casaña Amaya. All rights reserved. -->
+<!-- Licensed under the AGPL-3.0 License. See LICENSE in repository root. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Director Suite</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ABOUT MODAL -->
+  <div id="aboutModal" class="modal-overlay" hidden>
+    <div class="modal-card about-card">
+      <button id="closeAbout" class="modal-close">✕</button>
+      <div class="about-hero">
+        <img src="logo.svg" class="about-logo" alt="Director Suite">
+      </div>
+      <h2 class="modal-title">DIRECTOR SUITE</h2>
+      <div class="modal-subtitle">v6.0.0 — Autonomous AI Orchestration Environment</div>
+
+      <div class="about-author">
+        <img src="reatcas.png" class="about-avatar" alt="René Antonio Casaña">
+        <div class="about-author-info">
+          <span class="about-author-name">René Antonio Casaña</span>
+          <a class="about-author-handle" href="https://x.com/reatcas" target="_blank">@reatcas</a>
+        </div>
+      </div>
+
+      <div class="modal-body mono">
+        <p><span class="label">Version:</span> 6.0.0 (Build 2026)</p>
+        <p><span class="label">Author:</span> René Antonio Casaña Amaya</p>
+        <p><span class="label">X.com:</span> <a href="https://x.com/reatcas" target="_blank" style="color:var(--ai-cyan)">@reatcas</a></p>
+        <p><span class="label">License:</span> AGPL-3.0. See LICENSE file for details.</p>
+      </div>
+
+      <div class="about-credits">
+        <div class="about-credit-item">
+          <span class="about-credit-label">DESIGN & ENGINEERING</span>
+          <span class="about-credit-name">René Antonio Casaña</span>
+        </div>
+        <div class="about-credit-item">
+          <span class="about-credit-label">CONCEPT & ARCHITECTURE</span>
+          <span class="about-credit-name">René Antonio Casaña</span>
+        </div>
+        <div class="about-credit-item">
+          <span class="about-credit-label">AI ORCHESTRATION PROTOCOL</span>
+          <span class="about-credit-name">René Antonio Casaña</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">Powered by Claude & Antigravity<br><span style="font-size:8px;opacity:0.5">Copyright &copy; 2026 René Antonio Casaña Amaya. All rights reserved.</span></div>
+    </div>
+  </div>
+
+  <!-- CUSTOM ATRIL MODAL -->
+  <div id="atrilModal" class="modal-overlay" hidden>
+    <div class="modal-card" style="width:400px">
+      <button id="closeAtrilModal" class="modal-close">✕</button>
+      <h2 class="modal-title" style="font-size:13px">NEW STAND</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+        <input id="atrilName" type="text" class="mix-import-field mono" placeholder="Stand name">
+        <textarea id="atrilDesc" class="mix-import-field mono" rows="2" placeholder="Description — how it guides the AI"></textarea>
+        <div>
+          <span style="font:700 8px var(--sans);color:var(--dim);letter-spacing:1px">COLOR</span>
+          <div id="atrilColors" class="atril-color-grid"></div>
+        </div>
+        <div>
+          <span style="font:700 8px var(--sans);color:var(--dim);letter-spacing:1px">ICON</span>
+          <div id="atrilIcons" class="atril-icon-grid"></div>
+        </div>
+        <button id="atrilSaveBtn" class="tp-action warn" style="width:100%;padding:8px">CREATE STAND</button>
+      </div>
+    </div>
+  </div>
+
+<div id="app">
+  <div id="particleCanvasWrap"><canvas id="particleCanvas"></canvas></div>
+
+  <!-- TRANSPORT BAR -->
+  <header id="transport">
+    <div id="trafficSpacer"></div>
+    <div id="brandArea">
+      <img id="brandLogo" src="logo.svg" alt="D">
+      <div id="brandText">
+        <span class="brand-name">DIRECTOR</span>
+        <span class="brand-sub">v6.0.0</span>
+      </div>
+    </div>
+    <div id="transportControls">
+      <button id="playBtn" class="tp-btn tp-play disabled" title="Conduct">▶</button>
+      <button id="fineBtn" class="tp-btn tp-fine disabled" title="Fine">◼</button>
+      <button id="killBtn" class="tp-btn tp-kill disabled" title="Hard cut">✕</button>
+    </div>
+    <div id="clockArea">
+      <div class="clock-block">
+        <span class="clock-seg" id="clockTime">00:00:00</span>
+        <span class="clock-label">TIME</span>
+      </div>
+      <div class="clock-block">
+        <span class="clock-seg orange" id="clockStatus">IDLE</span>
+        <span class="clock-label">STATUS</span>
+      </div>
+    </div>
+    <div id="transportInfo">
+      <div class="badge" id="pbadge"><span id="pbadgeText"></span></div>
+      <div id="transportMeta">
+        <span id="pname" class="tp-project">—</span>
+        <span id="pstatus" class="tp-status">no project</span>
+      </div>
+    </div>
+    <div id="transportActions">
+      <button id="installBtn" class="tp-action warn" hidden>INSTALL</button>
+      <button id="upgradeBtn" class="tp-action upgrade" hidden>UPDATE</button>
+      <span id="upgradeVer" class="tp-path mono" style="display:none"></span>
+      <span id="ppath" class="tp-path mono"></span>
+      <button id="removeBtn" class="tp-action dim">REMOVE</button>
+    </div>
+  </header>
+
+  <div id="workspace">
+    <!-- CHANNEL RACK -->
+    <aside id="rack">
+      <div id="rackHead">
+        <span class="rack-title">REPERTOIRE</span>
+        <button id="addBtn" class="rack-add">+</button>
+      </div>
+      <div id="dropzone">Drop folder here</div>
+      <ul id="projects"></ul>
+    </aside>
+
+    <!-- MAIN STAGE — split layout v6 -->
+    <main id="stage">
+      <!-- Empty state (no project selected) -->
+      <div id="emptyState" class="empty-state on">
+        <div class="empty-visual">
+          <div class="empty-ring"></div>
+          <div class="empty-glyph">𝄞</div>
+        </div>
+        <div class="empty-title">DIRECTOR SUITE</div>
+        <div class="empty-sub">Select a project from the repertoire<br>or drag a folder to get started</div>
+        <div class="empty-keys">
+          <span class="empty-key"><kbd>+</kbd> Add project</span>
+          <span class="empty-key"><kbd>⇧</kbd> Drag folder</span>
+        </div>
+      </div>
+
+      <!-- Usage limit banner -->
+      <div id="usageBanner">
+        <div class="usage-dot"></div>
+        <span id="usageBannerText">Usage limit active — waiting for automatic resume…</span>
+      </div>
+
+      <!-- ═══ SPLIT LAYOUT ═══ -->
+      <div id="splitLayout" class="split-layout">
+
+        <!-- ─── TOP AREA (70%) ─── -->
+        <div class="split-top">
+
+          <!-- LEFT PANEL: CONSOLE (~65%) -->
+          <div class="split-console">
+
+            <!-- Monitor status bar -->
+            <div id="monitorStatus" class="monitor-status idle">
+              <div class="ms-indicator">
+                <div class="ms-icon-wrap"><span class="ms-icon">◇</span></div>
+                <span class="ms-label">SILENT</span>
+              </div>
+              <div class="console-actions">
+                <button id="toggleRawBtn" class="ms-copy" title="View raw log">RAW</button>
+                <button id="copyLogBtn" class="ms-copy" title="Copy full history">⎘ COPY ALL</button>
+              </div>
+            </div>
+
+            <!-- Telemetry metrics strip -->
+            <div id="metricsStrip" class="metrics-strip">
+              <div class="mm-cell"><span class="mm-label">RESOURCES</span><span class="mm-val" id="mmAllocVal">—</span></div>
+              <div class="mm-cell"><span class="mm-label">MEMORY</span><span class="mm-val" id="mmMemVal">—</span></div>
+              <div class="mm-cell"><span class="mm-label">TOKENS</span><span class="mm-val" id="mmTokensVal">—</span></div>
+              <div class="mm-cell"><span class="mm-label">COMPRESSION</span><span class="mm-val" id="mmCompressionVal">—</span></div>
+              <div class="mm-cell"><span class="mm-label">INSTANCES</span><span class="mm-val" id="mmInstancesVal">—</span></div>
+              <div class="mm-cell"><span class="mm-label">COMPLIANCE</span><span class="mm-val" id="mmComplianceVal">—</span></div>
+              <div class="mm-cell"><span class="mm-label">ROADMAP</span><span class="mm-val" id="mmRoadmapVal">—</span></div>
+              <div class="mm-cell mm-cell-usage"><span class="mm-label">CLAUDE API</span><span class="mm-val" id="mmClaudeUsageVal">—</span><div class="usage-bar"><div class="usage-bar-fill" id="usageBarFill"></div></div></div>
+            </div>
+
+            <!-- Current feature indicator -->
+            <div id="featureStrip" class="feature-strip">
+              <span class="fs-label">DEVELOPING</span>
+              <span class="fs-val" id="currentFeature">—</span>
+            </div>
+
+            <!-- Log area -->
+            <div class="console-log-wrap">
+              <div id="log"></div>
+              <!-- Raw log overlay -->
+              <div id="rawLogOverlay">
+                <div class="raw-bar">
+                  <span>FULL LOG — PLAIN TEXT</span>
+                  <button id="closeRawBtn" class="ms-copy">CLOSE</button>
+                  <button id="copyRawBtn" class="ms-copy">COPY ALL</button>
+                  <button id="selectAllRawBtn" class="ms-copy">SELECT ALL</button>
+                </div>
+                <pre id="rawLogContent"></pre>
+              </div>
+            </div>
+
+
+          </div>
+
+          <!-- RESIZABLE DIVIDER -->
+          <div class="split-divider" id="splitDivider"></div>
+
+          <!-- RIGHT PANEL: MIXER (~35%) -->
+          <div id="mixerPanel" class="mixer-panel">
+            <!-- Tabs: MIX | BLUEPRINT -->
+            <div class="mixer-tabs">
+              <button class="mixer-tab on" data-mtab="mixTab">MIX</button>
+              <button class="mixer-tab" data-mtab="bpTab">BLUEPRINT</button>
+            </div>
+
+            <!-- MIX tab content -->
+            <div id="mixTab" class="mixer-tab-pane on">
+              <div id="mixesHeader">
+                <span class="rack-title" style="color:var(--txt)">SAVED MIXES</span>
+                <div id="mixesImport">
+                  <input id="mixImportInput" type="text" placeholder="Paste JSON…" class="mix-import-field mono">
+                  <button id="mixImportBtn" class="tp-action">IMPORT</button>
+                </div>
+              </div>
+              <div id="mixesList"></div>
+              <div id="mixesEmpty" class="mixes-empty" hidden>
+                <span>No saved mixes yet.</span>
+              </div>
+              <div id="mixerStrips" class="mixer-strips-v"></div>
+              <div id="mixerFooter">
+                <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:140px">
+                <button id="saveMixer" class="tp-action">SAVE</button>
+                <button id="addAtrilBtn" class="tp-action" title="Add custom stand">+ STAND</button>
+                <span id="mixerSaved" class="saved-msg" hidden>✓</span>
+              </div>
+            </div>
+
+            <!-- BLUEPRINT tab content -->
+            <div id="bpTab" class="mixer-tab-pane">
+              <div id="bpPhases" class="bp-phases"></div>
+              <div id="bpChat" class="bp-chat">
+                <div id="bpMessages" class="bp-messages"></div>
+                <div class="bp-input-area">
+                  <input id="bpInput" type="text" class="bp-input mono" placeholder="Type your answer…" autocomplete="off">
+                  <button id="bpSend" class="bp-send">→</button>
+                  <button id="bpSkip" class="bp-skip" title="Skip question">SKIP</button>
+                </div>
+              </div>
+              <div id="bpModules" class="bp-modules">
+                <div class="bp-modules-header">
+                  <span class="rack-title" style="color:var(--txt)">MODULES</span>
+                  <button id="bpAddModule" class="ms-copy">+ MODULE</button>
+                </div>
+                <div id="bpModuleList" class="bp-module-list"></div>
+              </div>
+              <div style="padding:6px 10px;display:flex;gap:4px">
+                <button id="bpNewSession" class="tp-action">+ SESSION</button>
+                <button id="bpGenerate" class="tp-action upgrade" disabled>GENERATE BRIEF</button>
+                <span id="bpReadiness" class="section-badge mono" style="margin-left:auto"></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ─── BOTTOM: PROCESSES ─── -->
+        <div id="procsPanel" class="procs-panel">
+          <div class="procs-bar">
+            <span class="section-icon">⚙</span>
+            <span class="rack-title" style="color:var(--txt)">PROCESSES</span>
+            <button id="procsRefresh" class="ms-copy">↺</button>
+            <span id="procsCount" class="section-badge mono"></span>
+          </div>
+          <div id="procsList"></div>
+        </div>
+
+        <!-- ─── BOTTOM: CRITIQUE ─── -->
+        <details id="sectionAnalysis" class="console-collapsible" hidden>
+          <summary class="collapsible-header">
+            <span class="section-icon">✎</span>
+            <span class="section-title">CRITIQUE</span>
+            <div class="section-actions">
+              <button id="refreshAnalysis" class="ms-copy">UPDATE</button>
+              <button id="copyAnalysis" class="ms-copy">COPY</button>
+            </div>
+          </summary>
+          <div class="collapsible-body">
+            <textarea id="analysisOut" class="mono" readonly placeholder="Loading critique…"></textarea>
+            <span id="analysisFile" class="mono tp-path" style="padding:4px 12px"></span>
+          </div>
+        </details>
+
+      </div>
+    </main>
+  </div>
+</div>
+<script src="renderer.js"></script>
+</body>
+</html>

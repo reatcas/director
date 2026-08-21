@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+.claude/logs/
+.claude/ALTO
+analysis-*.txt
+dist/
+build/
+*.log
+.env
+.claude/settings.local.json
