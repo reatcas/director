@@ -676,6 +676,11 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         const k = m ? m[1] : 'other'
         cat[k] = (cat[k] || 0) + 1
       }
+      // Fetch local metrics
+      const usage = getClaudeUsage(dir)
+      const complianceLines = read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE'))
+      const avgCompliance = complianceLines.length ? 'Calculated from log' : 'N/A'
+
       const report = [
         `=== ORCHESTRA ANALYSIS — ${new Date().toISOString()} ===`,
         `Project: ${dir}`,
@@ -683,6 +688,8 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         `Run started: ${started || 'unknown'}`,
         `Commits since start: ${commits.length}`,
         `By type: ${JSON.stringify(cat)}`,
+        `Usage / Iterations: ${usage ? usage.iterations : 0}`,
+        `Tokens Estimated: ${usage ? (usage.tokensEstimated / 1000).toFixed(1) + 'k' : 'unknown'}`,
         ``,
         `--- ORCHESTRA_REPORT.md (last 150 lines) ---`,
         read('ORCHESTRA_REPORT.md').split('\n').slice(-150).join('\n'),
@@ -851,6 +858,7 @@ const UPGRADE_FILES = [
   '.claude/skills/ip-protection/SKILL.md',
   '.claude/skills/roadmap-sync/SKILL.md',
   '.claude/skills/verification-gate/SKILL.md',
+  '.claude/skills/verification-gate/run-tests.sh',
   '.claude/skills/browser-vision/SKILL.md',
   '.claude/skills/browser-vision/a11y.js',
   '.claude/ORCHESTRA_VERSION',

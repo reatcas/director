@@ -27,8 +27,9 @@ Missing→Phase 0 `team-orchestra` skill.
 6. Evidence: claims need output (`tail -5`/`grep`).
 7. Secure: strict types, server validation, parameterized queries, authz@handler, env secrets, no PII in logs, UTC ISO 8601.
 8. UI: project's design system only. States(loading/empty/error). i18n es primary.
-9. Linked Entities (skill). 10. ip-protection before deploy.
-11. Commit always; push when possible. 12. Product before polish (rule 14+17).
+9. UI Data-Binding: ALWAYS check database schema / API types when building forms. If a field is a foreign key or relation, you MUST build a smart dropdown/select UI, NEVER a simple text input.
+10. Linked Entities (skill). 11. ip-protection before deploy.
+12. Commit always; push when possible. 13. Product before polish (rule 15+18).
 13. **Patterns>rediscovery.** Check DECISIONS.md Patterns FIRST.
     ROADMAP STALENESS: run `roadmap-sync` if: missing | >10 cycles stale | count unchanged 5+ cycles | stats differ >20% from ORCHESTRA_REPORT | ratio<30% for 3+ cycles.
 14. **FOCUS MIXER=HARD CONTRACT.** `.claude/orchestra.json` weights=BINDING.

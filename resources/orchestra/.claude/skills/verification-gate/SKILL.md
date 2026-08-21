@@ -16,6 +16,7 @@ description: The full pre-commit verification gate. Synthesize it per stack in P
 
 ## Rules
 - ALL steps green → conventional commit + push. Any red → fix; 3 failed attempts → revert + PENDING.md entry, move on.
-- Evidence over assertion: paste the summarized real output (tail/grep) of failing→passing runs into the unit's outcome; never claim "should work".
-- Non-interactive everywhere: CI=true, --run/--no-watch, timeouts on every command. Long output piped through tail/grep — never dumped whole into context.
+- Evidence over assertion: paste the summarized real output of failing→passing runs into the unit's outcome; never claim "should work".
+- **BRAIN ROT PREVENTION**: ALWAYS run test/build commands through the provided wrapper script: `bash .claude/skills/verification-gate/run-tests.sh "your command"`. This automatically truncates output to 40 lines. NEVER run tests directly (e.g. `npm run test`), otherwise the long stack traces will fill your context window and cause hallucinations.
+- Non-interactive everywhere: CI=true, --run/--no-watch, timeouts on every command.
 - The gate itself is code: keep its exact commands versioned at the top of PLAN.md; improve it when gaps let a bug through (a bug that passed the gate = a missing gate step).
