@@ -8,7 +8,7 @@ description: Gives the AI "eyes" to see the real UI layout and elements via a he
 ## Why use this skill?
 When you write UI code, you are blind to how it actually renders. You might create a text input where a dropdown is expected, or miss important layout relationships. Unit tests do not catch these visual or accessibility issues.
 
-This skill allows you to run a headless browser against your local development server and dump the Accessibility Tree. The tree provides a clean, layout-noise-free structural view of exactly what a real user (or screen reader) experiences.
+This skill allows you to run a headless browser against your local development server and dump the Accessibility Tree. The tree provides a clean, layout-noise-free structural view of exactly what a real user (or screen reader) experiences. It also captures browser console errors (e.g. React runtime exceptions) that would otherwise be invisible to you.
 
 ## How to use
 

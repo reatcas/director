@@ -415,24 +415,59 @@ function playOrchestra(dir) {
   fs.mkdirSync(telDir, { recursive: true })
   writeJSON(path.join(telDir, 'current-allocation.json'), allocation)
 
-  // ── Product directive injection ────────────────────────────────────────
-  const productW = (focus.product || 0)
-  const qualityW = (focus.quality_tests || 0)
-  if (productW >= 70 && qualityW <= 10) {
-    const directive = [
-      '# PRODUCT DIRECTIVE — injected by Director at play time',
-      `Product weight: ${productW}. Quality weight: ${qualityW}.`,
-      'PRODUCT MODE ACTIVE — this cycle MUST produce ROADMAP.md features.',
-      `Minimum ${productW}% of units must be product (new migrations, endpoints, UI components).`,
-      'Do NOT fill product slots with tests, refactors, or coverage.',
-      'Each product unit must cite a ROADMAP.md item ID and acceptance criteria.',
-      `Generated: ${new Date().toISOString()}`
-    ].join('\n')
-    const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
-    try { fs.writeFileSync(directivePath, directive) } catch {}
+  // ── Focus Directive Injection ──────────────────────────────────────────
+  const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
+  
+  // Sort focus weights descending
+  const sortedFocus = Object.entries(focus)
+    .filter(([_, w]) => w > 0)
+    .sort((a, b) => b[1] - a[1])
+
+  if (sortedFocus.length > 0) {
+    const topW = sortedFocus[0][1]
+    
+    // Only inject strong directives if there is meaningful weight (> 20)
+    if (topW >= 20) {
+      let lines = [
+        '# FOCUS DIRECTIVE — injected by Director at play time',
+        'Follow these exact priorities for this cycle based on the Director Mixer:',
+        ''
+      ]
+
+      sortedFocus.forEach(([key, weight]) => {
+        if (weight >= 70) {
+          lines.push(`- **${key.toUpperCase()} (CRITICAL - ${weight}%):** Must be the primary focus of this cycle. Do not substitute with other tasks.`)
+        } else if (weight >= 40) {
+          lines.push(`- **${key.toUpperCase()} (HIGH - ${weight}%):** Should be actively addressed and mixed into the execution.`)
+        } else if (weight > 0) {
+          lines.push(`- **${key.toUpperCase()} (LOW - ${weight}%):** Address only if opportunistic or blocking other work.`)
+        }
+      })
+      
+      const productW = (focus.product || 0)
+      if (productW >= 50) {
+        lines.push('')
+        lines.push('## PRODUCT MODE ACTIVE')
+        lines.push(`Minimum ${productW}% of units must be product (new migrations, endpoints, UI components).`)
+        lines.push('Each product unit must cite a ROADMAP.md item ID and acceptance criteria.')
+        lines.push('Do NOT fill product slots with tests, refactors, or coverage.')
+      }
+
+      const qualityW = (focus.quality_tests || 0)
+      if (qualityW >= 50) {
+        lines.push('')
+        lines.push('## QUALITY MODE ACTIVE')
+        lines.push(`Minimum ${qualityW}% of units must be tests, coverage, and QA verification.`)
+      }
+
+      lines.push('')
+      lines.push(`Generated: ${new Date().toISOString()}`)
+      
+      try { fs.writeFileSync(directivePath, lines.join('\n')) } catch {}
+    } else {
+      try { fs.unlinkSync(directivePath) } catch {}
+    }
   } else {
-    // Remove directive if product mode not active
-    const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
     try { fs.unlinkSync(directivePath) } catch {}
   }
 

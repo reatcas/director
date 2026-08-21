@@ -14,6 +14,18 @@ const puppeteer = require('puppeteer');
   
   try {
     const page = await browser.newPage();
+    
+    // Capture browser console logs and errors
+    const logs = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error' || msg.type() === 'warning') {
+        logs.push(`[${msg.type().toUpperCase()}] ${msg.text()}`);
+      }
+    });
+    page.on('pageerror', err => {
+      logs.push(`[PAGE ERROR] ${err.toString()}`);
+    });
+
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
     
     // Wait for a brief moment to ensure dynamic content loads
@@ -46,6 +58,12 @@ const puppeteer = require('puppeteer');
       console.log("No accessibility tree found.");
     }
     console.log(`\n======================================\n`);
+    
+    if (logs.length > 0) {
+      console.log(`\n=== BROWSER CONSOLE LOGS & ERRORS ===\n`);
+      console.log(logs.join('\n'));
+      console.log(`\n=====================================\n`);
+    }
     
   } catch (err) {
     console.error("Error generating accessibility tree:", err);
