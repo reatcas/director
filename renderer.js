@@ -436,7 +436,17 @@ function paint() {
   }
 }
 
-function scrollLog() { const l = $('#log'); if(l) l.scrollTop = l.scrollHeight }
+let autoScrollEnabled = true
+if ($('#autoScrollBtn')) {
+  $('#autoScrollBtn').onclick = (e) => {
+    autoScrollEnabled = !autoScrollEnabled
+    e.target.style.color = autoScrollEnabled ? 'var(--hi)' : 'var(--tx-muted)'
+  }
+}
+function scrollLog() {
+  const l = $('#log')
+  if(l && autoScrollEnabled) l.scrollTop = l.scrollHeight
+}
 
 // ─── Button handlers ──────────────────────────────────────────────────────────
 if ($('#addBtn')) $('#addBtn').onclick = async () => {

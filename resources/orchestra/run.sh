@@ -174,11 +174,17 @@ while :; do
   fi
 
   if [ "$EXIT" -eq 0 ]; then
-    BACKOFF_IDX=0; DELAY=15
+    stamp "movement $ITER exited ($EXIT). Resetting backoff."
+    BACKOFF_IDX=0
   else
-    DELAY=${BACKOFF_STEPS[$BACKOFF_IDX]}
-    [ "$BACKOFF_IDX" -lt $(( ${#BACKOFF_STEPS[@]} - 1 )) ] && BACKOFF_IDX=$((BACKOFF_IDX+1))
-    echo "[orchestra v$VERSION] backoff ${DELAY}s (idx $BACKOFF_IDX)" | tee -a "$MASTER_LOG"
+    BACKOFF=${BACKOFF_STEPS[$BACKOFF_IDX]}
+    stamp "movement $ITER exited ($EXIT). Backoff ${BACKOFF}s (idx $BACKOFF_IDX)."
+    sleep $BACKOFF
+    if [ $BACKOFF_IDX -lt $((${#BACKOFF_STEPS[@]} - 1)) ]; then
+      BACKOFF_IDX=$((BACKOFF_IDX + 1))
+    fi
   fi
-  sleep "$DELAY"
+
+  # ── Log rotation: keep last 50 ──────────────────────────────────────────
+  ls -1t "$LOG_DIR"/iter-*.log 2>/dev/null | tail -n +51 | xargs rm -f 2>/dev/null || true
 done
