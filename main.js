@@ -1,7 +1,7 @@
 // Copyright (c) 2026 René Antonio Casaña Amaya. All rights reserved.
 // Licensed under the AGPL-3.0 License. See LICENSE in repository root.
 
-const { app, BrowserWindow, ipcMain, dialog, protocol, net } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell } = require('electron')
 const { spawn, execFile } = require('child_process')
 const path = require('path')
 const fs = require('fs')
@@ -526,6 +526,14 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   return true
 })
 
+ipcMain.handle('repertoire:open', (_e, dir) => {
+  if (dir && fs.existsSync(dir)) {
+    shell.openPath(dir)
+    return true
+  }
+  return false
+})
+
 ipcMain.handle('orchestra:install', (_e, dir) => {
   copyDir(orchestraSrc(), dir)
   try { fs.chmodSync(path.join(dir, 'run.sh'), 0o755) } catch {}
@@ -619,7 +627,17 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
 // ─── Saved mixes (named snapshots) ───────────────────────────────────────────
 ipcMain.handle('mixer:saved:list', (_e, dir) => {
   if (!dir) return []
-  return readJSON(path.join(dir, '.claude/saved-mixes.json'), [])
+  const p = path.join(dir, '.claude/saved-mixes.json')
+  if (!fs.existsSync(p)) {
+    const defaults = [
+      { id: 'def-prod', name: 'Product Launch', ts: new Date().toISOString(), focus: { product: 90, frontend: 50, backend: 50, quality_tests: 10 } },
+      { id: 'def-sec', name: 'Security Audit', ts: new Date().toISOString(), focus: { cybersecurity: 100, backend: 60, product: 0, quality_tests: 80 } },
+      { id: 'def-ref', name: 'Refactoring Phase', ts: new Date().toISOString(), focus: { architecture: 90, performance: 60, quality_tests: 70, product: 10 } },
+      { id: 'def-qa', name: 'QA & Testing', ts: new Date().toISOString(), focus: { quality_tests: 100, product: 0, architecture: 0 } }
+    ]
+    writeJSON(p, defaults)
+  }
+  return readJSON(p, [])
 })
 
 ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {

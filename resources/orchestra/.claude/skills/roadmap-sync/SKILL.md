@@ -8,7 +8,7 @@ description: Consolidates PRODUCT FEATURES into ROADMAP.md with concrete deliver
 ROADMAP.md≠PENDING.md. PENDING=bugs/partials/quality. ROADMAP=unshipped product capability. Empty ROADMAP→loop degrades to permanent polishing.
 
 ## Procedure
-1. **Harvest** planning artifacts: `*GAP*.md`, `*ROADMAP*.md`, `*SPEC.md`, `*_REPORT.md`, `docs/features/`, `docs/adr/`, README/CHANGELOG TODOs. Read fully.
+1. **Harvest** planning artifacts: `.claude/BLUEPRINT.md`, `.claude/blueprint.json`, `*GAP*.md`, `*ROADMAP*.md`, `*SPEC.md`, `*_REPORT.md`, `docs/features/`, `docs/adr/`, README/CHANGELOG TODOs. Read fully.
 2. **Extract features only** (skip quality/hardening). Feature=user-facing capability or business workflow not yet built/complete. Implemented→don't carry forward.
 3. **Normalize** into ROADMAP.md — CONCRETE items only:
    ```

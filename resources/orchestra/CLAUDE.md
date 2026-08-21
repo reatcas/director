@@ -80,7 +80,7 @@ Boot→read INDEX.md. Write cross-cutting discoveries. Project-specific→DECISI
 - **Use codebase memory ALWAYS.** Boot: read auto-memory. Save discoveries immediately. Memory survives compaction.
 
 ## BOOT
-1. `date`→anchor. Re-read `.claude/orchestra.json` NOW. Read PLAN.md+DECISIONS.md+PENDING.md. Auto-memory+shared-memory INDEX.md. Read `.claude/PRODUCT_DIRECTIVE.md` if exists. Read `.claude/A11Y_TREE.md` if exists to see actual UI. Read `.claude/DB_SCHEMA.md` if exists.
+1. `date`→anchor. Re-read `.claude/orchestra.json` NOW. Read PLAN.md+DECISIONS.md+PENDING.md. Auto-memory+shared-memory INDEX.md. Read `.claude/BLUEPRINT.md` if exists. Read `.claude/PRODUCT_DIRECTIVE.md` if exists. Read `.claude/A11Y_TREE.md` if exists to see actual UI. Read `.claude/DB_SCHEMA.md` if exists.
 2. Missing state→Phase 0 `team-orchestra`.
 3. `.claude/ALTO`→shutdown only.
 4. `▸ [Cycle N | elapsed | unit]`. Execute. 2-line recap max.

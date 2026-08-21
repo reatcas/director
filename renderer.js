@@ -249,6 +249,7 @@ function updateStageView() {
       emptyState.classList.remove('on')
     } else {
       emptyState.classList.add('on')
+      if ($('#openFolderBtn')) $('#openFolderBtn').hidden = true
     }
   }
   if (unified) {
@@ -415,6 +416,7 @@ function paint() {
   }
 
   if ($('#installBtn')) $('#installBtn').hidden = p.installed
+  if ($('#openFolderBtn')) $('#openFolderBtn').hidden = false
   if ($('#sectionAnalysis')) $('#sectionAnalysis').hidden = !p.hasLogs
 
   updateTransportButtons()
@@ -460,6 +462,7 @@ if ($('#removeBtn')) $('#removeBtn').onclick = async () => {
   refresh()
 }
 if ($('#installBtn')) $('#installBtn').onclick = async () => { await window.director.install(current); refresh() }
+if ($('#openFolderBtn')) $('#openFolderBtn').onclick = () => window.director.openDir(current)
 if ($('#upgradeBtn')) $('#upgradeBtn').onclick = async () => {
   const btn = $('#upgradeBtn')
   if (btn) { btn.textContent = '…'; btn.disabled = true }
