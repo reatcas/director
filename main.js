@@ -815,6 +815,8 @@ const UPGRADE_FILES = [
   '.claude/skills/ip-protection/SKILL.md',
   '.claude/skills/roadmap-sync/SKILL.md',
   '.claude/skills/verification-gate/SKILL.md',
+  '.claude/skills/browser-vision/SKILL.md',
+  '.claude/skills/browser-vision/a11y.js',
   '.claude/ORCHESTRA_VERSION',
 ]
 

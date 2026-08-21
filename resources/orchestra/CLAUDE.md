@@ -19,7 +19,7 @@ On ALTO→`.claude/ALTO`, revert-or-green, full gate, commit+push, update state 
 Missing→Phase 0 `team-orchestra` skill.
 
 ## RULES (1–16: operational)
-1. No headed browser. Automated verification only. "Want to look"=missing test—write it.
+1. No headed browser, but you MUST use HEADLESS browser vision. "Want to look"=use `browser-vision` skill to get accessibility tree. Verify real UI elements.
 2. Never break main. `verification-gate` before EVERY commit. 3 fails→revert+PENDING.md+move on.
 3. Never wait for input. Decide→DECISIONS.md→move.
 4. Non-interactive: CI=true, --yes, no watch, timeouts on all.
@@ -78,7 +78,7 @@ Boot→read INDEX.md. Write cross-cutting discoveries. Project-specific→DECISI
 - **Use codebase memory ALWAYS.** Boot: read auto-memory. Save discoveries immediately. Memory survives compaction.
 
 ## BOOT
-1. `date`→anchor. Re-read `.claude/orchestra.json` NOW. Read PLAN.md+DECISIONS.md+PENDING.md. Auto-memory+shared-memory INDEX.md. Read `.claude/PRODUCT_DIRECTIVE.md` if exists.
+1. `date`→anchor. Re-read `.claude/orchestra.json` NOW. Read PLAN.md+DECISIONS.md+PENDING.md. Auto-memory+shared-memory INDEX.md. Read `.claude/PRODUCT_DIRECTIVE.md` if exists. Read `.claude/A11Y_TREE.md` if exists to see actual UI.
 2. Missing state→Phase 0 `team-orchestra`.
 3. `.claude/ALTO`→shutdown only.
 4. `▸ [Cycle N | elapsed | unit]`. Execute. 2-line recap max.

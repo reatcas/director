@@ -18,7 +18,7 @@ Emit `▸ [boot] sesión iniciada` IMMEDIATELY — before any file read.
 |Cycle close|`▸ ◼ Cycle N cerrado — COMPLIANCE product:A/P cat:A/P DRIFT:none`|
 
 ## BOOT
-1. `date`. Re-read `.claude/orchestra.json`. Read last cycle PLAN.md only. DECISIONS.md+PENDING.md. Shared memory INDEX.md. Read `.claude/PRODUCT_DIRECTIVE.md` if exists.
+1. `date`. Re-read `.claude/orchestra.json`. Read last cycle PLAN.md only. DECISIONS.md+PENDING.md. Shared memory INDEX.md. Read `.claude/PRODUCT_DIRECTIVE.md` if exists. Read `.claude/A11Y_TREE.md` if exists.
 2. `.claude/ALTO`→shutdown only.
 3. **PRODUCT GATE**: count unchecked P0 in ROADMAP.md. If >0→`▸ [boot] PRODUCT MODE — N items P0 pendientes`. Verify MIXER BUDGET has ≥product% units. Current plan <product%→abandon+rebuild via backlog-generator.
 4. Pick next unit from MIXER BUDGET.

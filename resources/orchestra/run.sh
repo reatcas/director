@@ -43,6 +43,7 @@ CLAUDE_ARGS=(
   --output-format text
   --model "$MODEL"
   --add-dir "$SHARED_MEMORY"
+  --mcp codebase-memory
 )
 
 # ── rtk integration (if installed) ────────────────────────────────────────────
@@ -88,6 +89,19 @@ while :; do
   fi
 
   echo "[orchestra v$VERSION] movement $ITER — $(date '+%H:%M:%S')" | tee -a "$MASTER_LOG"
+
+  # ── Auto-capture A11Y Tree if local server is running ───────────────────
+  if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null; then
+    stamp "Capturing a11y tree from localhost:3000"
+    VISION_DIR=".claude/skills/browser-vision"
+    if [ ! -d "$VISION_DIR/node_modules/puppeteer" ]; then
+      stamp "Installing puppeteer for a11y capture..."
+      (cd "$VISION_DIR" && npm install --no-save puppeteer >/dev/null 2>&1)
+    fi
+    node "$VISION_DIR/a11y.js" http://localhost:3000 > .claude/A11Y_TREE.md 2>/dev/null || true
+  else
+    rm -f .claude/A11Y_TREE.md
+  fi
 
   # ── Run claude ──────────────────────────────────────────────────────────
   # PLAN.md trimmed above keeps boot fast. Usage-limit detection handles quota.
