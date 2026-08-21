@@ -66,6 +66,12 @@
 })()
 
 const $ = s => document.querySelector(s)
+const $$ = s => document.querySelectorAll(s)
+
+function esc(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
 
 const SECTIONS = [
   ['product',        'Product',     '#e8631a', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>'],
@@ -213,10 +219,10 @@ const hue = s => [...s].reduce((a, c) => a + c.charCodeAt(0), 0) % 360
 function logoHTML(p, sm) {
   if (p.logo) {
     const src = 'local-img://' + encodeURIComponent(p.logo)
-    return `<img class="badge${sm ? ' sm' : ''}" src="${src}" alt="${p.name}">`
+    return `<img class="badge${sm ? ' sm' : ''}" src="${src}" alt="${esc(p.name)}">`
   }
   const cls = sm ? 'badge sm' : 'badge'
-  return `<span class="${cls}" style="background:hsl(${hue(p.name)} 45% 30%)">${initials(p.name)}</span>`
+  return `<span class="${cls}" style="background:hsl(${hue(p.name)} 45% 30%)">${initials(esc(p.name))}</span>`
 }
 
 function showToast(msg) {
@@ -288,7 +294,7 @@ async function refresh() {
     li.className = (current === p.path ? 'sel ' : '') + (p.running ? 'live' : '')
     li.innerHTML = `<span class="led"></span>
       ${logoHTML(p, true)}
-      <span class="pn">${p.name}</span>
+      <span class="pn">${esc(p.name)}</span>
       <span class="pv">${p.running ? 'LIVE' : p.installed ? 'v' + p.version : '—'}</span>`
     li.onclick = () => open(p.path)
     ul.appendChild(li)
@@ -395,7 +401,7 @@ function paint() {
       img.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:inherit'
       badge.appendChild(img)
     } else {
-      badge.innerHTML = `<span id="pbadgeText">${initials(p.name)}</span>`
+      badge.innerHTML = `<span id="pbadgeText">${initials(esc(p.name))}</span>`
       badge.style.background = `hsl(${hue(p.name)} 45% 30%)`
     }
   }
@@ -470,7 +476,7 @@ if ($('#upgradeBtn')) $('#upgradeBtn').onclick = async () => {
 if ($('#playBtn')) $('#playBtn').onclick = async () => {
   const p = proj()
   if (!p || !p.installed || p.running) return
-  addActionEntry('play', 'CONDUCT', `Order to interpret — project: ${p.name}`)
+  addActionEntry('play', 'CONDUCT', `Order to interpret — project: ${esc(p.name)}`)
   setOrchestraState('started')
   await window.director.play(current)
   setTimeout(() => { if (orchestraState === 'started') setOrchestraState('interpreting') }, 3000)
@@ -657,7 +663,7 @@ async function loadMixes() {
 
     card.innerHTML = `
       <div class="mix-card-info">
-        <div class="mix-card-name">${m.name}</div>
+        <div class="mix-card-name">${esc(m.name)}</div>
         ${ribbon}
         <div class="mix-card-meta">${date}</div>
       </div>
@@ -1857,7 +1863,7 @@ function bpAskCurrent() {
 function bpAnswer(text) {
   const q = BP_QUESTIONS[bpState.currentQuestion]
   if (!q) return
-  bpAddMessage('user', text)
+  bpAddMessage('user', esc(text))
   bpState.answers[q.key] = text
   bpUpdateCompleteness()
   bpState.currentQuestion++
@@ -1945,12 +1951,12 @@ function renderBpModules() {
     card.className = 'bp-mod-card'
     card.innerHTML = `
       <div class="bp-mod-header">
-        <input class="bp-mod-name mono" value="${mod.name || ''}" placeholder="Module name" data-i="${i}" data-field="name">
+        <input class="bp-mod-name mono" value="${esc(mod.name || '')}" placeholder="Module name" data-i="${i}" data-field="name">
         <button class="bp-mod-del" data-i="${i}" title="Delete">✕</button>
       </div>
-      <textarea class="bp-mod-desc mono" rows="2" placeholder="Description — what it does, responsibilities…" data-i="${i}" data-field="description">${mod.description || ''}</textarea>
-      <input class="bp-mod-features mono" value="${(mod.features || []).join(', ')}" placeholder="Features: feat1, feat2, feat3…" data-i="${i}" data-field="features">
-      <input class="bp-mod-deps mono" value="${(mod.dependencies || []).join(', ')}" placeholder="Depends on: module1, module2…" data-i="${i}" data-field="dependencies">
+      <textarea class="bp-mod-desc mono" rows="2" placeholder="Description — what it does, responsibilities…" data-i="${i}" data-field="description">${esc(mod.description || '')}</textarea>
+      <input class="bp-mod-features mono" value="${esc((mod.features || []).join(', '))}" placeholder="Features: feat1, feat2, feat3…" data-i="${i}" data-field="features">
+      <input class="bp-mod-deps mono" value="${esc((mod.dependencies || []).join(', '))}" placeholder="Depends on: module1, module2…" data-i="${i}" data-field="dependencies">
     `
     list.appendChild(card)
   }

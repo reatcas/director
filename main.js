@@ -616,6 +616,7 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
 ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   if (!dir || !logPath) return ''
   const fullPath = path.isAbsolute(logPath) ? logPath : path.join(dir, logPath)
+  if (!fullPath.startsWith(dir)) return ''
   try {
     const content = fs.readFileSync(fullPath, 'utf8').trim()
     if (!content) return ''
