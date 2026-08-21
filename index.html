@@ -167,6 +167,7 @@
                 <div class="ms-icon-wrap"><span class="ms-icon">◇</span></div>
                 <span class="ms-label">SILENT</span>
               </div>
+              <input id="logFilterInput" type="text" placeholder="Filter logs..." class="mix-import-field mono" style="margin-left:auto; margin-right:10px; width:150px; background:transparent">
               <div class="console-actions">
                 <button id="autoScrollBtn" class="ms-copy on" title="Toggle Auto-scroll" style="color:var(--hi)">↓ SCROLL</button>
                 <button id="toggleRawBtn" class="ms-copy" title="View raw log">RAW</button>
@@ -219,6 +220,7 @@
             <div class="mixer-tabs">
               <button class="mixer-tab on" data-mtab="mixTab">MIX</button>
               <button class="mixer-tab" data-mtab="bpTab">BLUEPRINT</button>
+              <button class="mixer-tab" data-mtab="knowledgeTab">KNOWLEDGE</button>
             </div>
 
             <!-- MIX tab content -->
@@ -265,6 +267,21 @@
                 <button id="bpNewSession" class="tp-action">+ SESSION</button>
                 <button id="bpGenerate" class="tp-action upgrade" disabled>GENERATE BRIEF</button>
                 <span id="bpReadiness" class="section-badge mono" style="margin-left:auto"></span>
+              </div>
+            </div>
+
+            <!-- KNOWLEDGE tab content -->
+            <div id="knowledgeTab" class="mixer-tab-pane" style="display:flex; flex-direction:column; overflow:hidden">
+              <div class="bp-phases" style="display:flex; gap:10px; padding:10px; flex-wrap:wrap">
+                <button id="knBtnRoadmap" class="tp-action kn-btn on">ROADMAP.md</button>
+                <button id="knBtnReport" class="tp-action kn-btn">REPORT.md</button>
+                <button id="knBtnDb" class="tp-action kn-btn">DB_SCHEMA.md</button>
+                <button id="knBtnPlan" class="tp-action kn-btn">PLAN.md</button>
+                <button id="knBtnDecisions" class="tp-action kn-btn">DECISIONS.md</button>
+                <button id="knBtnBlueprint" class="tp-action kn-btn">BLUEPRINT.md</button>
+              </div>
+              <div style="flex:1; overflow-y:auto; padding:10px;">
+                <pre id="knowledgeContent" class="mono" style="font-size:11px; white-space:pre-wrap; color:var(--txt)"></pre>
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('director', {
   add:     p       => ipcRenderer.invoke('repertoire:add', p),
   remove:  p       => ipcRenderer.invoke('repertoire:remove', p),
   openDir: p       => ipcRenderer.invoke('repertoire:open', p),
+  readFile: (p, s) => ipcRenderer.invoke('repertoire:readFile', p, s),
   install: p       => ipcRenderer.invoke('orchestra:install', p),
   play:    p       => ipcRenderer.invoke('orchestra:play', p),
   fine:    p       => ipcRenderer.invoke('orchestra:fine', p),

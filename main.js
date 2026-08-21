@@ -290,8 +290,9 @@ function getClaudeUsage(dir) {
 
   const percent = Math.min(99, Math.round((tokensEstimated / dailyBudget) * 100))
   const status = percent >= 90 ? 'critical' : percent >= 70 ? 'high' : percent >= 40 ? 'mid' : 'normal'
+  const estCost = (tokensEstimated * 0.000003).toFixed(3)
 
-  return { percent, status, iterations: iterCount, tokensEstimated, dailyBudget, detail: `${iterCount} iter · ~${tokensEstimated > 999 ? Math.floor(tokensEstimated/1000) + 'K' : tokensEstimated} tok` }
+  return { percent, status, iterations: iterCount, tokensEstimated, dailyBudget, detail: `${iterCount} iter · ~${tokensEstimated > 999 ? Math.floor(tokensEstimated/1000) + 'K' : tokensEstimated} tok · ~$${estCost}` }
 }
 
 // ─── Metrics sampling ────────────────────────────────────────────────────────
@@ -532,6 +533,16 @@ ipcMain.handle('repertoire:open', (_e, dir) => {
     return true
   }
   return false
+})
+
+ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
+  if (!dir || !subpath) return null
+  const p = path.join(dir, subpath)
+  try {
+    return fs.readFileSync(p, 'utf8')
+  } catch {
+    return null
+  }
 })
 
 ipcMain.handle('orchestra:install', (_e, dir) => {

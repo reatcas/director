@@ -37,8 +37,18 @@ trap cleanup SIGTERM SIGINT
 # ── Build claude args ─────────────────────────────────────────────────────────
 SHARED_MEMORY="$HOME/.director-suite/shared-memory"
 mkdir -p "$SHARED_MEMORY"
+
+PROMPT_CONTENT=$(cat "$PROMPT_FILE")
+if [ "$CAVEMAN" = "true" ]; then
+  PROMPT_CONTENT="$PROMPT_CONTENT
+
+CRITICAL INSTRUCTION: CAVEMAN MODE IS ENABLED.
+Always use zero prose in responses. No pleasantries. No yapping. Save tokens.
+You MUST also use MCP codebase memory to save tokens."
+fi
+
 CLAUDE_ARGS=(
-  -p "$(cat "$PROMPT_FILE")"
+  -p "$PROMPT_CONTENT"
   --dangerously-skip-permissions
   --output-format text
   --model "$MODEL"

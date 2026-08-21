@@ -2194,3 +2194,4 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
 .bp-mod-desc:focus, .bp-mod-features:focus, .bp-mod-deps:focus {
   border-color: rgba(0,255,238,0.15);
 }
+#log.filtering .le:not(.match) { display: none !important; }

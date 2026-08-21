@@ -1031,6 +1031,45 @@ if ($('#selectAllRawBtn')) $('#selectAllRawBtn').onclick = () => {
   sel.addRange(range)
 }
 
+if ($('#logFilterInput')) {
+  const filterInput = $('#logFilterInput')
+  filterInput.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase()
+    const logEl = $('#log')
+    if (!logEl) return
+    if (!q) {
+      logEl.classList.remove('filtering')
+    } else {
+      logEl.classList.add('filtering')
+      const entries = logEl.querySelectorAll('.le')
+      for (const el of entries) {
+        if (el.textContent.toLowerCase().includes(q)) {
+          el.classList.add('match')
+        } else {
+          el.classList.remove('match')
+        }
+      }
+    }
+  })
+
+  const logObserver = new MutationObserver((mutations) => {
+    const q = filterInput.value.toLowerCase()
+    if (!q) return
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node.nodeType === 1 && node.classList.contains('le')) {
+          if (node.textContent.toLowerCase().includes(q)) {
+            node.classList.add('match')
+          }
+        }
+      }
+    }
+  })
+  if ($('#log')) {
+    logObserver.observe($('#log'), { childList: true })
+  }
+}
+
 // ─── New Entry Types ─────────────────────────────────────────────────────────
 
 // Iteration start entry
@@ -2098,8 +2137,31 @@ document.querySelectorAll('.mixer-tab').forEach(t => {
     const pane = document.getElementById(t.dataset.mtab)
     if (pane) pane.classList.add('on')
     if (t.dataset.mtab === 'bpTab') bpLoad()
+    if (t.dataset.mtab === 'knowledgeTab') loadKnowledge('ROADMAP.md', 'knBtnRoadmap')
   })
 })
+
+async function loadKnowledge(file, btnId) {
+  if (!current) return
+  
+  if (btnId) {
+    document.querySelectorAll('#knowledgeTab .tp-action').forEach(b => b.classList.remove('warn'))
+    document.getElementById(btnId).classList.add('warn')
+  }
+
+  const content = await window.director.readFile(current, file)
+  const el = document.getElementById('knowledgeContent')
+  if (el) {
+    el.textContent = content || `[File not found: ${file}]`
+  }
+}
+
+if (document.getElementById('knBtnRoadmap')) document.getElementById('knBtnRoadmap').onclick = () => loadKnowledge('ROADMAP.md', 'knBtnRoadmap')
+if (document.getElementById('knBtnReport')) document.getElementById('knBtnReport').onclick = () => loadKnowledge('.claude/ORCHESTRA_REPORT.md', 'knBtnReport')
+if (document.getElementById('knBtnDb')) document.getElementById('knBtnDb').onclick = () => loadKnowledge('.claude/DB_SCHEMA.md', 'knBtnDb')
+if (document.getElementById('knBtnPlan')) document.getElementById('knBtnPlan').onclick = () => loadKnowledge('PLAN.md', 'knBtnPlan')
+if (document.getElementById('knBtnDecisions')) document.getElementById('knBtnDecisions').onclick = () => loadKnowledge('DECISIONS.md', 'knBtnDecisions')
+if (document.getElementById('knBtnBlueprint')) document.getElementById('knBtnBlueprint').onclick = () => loadKnowledge('.claude/BLUEPRINT.md', 'knBtnBlueprint')
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 // On boot, auto-detect running projects and restore state
