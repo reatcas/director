@@ -736,12 +736,16 @@ async function loadMixer() {
     inp.addEventListener('input', () => {
       const newVal = parseInt(inp.value, 10)
       rebalanceMixer(k, newVal)
+      updateSmartAuroraColors()
     })
     inp.addEventListener('change', () => {
       const newVal = parseInt(inp.value, 10)
       rebalanceMixer(k, newVal)
+      updateSmartAuroraColors()
     })
   }
+  // Update aurora colors from the freshly built strips
+  setTimeout(updateSmartAuroraColors, 50)
 }
 
 // ─── Mixer Equalizer: all stands always sum to 100% ────────────────────────
@@ -856,14 +860,34 @@ if ($('#saveMixer')) $('#saveMixer').onclick = async () => {
   loadMixes()
 }
 
-// ─── Smart Mix Toggle ───────────────────────────────────────────────────────
+// ─── Smart Mix Toggle (aurora mesh gradient) ────────────────────────────────
 function updateSmartMixIndicator(active) {
-  const btn = $('#smartMixBtn')
-  if (!btn) return
-  btn.classList.toggle('active', active)
-  btn.title = active ? 'Smart Mix ACTIVE — self-regulating every 3 cycles' : 'Enable Smart Mix — self-regulating'
+  const bar = $('#smartMixBar')
+  if (!bar) return
+  bar.classList.toggle('active', active)
+  if (active) updateSmartAuroraColors()
 }
-if ($('#smartMixBtn')) $('#smartMixBtn').onclick = async () => {
+
+function updateSmartAuroraColors() {
+  // Read the top 4 active stand colors and inject them into the aurora gradient
+  const aurora = $('#smartAurora')
+  if (!aurora) return
+  const strips = document.querySelectorAll('#mixerStrips .strip-h.on')
+  const colors = []
+  strips.forEach(s => {
+    const color = getComputedStyle(s).getPropertyValue('--strip-color').trim()
+    if (color && colors.length < 4) colors.push(color)
+  })
+  // Pad to 4 colors
+  const defaults = ['#e8631a', '#3d78e8', '#9955ee', '#28a828']
+  while (colors.length < 4) colors.push(defaults[colors.length])
+  aurora.style.setProperty('--aurora-c1', colors[0])
+  aurora.style.setProperty('--aurora-c2', colors[1])
+  aurora.style.setProperty('--aurora-c3', colors[2])
+  aurora.style.setProperty('--aurora-c4', colors[3])
+}
+
+if ($('#smartMixToggle')) $('#smartMixToggle').onclick = async () => {
   if (!current) return
   const cfg = await window.director.mixerRead(current) || {}
   const newState = !cfg.smartMix
@@ -994,7 +1018,6 @@ async function loadMixes() {
         await window.director.configWrite(current, cfg)
       }
       loadMixer()
-      updateSmartMixIndicator(!!m.smart)
       showToast(m.smart ? 'Smart Mix activated — self-regulating' : 'Mix "' + m.name + '" loaded')
     }
     card.querySelector('.share').onclick = async e => {

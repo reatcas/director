@@ -1580,17 +1580,95 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
   flex-shrink: 0;
 }
 .mixer-hint { font: 8px var(--sans); color: var(--dim2); margin-left: auto; text-transform: uppercase; white-space: nowrap; overflow: hidden }
-.smart-mix-btn { font-size: 8px !important; letter-spacing: .5px }
-.smart-mix-btn.active {
-  background: rgba(0,255,238,.08) !important; color: var(--ai-cyan) !important;
-  border-color: var(--ai-cyan) !important; box-shadow: 0 0 10px rgba(0,255,238,.15);
-  animation: smartPulse 3s ease-in-out infinite;
+
+/* ── Smart Mix Toggle — aurora mesh gradient ─────────────────────────────── */
+.smart-mix-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+  background: rgba(0,0,0,.12);
 }
-@keyframes smartPulse { 0%,100%{box-shadow:0 0 8px rgba(0,255,238,.1)} 50%{box-shadow:0 0 16px rgba(0,255,238,.25)} }
-html.light .smart-mix-btn.active {
-  background: rgba(0,122,110,.06) !important; color: var(--ai-cyan) !important;
-  border-color: var(--ai-cyan) !important; box-shadow: 0 0 8px rgba(0,122,110,.12);
+.smart-label {
+  font: 700 8px var(--sans); letter-spacing: 1.5px; color: var(--dim2);
+  transition: color .4s;
 }
+.smart-mix-bar.active .smart-label { color: var(--ai-cyan) }
+
+.smart-toggle {
+  position: relative;
+  width: 52px; height: 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid var(--line2);
+  background: var(--panel3);
+  transition: border-color .4s;
+}
+.smart-mix-bar.active .smart-toggle { border-color: rgba(0,255,238,.4) }
+
+/* Aurora mesh — layered radial gradients that animate */
+.smart-toggle-aurora {
+  position: absolute; inset: -50%;
+  width: 200%; height: 200%;
+  opacity: 0;
+  transition: opacity .6s;
+  filter: blur(8px) saturate(1.4);
+  animation: auroraDrift 6s ease-in-out infinite;
+  /* Default colors — overridden by JS with mix stand colors */
+  background:
+    radial-gradient(ellipse at 20% 50%, var(--aurora-c1, #e8631a) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 30%, var(--aurora-c2, #3d78e8) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 80%, var(--aurora-c3, #9955ee) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 20%, var(--aurora-c4, #28a828) 0%, transparent 50%);
+}
+.smart-mix-bar.active .smart-toggle-aurora { opacity: 1 }
+
+@keyframes auroraDrift {
+  0%   { transform: translate(0, 0) rotate(0deg) }
+  25%  { transform: translate(5%, -8%) rotate(3deg) }
+  50%  { transform: translate(-3%, 5%) rotate(-2deg) }
+  75%  { transform: translate(8%, 3%) rotate(4deg) }
+  100% { transform: translate(0, 0) rotate(0deg) }
+}
+
+/* Frosted glass overlay */
+.smart-toggle-glass {
+  position: absolute; inset: 0;
+  border-radius: 12px;
+  background: rgba(0,0,0,.25);
+  backdrop-filter: blur(2px);
+  transition: background .4s;
+}
+.smart-mix-bar.active .smart-toggle-glass { background: rgba(0,0,0,.1) }
+
+/* Sliding knob */
+.smart-toggle-knob {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--dim);
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  transition: transform .35s cubic-bezier(.4,.0,.2,1), background .35s, box-shadow .35s;
+  z-index: 2;
+}
+.smart-mix-bar.active .smart-toggle-knob {
+  transform: translateX(28px);
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0,255,238,.5), 0 1px 4px rgba(0,0,0,.2);
+}
+
+/* Light mode overrides */
+html.light .smart-mix-bar { background: var(--panel3) }
+html.light .smart-toggle { background: var(--panel4); border-color: var(--line) }
+html.light .smart-toggle-glass { background: rgba(255,255,255,.3) }
+html.light .smart-mix-bar.active .smart-toggle-glass { background: rgba(255,255,255,.15) }
+html.light .smart-mix-bar.active .smart-toggle-knob {
+  background: #fff; box-shadow: 0 0 6px rgba(0,122,110,.4), 0 1px 3px rgba(0,0,0,.1);
+}
+html.light .smart-mix-bar.active .smart-label { color: var(--ai-cyan) }
+html.light .smart-mix-bar.active .smart-toggle { border-color: rgba(0,122,110,.3) }
 .save-mix { background: var(--bg); color: var(--fl-orange); border: 1px solid var(--fl-orange); font-size: 9px; padding: 3px 8px }
 .save-mix:hover { background: rgba(232,99,26,.08); box-shadow: var(--glow-orange) }
 .saved-msg { font: 9px var(--mono); color: var(--fl-green); transition: opacity .3s }
