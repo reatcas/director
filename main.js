@@ -420,45 +420,14 @@ function hotReloadAllProjects(changedFile) {
   let resynced = 0
   for (const p of projects) {
     if (!p.path) continue
-    // Always sync protocol files to every registered project
+    // Sync protocol files to every registered project (non-destructive)
     syncProtocol(p.path)
     resynced++
-    // If running, restart the orchestra so it picks up the new files
-    if (isRunning(p.path)) {
-      const c = procs.get(p.path)
-      const currentAgent = aiState().selected || 'claude'
-      // Read agent from project config
-      let agent = currentAgent
-      try {
-        const cfg = readJSON(path.join(p.path, '.claude/orchestra.json'), {})
-        if (cfg.agent) agent = cfg.agent
-      } catch {}
-      // Kill current run — do NOT write ALTO (we want it to restart)
-      if (c) {
-        killProcessGroup(c.pid)
-        procs.delete(p.path)
-      } else {
-        const pidFile = path.join(p.path, '.claude/ORCHESTRA_PID')
-        try {
-          const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10)
-          if (pid) killProcessGroup(pid)
-        } catch {}
-      }
-      stopTailing(p.path)
-      // Restart after a brief delay to let the old process clean up
-      setTimeout(() => {
-        if (!isRunning(p.path)) {
-          persistLifecycleEvent(p.path, 'hot_reload', 'RELOAD', `Protocol updated (${changedFile}) — restarting with latest config`)
-          playOrchestra(p.path, agent)
-          if (win && !win.isDestroyed()) {
-            win.webContents.send('orchestra:resumed', { dir: p.path, agent })
-          }
-        }
-      }, 1500)
-    }
+    // Do NOT restart running processes — run.sh picks up new files at next iteration.
+    // Restarting kills Claude mid-work and wastes cycles.
   }
   if (resynced > 0 && win && !win.isDestroyed()) {
-    win.webContents.send('orchestra:line', { dir: '', line: `[director] Hot-reload: synced ${resynced} project(s) — ${changedFile}\n` })
+    win.webContents.send('orchestra:line', { dir: '', line: `[director] Hot-sync: ${resynced} project(s) updated — ${changedFile}\n` })
   }
 }
 
