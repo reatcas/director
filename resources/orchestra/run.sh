@@ -263,6 +263,48 @@ for raw in sys.stdin:
     fi
   fi
 
+  # ── Smart Mix Auto-Switch ───────────────────────────────────────────────
+  # Every 5 iterations, analyze commit patterns and auto-adjust the mix profile.
+  if [ $((ITER % 5)) -eq 0 ] && [ "$ITER" -gt 0 ] && [ -f .claude/CYCLE_LEARNINGS.md ]; then
+    # Count recent commit categories from git log (last 15 commits)
+    RECENT_PRODUCT=$(git log --oneline -15 2>/dev/null | grep -ciE 'feat' || echo 0)
+    RECENT_QUALITY=$(git log --oneline -15 2>/dev/null | grep -ciE 'test|fix' || echo 0)
+    RECENT_SECURITY=$(git log --oneline -15 2>/dev/null | grep -ciE 'security|auth|xss|sql.inject|csrf' || echo 0)
+    RECENT_TOTAL=$((RECENT_PRODUCT + RECENT_QUALITY + RECENT_SECURITY))
+    [ "$RECENT_TOTAL" -eq 0 ] && RECENT_TOTAL=1
+
+    # Detect slop: >60% in one category → switch to complement
+    PRODUCT_PCT=$((RECENT_PRODUCT * 100 / RECENT_TOTAL))
+    QUALITY_PCT=$((RECENT_QUALITY * 100 / RECENT_TOTAL))
+
+    NEW_MIX=""
+    if [ "$PRODUCT_PCT" -gt 60 ]; then
+      NEW_MIX="quality-first"
+      stamp "AUTO-MIX: Product slop detected (${PRODUCT_PCT}%) — switching to Quality First"
+    elif [ "$QUALITY_PCT" -gt 60 ]; then
+      NEW_MIX="ship-fast"
+      stamp "AUTO-MIX: Quality heavy (${QUALITY_PCT}%) — switching to Ship Fast"
+    elif [ "$RECENT_SECURITY" -eq 0 ] && [ "$ITER" -ge 10 ]; then
+      NEW_MIX="hardening"
+      stamp "AUTO-MIX: Zero security work in 15 commits — switching to Hardening"
+    fi
+
+    if [ -n "$NEW_MIX" ] && [ -f .claude/default-mixes.json ]; then
+      # Apply the new mix from presets
+      python3 -c "
+import json, sys
+mixes = json.load(open('.claude/default-mixes.json'))
+cfg = json.load(open('$CFG'))
+target = [m for m in mixes if m['id'] == 'preset-$NEW_MIX']
+if target:
+    cfg['focus'] = target[0]['focus']
+    json.dump(cfg, open('$CFG', 'w'), indent=2)
+    print('Applied: ' + target[0]['name'])
+" 2>/dev/null | tee -a "$MASTER_LOG"
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) AUTO-MIX=$NEW_MIX product_pct=$PRODUCT_PCT quality_pct=$QUALITY_PCT" >> .claude/CYCLE_LEARNINGS.md
+    fi
+  fi
+
   echo "[orchestra v$VERSION] movement $ITER exited ($EXIT)" | tee -a "$MASTER_LOG"
   [ -f .claude/ALTO ] && continue
 
