@@ -75,12 +75,12 @@ Boot→read INDEX.md. Write cross-cutting discoveries. Project-specific→DECISI
   1. Log `blocked: <reason>` in PENDING.md
   2. Emit `▸ ⚠ BLOCKED: <reason> — requiere intervención owner`
   3. Skip to next unit. NEVER ask. NEVER wait.
-  4. ALL units blocked→`▸ ⚠ CICLO BLOQUEADO — ver PENDING.md`→backlog-generator for alt work.
+  4. ALL units blocked→enter **IMPROVEMENT MODE**: scan codebase, review existing modules/forms/UI/API/tests, find real improvements, add them to ROADMAP.md `## Improvements`, execute. A senior dev always finds work.
 - **Ambiguity→simplest interpretation.** Log reasoning in DECISIONS.md.
 - **Use codebase memory ALWAYS.** Boot: read auto-memory. Save discoveries immediately. Memory survives compaction.
 
 ## BOOT
-1. `date`→anchor. Re-read `.claude/orchestra.json` NOW. Read PLAN.md+DECISIONS.md+PENDING.md. Auto-memory+shared-memory INDEX.md. Read `.claude/BLUEPRINT.md` if exists. Read `.claude/PRODUCT_DIRECTIVE.md` if exists. Read `.claude/A11Y_TREE.md` if exists to see actual UI. Read `.claude/DB_SCHEMA.md` if exists.
+1. `date`→anchor. Re-read `.claude/orchestra.json` NOW. Read PLAN.md+DECISIONS.md+PENDING.md+`.claude/CYCLE_LEARNINGS.md`. Auto-memory+shared-memory INDEX.md. Read `.claude/BLUEPRINT.md` if exists. Read `.claude/PRODUCT_DIRECTIVE.md` if exists. Read `.claude/A11Y_TREE.md` if exists to see actual UI. Read `.claude/DB_SCHEMA.md` if exists. LEARN from CYCLE_LEARNINGS — avoid past mistakes.
 2. Missing state→Phase 0 `team-orchestra`.
 3. `.claude/ALTO`→shutdown only.
 4. `▸ [Cycle N | elapsed | unit]`. Execute. 2-line recap max.

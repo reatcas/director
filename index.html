@@ -20,7 +20,6 @@
       <div class="modal-subtitle">v6.0.0 — Autonomous AI Orchestration Environment</div>
 
       <div class="about-author">
-        <img src="reatcas.png" class="about-avatar" alt="René Antonio Casaña">
         <div class="about-author-info">
           <span class="about-author-name">René Antonio Casaña</span>
           <a class="about-author-handle" href="https://x.com/reatcas" target="_blank">@reatcas</a>
@@ -50,6 +49,83 @@
       </div>
 
       <div class="modal-footer">Powered by Claude & Antigravity<br><span style="font-size:8px;opacity:0.5">Copyright &copy; 2026 René Antonio Casaña Amaya. All rights reserved.</span></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="modal-overlay" hidden>
+    <div class="modal-card" style="width:480px;max-height:80vh;overflow-y:auto">
+      <button id="closeSettings" class="modal-close">✕</button>
+      <h2 class="modal-title" style="font-size:14px">SETTINGS</h2>
+
+      <div class="settings-section">
+        <span class="settings-label">APPEARANCE</span>
+        <div class="settings-row">
+          <span class="settings-key">Theme</span>
+          <div class="settings-toggle-group" id="themeGroup">
+            <button class="stg-btn" data-theme="dark">DARK</button>
+            <button class="stg-btn on" data-theme="auto">AUTO</button>
+            <button class="stg-btn" data-theme="light">LIGHT</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <span class="settings-label">ORCHESTRA</span>
+        <div class="settings-row">
+          <span class="settings-key">Caveman mode</span>
+          <label class="stg-switch"><input type="checkbox" id="stgCaveman" checked><span class="stg-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <span class="settings-key">Compact at (%)</span>
+          <input type="number" id="stgCompactAt" class="mix-import-field mono" value="50" min="10" max="90" style="width:60px">
+        </div>
+        <div class="settings-row">
+          <span class="settings-key">Max hallucination streak</span>
+          <input type="number" id="stgMaxHallStreak" class="mix-import-field mono" value="5" min="1" max="20" style="width:60px">
+        </div>
+        <div class="settings-row">
+          <span class="settings-key">Run mode</span>
+          <select id="stgRunMode" class="mix-import-field mono" style="width:120px">
+            <option value="perpetual">Perpetual</option>
+            <option value="single">Single cycle</option>
+            <option value="bounded">Bounded</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-key">Max iterations (bounded)</span>
+          <input type="number" id="stgMaxIter" class="mix-import-field mono" value="0" min="0" style="width:60px">
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <span class="settings-label">AI DEFAULTS</span>
+        <div class="settings-row">
+          <span class="settings-key">Default provider</span>
+          <select id="stgDefaultAi" class="mix-import-field mono" style="width:160px">
+            <option value="claude">Claude (Anthropic)</option>
+            <option value="agy">Antigravity</option>
+            <option value="codex">Codex (OpenAI)</option>
+            <option value="aider">Aider (Multi)</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-key">Auto-switch on quota</span>
+          <label class="stg-switch"><input type="checkbox" id="stgAutoSwitch" checked><span class="stg-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <span class="settings-label">LOGS</span>
+        <div class="settings-row">
+          <span class="settings-key">Keep last N iter logs</span>
+          <input type="number" id="stgKeepLogs" class="mix-import-field mono" value="50" min="5" max="200" style="width:60px">
+        </div>
+        <div class="settings-row">
+          <span class="settings-key">Auto-scroll</span>
+          <label class="stg-switch"><input type="checkbox" id="stgAutoScroll" checked><span class="stg-slider"></span></label>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -88,9 +164,29 @@
       </div>
     </div>
     <div id="transportControls">
-      <button id="playBtn" class="tp-btn tp-play disabled" title="Conduct">▶</button>
+      <button id="playBtn" class="tp-btn tp-play disabled" title="Start development cycle">▶</button>
       <button id="fineBtn" class="tp-btn tp-fine disabled" title="Fine">◼</button>
       <button id="killBtn" class="tp-btn tp-kill disabled" title="Hard cut">✕</button>
+    </div>
+    <div id="aiControl" class="ai-control">
+      <label for="aiSelect">AI DEVELOPER</label>
+      <div class="ai-select-wrap">
+        <span class="ai-icon" id="aiIconMain">✦</span>
+        <select id="aiSelect" aria-label="AI provider">
+          <option value="claude">Claude (Anthropic)</option>
+          <option value="agy">Antigravity</option>
+          <option value="codex">Codex (OpenAI)</option>
+          <option value="aider">Aider (Multi)</option>
+        </select>
+      </div>
+      <div class="ai-select-wrap" style="display:none;">
+        <span class="ai-icon" id="aiIconModel">✦</span>
+        <select id="modelSelect" aria-label="AI model" style="margin-left:5px;">
+        </select>
+      </div>
+      <button id="aiLoginBtn" class="tp-btn" title="Login to AI provider" style="font-size:8px;width:auto;padding:0 6px;">LOGIN</button>
+      <span id="aiAuthDot" class="ai-auth-dot" title="Not connected"></span>
+      <span id="aiCreditStatus" class="ai-credit-status">Select an AI to start</span>
     </div>
     <div id="clockArea">
       <div class="clock-block">
@@ -116,6 +212,11 @@
       <span id="upgradeVer" class="tp-path mono" style="display:none"></span>
       <span id="ppath" class="tp-path mono"></span>
       <button id="removeBtn" class="tp-action dim">REMOVE</button>
+    </div>
+    <div id="transportUtils">
+      <button id="themeToggle" class="tp-btn" title="Toggle theme">◐</button>
+      <button id="settingsBtn" class="tp-btn" title="Settings">⚙</button>
+      <button id="aboutBtn" class="tp-btn" title="About">?</button>
     </div>
   </header>
 
@@ -169,6 +270,7 @@
               </div>
               <input id="logFilterInput" type="text" placeholder="Filter logs..." class="mix-import-field mono" style="margin-left:auto; margin-right:10px; width:150px; background:transparent">
               <div class="console-actions">
+                <button id="clearLogBtn" class="ms-copy" title="Clear terminal log" style="color:var(--txt)">CLEAR</button>
                 <button id="autoScrollBtn" class="ms-copy on" title="Toggle Auto-scroll" style="color:var(--hi)">↓ SCROLL</button>
                 <button id="toggleRawBtn" class="ms-copy" title="View raw log">RAW</button>
                 <button id="copyLogBtn" class="ms-copy" title="Copy full history">⎘ COPY ALL</button>
@@ -184,7 +286,7 @@
               <div class="mm-cell"><span class="mm-label">INSTANCES</span><span class="mm-val" id="mmInstancesVal">—</span></div>
               <div class="mm-cell"><span class="mm-label">COMPLIANCE</span><span class="mm-val" id="mmComplianceVal">—</span></div>
               <div class="mm-cell"><span class="mm-label">ROADMAP</span><span class="mm-val" id="mmRoadmapVal">—</span></div>
-              <div class="mm-cell mm-cell-usage"><span class="mm-label">CLAUDE API</span><span class="mm-val" id="mmClaudeUsageVal">—</span><div class="usage-bar"><div class="usage-bar-fill" id="usageBarFill"></div></div></div>
+              <div class="mm-cell mm-cell-usage"><span class="mm-label">AI USAGE</span><span class="mm-val" id="mmAiUsageVal">—</span><div class="usage-bar"><div class="usage-bar-fill" id="usageBarFill"></div></div></div>
             </div>
 
             <!-- Current feature indicator -->
@@ -208,6 +310,32 @@
               </div>
             </div>
 
+            <!-- PROCESSES (inside console) -->
+            <div id="procsPanel" class="procs-panel">
+              <div class="procs-bar">
+                <span class="section-icon">⚙</span>
+                <span class="rack-title" style="color:var(--txt)">PROCESSES</span>
+                <button id="procsRefresh" class="ms-copy">↺</button>
+                <span id="procsCount" class="section-badge mono"></span>
+              </div>
+              <div id="procsList"></div>
+            </div>
+
+            <!-- CRITIQUE (inside console) -->
+            <details id="sectionAnalysis" class="console-collapsible" hidden>
+              <summary class="collapsible-header">
+                <span class="section-icon">✎</span>
+                <span class="section-title">CRITIQUE</span>
+                <div class="section-actions">
+                  <button id="refreshAnalysis" class="ms-copy">UPDATE</button>
+                  <button id="copyAnalysis" class="ms-copy">COPY</button>
+                </div>
+              </summary>
+              <div class="collapsible-body">
+                <textarea id="analysisOut" class="mono" readonly placeholder="Loading critique…"></textarea>
+                <span id="analysisFile" class="mono tp-path" style="padding:4px 12px"></span>
+              </div>
+            </details>
 
           </div>
 
@@ -216,7 +344,6 @@
 
           <!-- RIGHT PANEL: MIXER (~35%) -->
           <div id="mixerPanel" class="mixer-panel">
-            <!-- Tabs: MIX | BLUEPRINT -->
             <div class="mixer-tabs">
               <button class="mixer-tab on" data-mtab="mixTab">MIX</button>
               <button class="mixer-tab" data-mtab="bpTab">BLUEPRINT</button>
@@ -271,7 +398,7 @@
             </div>
 
             <!-- KNOWLEDGE tab content -->
-            <div id="knowledgeTab" class="mixer-tab-pane" style="display:flex; flex-direction:column; overflow:hidden">
+            <div id="knowledgeTab" class="mixer-tab-pane kn-pane">
               <div class="bp-phases" style="display:flex; gap:10px; padding:10px; flex-wrap:wrap">
                 <button id="knBtnRoadmap" class="tp-action kn-btn on">ROADMAP.md</button>
                 <button id="knBtnReport" class="tp-action kn-btn">REPORT.md</button>
@@ -287,34 +414,6 @@
           </div>
 
         </div>
-
-        <!-- ─── BOTTOM: PROCESSES ─── -->
-        <div id="procsPanel" class="procs-panel">
-          <div class="procs-bar">
-            <span class="section-icon">⚙</span>
-            <span class="rack-title" style="color:var(--txt)">PROCESSES</span>
-            <button id="procsRefresh" class="ms-copy">↺</button>
-            <span id="procsCount" class="section-badge mono"></span>
-          </div>
-          <div id="procsList"></div>
-        </div>
-
-        <!-- ─── BOTTOM: CRITIQUE ─── -->
-        <details id="sectionAnalysis" class="console-collapsible" hidden>
-          <summary class="collapsible-header">
-            <span class="section-icon">✎</span>
-            <span class="section-title">CRITIQUE</span>
-            <div class="section-actions">
-              <button id="refreshAnalysis" class="ms-copy">UPDATE</button>
-              <button id="copyAnalysis" class="ms-copy">COPY</button>
-            </div>
-          </summary>
-          <div class="collapsible-body">
-            <textarea id="analysisOut" class="mono" readonly placeholder="Loading critique…"></textarea>
-            <span id="analysisFile" class="mono tp-path" style="padding:4px 12px"></span>
-          </div>
-        </details>
-
       </div>
     </main>
   </div>

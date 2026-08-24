@@ -25,6 +25,18 @@ if [ -n "$SQL_FILES" ]; then
   FOUND=1
 fi
 
+# Check for Drizzle / ORM Models
+TS_MODELS=$(find src/db src/server/db src/models src/schema -type f -name "*.ts" -o -name "*.js" 2>/dev/null | grep -i "schema\|model" | head -n 5)
+if [ -n "$TS_MODELS" ]; then
+  echo -e "\n## ORM Models / Schema Definitions\n" >> .claude/DB_SCHEMA.md
+  for f in $TS_MODELS; do
+    echo -e "\n### $f\n\`\`\`typescript" >> .claude/DB_SCHEMA.md
+    head -n 150 "$f" | grep -v "^//" | grep -v "^import" >> .claude/DB_SCHEMA.md
+    echo "\`\`\`" >> .claude/DB_SCHEMA.md
+  done
+  FOUND=1
+fi
+
 if [ "$FOUND" -eq 0 ]; then
   echo "\nNo standard schema files (Prisma, SQL) found automatically." >> .claude/DB_SCHEMA.md
 fi

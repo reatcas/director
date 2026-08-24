@@ -19,6 +19,7 @@ const contextProto = new ContextProtocol()
 const coordinator  = new CoordinationProtocol()
 
 const store     = () => path.join(app.getPath('userData'), 'repertoire.json')
+const aiStateFile = () => path.join(app.getPath('userData'), 'ai-credits.json')
 const orchestraSrc = () => path.join(__dirname, 'resources', 'orchestra')
 const procs   = new Map()
 const tailers = new Map()
@@ -42,7 +43,7 @@ function startTailing(dir, logFile) {
         fs.readSync(fd, buf, 0, buf.length, pos)
         fs.closeSync(fd)
         pos += buf.length
-        if (win) win.webContents.send('orchestra:line', { dir, line: buf.toString() })
+        if (win && !win.isDestroyed()) win.webContents.send('orchestra:line', { dir, line: buf.toString() })
       } else {
         // Log not growing — check if process is actually alive
         if (!isRunning(dir)) {
@@ -57,7 +58,7 @@ function startTailing(dir, logFile) {
               stopTailing(dir)
               stopMetricsSampling(dir)
               persistLifecycleEvent(dir, 'exit', 'FIN', 'Proceso huérfano detectado — orquesta ya no activa')
-              if (win) win.webContents.send('orchestra:exit', { dir, code: null })
+              if (win && !win.isDestroyed()) win.webContents.send('orchestra:exit', { dir, code: null })
             }
           }
         } else {
@@ -119,8 +120,8 @@ function watchForResume(dir) {
       clearInterval(iv)
       resumeTimers.delete(dir)
       if (!isRunning(dir)) {
-        playOrchestra(dir)
-        if (win) win.webContents.send('orchestra:resumed', { dir })
+        playOrchestra(dir, aiState().selected || 'claude')
+        if (win && !win.isDestroyed()) win.webContents.send('orchestra:resumed', { dir })
       }
     }
   }, 300_000)
@@ -308,13 +309,15 @@ function startMetricsSampling(dir) {
     if (win) {
       const resourceMetrics = scheduler.getMetrics(dir)
       const contextMetrics  = contextProto.getMetrics(dir)
-      win.webContents.send('metrics:update', {
-        dir,
-        resource: resourceMetrics,
-        context:  contextMetrics,
-        coordination: coordinator.getStatus(),
-        claudeUsage: getClaudeUsage(dir)
-      })
+      if (win && !win.isDestroyed()) {
+        win.webContents.send('metrics:update', {
+          dir,
+          resource: resourceMetrics,
+          context:  contextMetrics,
+          coordination: coordinator.getStatus(),
+          claudeUsage: getClaudeUsage(dir)
+        })
+      }
     }
   }, 30_000) // Every 30 seconds
   metricsSamplers.set(dir, iv)
@@ -341,9 +344,7 @@ const LEGACY_PURGE = [
   '.claude/commands/loop.md.bak',
   'CLAUDE.md.bak',
   'run.sh.bak',
-  '.claude/ORCHESTRA_VERSION.bak',
-  // Old product directive from previous runs (will be regenerated if needed)
-  '.claude/PRODUCT_DIRECTIVE.md',
+  '.claude/ORCHESTRA_VERSION.bak'
 ]
 
 function syncProtocol(dir) {
@@ -365,7 +366,7 @@ function syncProtocol(dir) {
 }
 
 // ─── Play orchestra (extracted for reuse in auto-resume) ─────────────────────
-function playOrchestra(dir) {
+function playOrchestra(dir, agent = 'claude') {
   if (isRunning(dir)) return { ok: false, err: 'already running' }
   // Always sync protocol files (run.sh, CLAUDE.md, skills, etc.) before starting
   syncProtocol(dir)
@@ -392,7 +393,7 @@ function playOrchestra(dir) {
   const outFd = fs.openSync(outLog, 'a')
   const errFd = fs.openSync(outLog, 'a')
   const child = spawn('bash', ['run.sh'], {
-    cwd: dir, env: process.env, detached: true,
+    cwd: dir, env: { ...process.env, DIRECTOR_AI_AGENT: agent }, detached: true,
     stdio: ['ignore', outFd, errFd]
   })
   fs.writeFileSync(path.join(dir, '.claude/ORCHESTRA_PID'), String(child.pid))
@@ -464,12 +465,53 @@ function playOrchestra(dir) {
       lines.push('')
       lines.push(`Generated: ${new Date().toISOString()}`)
       
-      try { fs.writeFileSync(directivePath, lines.join('\n')) } catch {}
+      lines.push('')
+      lines.push('## CONTINUOUS EXECUTION DIRECTIVE (INFINITE LOOP)')
+      lines.push('You MUST NEVER STOP. Continue developing in an infinite loop until all tasks in the project are 100% completed.')
+      lines.push('Do not ask for permission to continue. Automatically proceed to the next item when one is finished.')
+      lines.push('Your objective is to NEVER stop working. Follow the mix parameters and keep working without stopping, regardless of the project.')
+
+      lines.push('')
+      lines.push('## ⚠️ ANTI-HALLUCINATION & AUDIT RULES (MANDATORY)')
+      lines.push('YOUR COMMITS ARE VERIFIED EXTERNALLY. The harness checks `git log` before/after your session.')
+      lines.push('If HEAD has not changed, your ENTIRE session is marked FAILURE regardless of output.')
+      lines.push('1. **NO FAKE COMMITS**: NEVER type/generate a commit hash. Read it from `git log` output after a real `git commit`. Fabricating hashes = immediate detection + backoff penalty.')
+      lines.push('2. **NO FAKE TESTS**: Tests MUST verify real logic (200/201 responses, DB persistence). Error-only tests are NOT product work.')
+      lines.push('3. **NO FAKE LOGS**: Do NOT print `▸ ✔` or `▸ ◼` lines unless a real tool-executed commit preceded them.')
+      lines.push('4. **BLOCKED = IMPROVEMENT MODE**: If all ROADMAP items are blocked, switch to IMPROVEMENT MODE: review existing modules, forms, UI, API handlers, tests, and make real code improvements. Distribute work following the mixer weights. Write new items to ROADMAP.md under ## Improvements.')
+      lines.push('5. After ' + '5 consecutive zero-commit sessions, the harness will STOP you permanently and flag PENDING.md.')
+      lines.push('6. **NEVER STOP**: If ROADMAP is empty, scan the codebase and find improvements. A senior developer always finds work to do.')
+      
+      try {
+        let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+        if (existing.includes('## NEXT ITEM')) {
+          const nextItemContent = existing.substring(existing.indexOf('## NEXT ITEM'))
+          lines.push('')
+          lines.push(nextItemContent)
+        }
+        fs.writeFileSync(directivePath, lines.join('\n'))
+      } catch {}
     } else {
-      try { fs.unlinkSync(directivePath) } catch {}
+      try { 
+        let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+        if (existing.includes('## NEXT ITEM')) {
+          const nextItemContent = existing.substring(existing.indexOf('## NEXT ITEM'))
+          fs.writeFileSync(directivePath, nextItemContent)
+        } else {
+          fs.unlinkSync(directivePath)
+        }
+      } catch {}
     }
   } else {
-    try { fs.unlinkSync(directivePath) } catch {}
+    try { 
+      let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+      if (existing.includes('## NEXT ITEM')) {
+        const nextItemContent = existing.substring(existing.indexOf('## NEXT ITEM'))
+        fs.writeFileSync(directivePath, nextItemContent)
+      } else {
+        fs.unlinkSync(directivePath)
+      }
+    } catch {}
   }
 
   child.on('exit', code => {
@@ -487,13 +529,60 @@ function playOrchestra(dir) {
     // Check if exited due to usage limit — start watching for resume
     const usageSig = path.join(dir, USAGE_LIMIT_SIGNAL)
     if (fs.existsSync(usageSig)) {
-      persistLifecycleEvent(dir, 'usage_limit', 'PAUSA', 'Partitura agotada — esperando créditos')
-      watchForResume(dir)
-      if (win) win.webContents.send('orchestra:usage_limit', { dir })
+      const state = aiState()
+      state[agent].credits = 0
+      const nextAgent = nextAvailableAi(state, agent)
+      writeJSON(aiStateFile(), state)
+      if (nextAgent) {
+        try { fs.unlinkSync(usageSig) } catch {}
+        persistLifecycleEvent(dir, 'usage_limit', 'SWITCH', `${state[agent].label} sin créditos — cambiando a ${state[nextAgent].label}`)
+        setTimeout(() => {
+          if (!isRunning(dir)) {
+            const cfgPath = path.join(dir, '.claude/orchestra.json')
+            try {
+              const cfg = readJSON(cfgPath, {})
+              cfg.agent = nextAgent
+              if (AI_DEFAULTS[nextAgent]?.defaultModel) cfg.model = AI_DEFAULTS[nextAgent].defaultModel
+              writeJSON(cfgPath, cfg)
+            } catch {}
+            playOrchestra(dir, nextAgent)
+            if (win && !win.isDestroyed()) win.webContents.send('orchestra:resumed', { dir, agent: nextAgent })
+          }
+        }, 500)
+      } else {
+        persistLifecycleEvent(dir, 'usage_limit', 'PAUSA', 'Sin créditos disponibles — esperando restablecimiento')
+        watchForResume(dir)
+        if (win && !win.isDestroyed()) win.webContents.send('orchestra:usage_limit', { dir })
+      }
     } else {
       persistLifecycleEvent(dir, 'exit', 'FIN', `Interpretación finalizada (código ${code})`)
+      try {
+        const roadmapPath = path.join(dir, 'ROADMAP.md')
+        if (fs.existsSync(roadmapPath)) {
+          const lines = fs.readFileSync(roadmapPath, 'utf8').split('\n')
+          const nextItem = lines.find(l => l.trim().startsWith('- [ ]'))
+          if (nextItem) {
+            persistLifecycleEvent(dir, 'directive', 'DIRECTOR', `Siguiente item indicado: ${nextItem}`)
+            const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
+            let content = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+            content += `\n\n## NEXT ITEM\nEl proceso ha parado. Tu siguiente objetivo es:\n${nextItem}\n`
+            fs.writeFileSync(directivePath, content)
+          }
+        }
+      } catch (err) {}
+
+      const altoPath = path.join(dir, '.claude', 'ALTO')
+      if (!fs.existsSync(altoPath)) {
+        persistLifecycleEvent(dir, 'auto_resume', 'LOOP', 'Reiniciando orquesta automáticamente (infinite loop)')
+        setTimeout(() => {
+          if (!isRunning(dir)) {
+            playOrchestra(dir, agent)
+            if (win && !win.isDestroyed()) win.webContents.send('orchestra:resumed', { dir, agent })
+          }
+        }, 3000)
+      }
     }
-    if (win) win.webContents.send('orchestra:exit', { dir, code })
+    if (win && !win.isDestroyed()) win.webContents.send('orchestra:exit', { dir, code })
   })
 
   return { ok: true, allocation }
@@ -538,6 +627,7 @@ ipcMain.handle('repertoire:open', (_e, dir) => {
 ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
   if (!dir || !subpath) return null
   const p = path.join(dir, subpath)
+  if (!p.startsWith(dir)) return null
   try {
     return fs.readFileSync(p, 'utf8')
   } catch {
@@ -553,9 +643,114 @@ ipcMain.handle('orchestra:install', (_e, dir) => {
   return projectInfo(dir)
 })
 
-ipcMain.handle('orchestra:play', (_e, dir) => {
+const AI_DEFAULTS = {
+  claude: { label: 'Claude (Anthropic)', credits: 100, resetAt: null, vendor: 'anthropic', models: [{id: 'sonnet', label: 'Claude Sonnet 4.6'}, {id: 'opus', label: 'Claude Opus 4.6'}, {id: 'haiku', label: 'Claude Haiku 4.5'}], defaultModel: 'sonnet' },
+  agy: { label: 'Antigravity', credits: 100, resetAt: null, vendor: 'antigravity', models: [{id: 'Gemini 3.1 Pro (High)', label: 'Gemini 3.1 Pro'}, {id: 'Gemini 3.7 Flash (High)', label: 'Gemini 3.7 Flash'}, {id: 'Claude Sonnet 4.6 (Thinking)', label: 'Claude 4.6 via AGY'}], defaultModel: 'Gemini 3.7 Flash (High)' },
+  codex: { label: 'Codex (OpenAI)', credits: 100, resetAt: null, vendor: 'openai', models: [{id: 'default', label: 'Codex'}], defaultModel: 'default' },
+  aider: { label: 'Aider (Multi)', credits: 100, resetAt: null, vendor: 'aider', models: [{id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6'}, {id: 'gpt-4o', label: 'GPT-4o'}, {id: 'gemini/gemini-2.5-pro', label: 'Gemini 2.5 Pro'}, {id: 'deepseek/deepseek-coder', label: 'DeepSeek Coder'}], defaultModel: 'claude-sonnet-4-6' }
+}
+function nextAvailableAi(state, currentAgent) {
+  const providers = Object.keys(AI_DEFAULTS)
+  const start = Math.max(0, providers.indexOf(currentAgent))
+  for (let offset = 1; offset < providers.length; offset++) {
+    const candidate = providers[(start + offset) % providers.length]
+    if (state[candidate].credits > 0) return candidate
+  }
+  return null
+}
+function nextReset() {
+  const time = new Date()
+  time.setHours(14, 30, 0, 0)
+  if (time <= new Date()) time.setDate(time.getDate() + 1)
+  return time.toISOString()
+}
+function aiState() {
+  const state = readJSON(aiStateFile(), {})
+  for (const [id, defaults] of Object.entries(AI_DEFAULTS)) {
+    const existingReset = state[id]?.resetAt
+    const newReset = existingReset === undefined ? defaults.resetAt : existingReset
+    state[id] = { ...defaults, ...state[id], resetAt: newReset }
+    state[id].models = defaults.models
+    state[id].defaultModel = defaults.defaultModel
+    if (state[id].resetAt && new Date(state[id].resetAt) <= new Date()) {
+      state[id].credits = 100
+      state[id].resetAt = nextReset()
+    }
+  }
+  writeJSON(aiStateFile(), state)
+  return state
+}
+ipcMain.handle('ai:credits', () => aiState())
+ipcMain.handle('ai:select', (_e, id) => {
+  const state = aiState()
+  if (!state[id]) return { ok: false, error: 'Unknown AI' }
+  state.selected = id
+  writeJSON(aiStateFile(), state)
+  return { ok: true }
+})
+
+// ─── AI Auth: status check & login ──────────────────────────────────────────
+const { execSync, exec } = require('child_process')
+
+ipcMain.handle('ai:auth-status', (_e, id) => {
+  try {
+    if (id === 'claude') {
+      const out = execSync('claude auth status 2>&1', { encoding: 'utf8', timeout: 5000 })
+      const logged = out.includes('"loggedIn": true') || out.includes('"loggedIn":true')
+      const email = (out.match(/"email":\s*"([^"]+)"/) || [])[1] || null
+      return { loggedIn: logged, email }
+    }
+    if (id === 'codex') {
+      const out = execSync('codex login status 2>&1', { encoding: 'utf8', timeout: 5000 })
+      const logged = out.includes('Logged in')
+      return { loggedIn: logged }
+    }
+    if (id === 'agy') {
+      // agy uses browser-based auth, check if it can run
+      try { execSync('agy --help', { encoding: 'utf8', timeout: 3000 }); return { loggedIn: true } } catch { return { loggedIn: false } }
+    }
+    if (id === 'aider') {
+      // aider uses API keys from env
+      const hasKey = !!(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY)
+      return { loggedIn: hasKey, note: hasKey ? 'API key found' : 'Set OPENAI_API_KEY or ANTHROPIC_API_KEY' }
+    }
+    return { loggedIn: false }
+  } catch {
+    return { loggedIn: false }
+  }
+})
+
+ipcMain.handle('ai:login', (_e, id) => {
+  try {
+    if (id === 'claude') {
+      exec('claude auth login', { timeout: 120000 })
+      return { ok: true, msg: 'Claude login opened in browser' }
+    }
+    if (id === 'codex') {
+      exec('codex login', { timeout: 120000 })
+      return { ok: true, msg: 'Codex login opened in browser' }
+    }
+    if (id === 'aider') {
+      return { ok: false, msg: 'Aider uses API keys. Set OPENAI_API_KEY or ANTHROPIC_API_KEY in your shell profile.' }
+    }
+    if (id === 'agy') {
+      exec('agy', { timeout: 120000 })
+      return { ok: true, msg: 'Antigravity session started — authenticate in the opened window' }
+    }
+    return { ok: false, msg: 'Unknown provider' }
+  } catch (e) {
+    return { ok: false, msg: e.message }
+  }
+})
+
+ipcMain.handle('orchestra:play', (_e, dir, agent) => {
+  const state = aiState()
+  if (!agent || !state[agent]) return { ok: false, err: 'Select an AI developer first' }
+  state.selected = agent
+  state[agent].credits -= 1
+  writeJSON(aiStateFile(), state)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
-  return playOrchestra(dir)
+  return playOrchestra(dir, agent)
 })
 
 ipcMain.handle('orchestra:fine', (_e, dir) => {
@@ -601,6 +796,14 @@ ipcMain.handle('orchestra:kill', (_e, dir) => {
   return { ok: true }
 })
 
+ipcMain.handle('orchestra:clearLog', (_e, dir) => {
+  if (!dir) return
+  const stdoutLog = path.join(dir, '.claude/logs/orchestra-stdout.log')
+  const masterLog = path.join(dir, '.claude/logs/orchestra.log')
+  try { if (fs.existsSync(stdoutLog)) fs.writeFileSync(stdoutLog, '') } catch {}
+  try { if (fs.existsSync(masterLog)) fs.writeFileSync(masterLog, '') } catch {}
+})
+
 ipcMain.handle('orchestra:tail', (_e, dir) => {
   if (!dir) return ''
   const stdoutLog = path.join(dir, '.claude/logs/orchestra-stdout.log')
@@ -631,6 +834,13 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   const p = path.join(dir, '.claude/orchestra.json')
   const cfg = readJSON(p, { version: '2.0.0' })
   cfg.focus = focus
+  writeJSON(p, cfg)
+  return true
+})
+
+ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
+  if (!dir) return false
+  const p = path.join(dir, '.claude/orchestra.json')
   writeJSON(p, cfg)
   return true
 })
@@ -892,6 +1102,7 @@ const UPGRADE_FILES = [
   '.claude/skills/browser-vision/a11y.js',
   '.claude/skills/db-vision/SKILL.md',
   '.claude/skills/db-vision/db-extract.sh',
+  '.claude/skills/cycle-audit/SKILL.md',
   '.claude/ORCHESTRA_VERSION',
 ]
 

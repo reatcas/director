@@ -250,6 +250,21 @@ body {
   padding: 0 10px; height: 100%;
   border-right: 1px solid var(--line2);
 }
+.ai-control { display:flex; align-items:center; gap:7px; padding:0 12px; height:100%; border-right:1px solid var(--line2); background:linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.12) 100%) }
+.ai-control label { font:700 7px var(--sans); letter-spacing:1px; color:var(--dim2); white-space:nowrap }
+.ai-select-wrap { position:relative }
+.ai-icon { position:absolute; left:7px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:10px; z-index:1 }
+.ai-icon.antigravity { color:var(--ai-cyan); text-shadow:0 0 8px var(--ai-cyan), 0 0 20px rgba(0,210,255,.3); animation:ai-pulse 2s ease-in-out infinite }
+.ai-icon.anthropic { color:#D97757; text-shadow:0 0 8px #D97757, 0 0 20px rgba(217,119,87,.3); animation:ai-pulse 2s ease-in-out infinite }
+.ai-icon.openai { color:#10a37f; text-shadow:0 0 8px #10a37f, 0 0 20px rgba(16,163,127,.3); animation:ai-pulse 2s ease-in-out infinite }
+.ai-icon.aider { color:#f0b030; text-shadow:0 0 8px #f0b030, 0 0 20px rgba(240,176,48,.3); animation:ai-pulse 2s ease-in-out infinite }
+@keyframes ai-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+#aiSelect, #modelSelect { appearance:none; min-width:142px; padding:5px 18px 5px 20px; border:1px solid #294352; border-radius:3px; background:#101821; color:var(--txt); font:700 9px var(--sans); letter-spacing:.4px; outline:none; cursor:pointer; box-shadow:inset 0 1px rgba(255,255,255,.04),0 0 10px rgba(0,210,255,.08) }
+#aiSelect:focus, #modelSelect:focus { border-color:var(--ai-cyan); box-shadow:0 0 12px rgba(0,255,238,.28) }
+#aiSelect option, #modelSelect option { background:#10141c; color:#d7e3ec }
+.ai-auth-dot { width:7px; height:7px; border-radius:50%; background:#e03030; box-shadow:0 0 6px #e03030, 0 0 12px rgba(224,48,48,.3); flex-shrink:0; transition:all .4s ease }
+.ai-auth-dot.connected { background:#28a828; box-shadow:0 0 6px #28a828, 0 0 12px rgba(40,168,40,.3) }
+.ai-credit-status { max-width:148px; font:8px var(--mono); color:#8ca3ad; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 .tp-btn {
   width: 30px; height: 26px;
   border: 1px solid var(--line2);
@@ -627,15 +642,16 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   border-bottom-color: var(--ai-cyan);
 }
 .mixer-tab-pane {
-  display: none;
+  display: none !important;
   flex-direction: column;
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
 .mixer-tab-pane.on {
-  display: flex;
+  display: flex !important;
 }
+.kn-pane { flex-direction: column; overflow: hidden }
 
 /* ── Processes panel (bottom) ───────────────────────────────────────────── */
 .procs-panel {
@@ -1502,15 +1518,15 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
   min-width: 0;
 }
 
-/* Fill bar */
+/* Fill bar — FL Studio solid + subtle glow */
 .strip-bar-fill-h {
   position: absolute;
   top: 0; left: 0; bottom: 0;
   height: 100%;
   border-radius: 2px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--strip-color) 40%, #000), var(--strip-color));
-  box-shadow: 0 0 10px color-mix(in srgb, var(--strip-color) 50%, transparent),
-              0 0 20px color-mix(in srgb, var(--strip-color) 25%, transparent);
+  background: var(--strip-color);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--strip-color) 40%, transparent),
+              inset 0 1px 0 rgba(255,255,255,0.15);
   transition: width .15s ease-out, opacity .2s;
   pointer-events: none;
   z-index: 2;
@@ -1688,8 +1704,8 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
 .strip-bar-fill {
   position: absolute; bottom: 0; left: 0; right: 0;
   border-radius: 0 0 2px 2px;
-  background: linear-gradient(to top, color-mix(in srgb, var(--strip-color) 35%, #000), var(--strip-color));
-  box-shadow: 0 -4px 12px color-mix(in srgb, var(--strip-color) 40%, transparent);
+  background: var(--strip-color);
+  box-shadow: 0 -4px 8px color-mix(in srgb, var(--strip-color) 30%, transparent);
   transition: height .12s ease-out;
   pointer-events: none;
   z-index: 2;
@@ -1699,8 +1715,8 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
-  background: #fff;
-  box-shadow: 0 0 4px #fff;
+  background: rgba(255,255,255,.5);
+  box-shadow: 0 0 3px var(--strip-color);
 }
 
 .strip-label {
@@ -2195,3 +2211,230 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
   border-color: rgba(0,255,238,0.15);
 }
 #log.filtering .le:not(.match) { display: none !important; }
+
+/* ══════════════════════════════════════════
+   TRANSPORT UTILS
+══════════════════════════════════════════ */
+#transportUtils {
+  display: flex; align-items: center; gap: 4px;
+  padding: 0 8px; height: 100%;
+  margin-left: auto;
+}
+#transportUtils .tp-btn { font-size: 11px; width: 26px; height: 24px }
+
+/* ══════════════════════════════════════════
+   SETTINGS MODAL
+══════════════════════════════════════════ */
+.settings-section { margin: 16px 0; border-top: 1px solid var(--line2); padding-top: 12px }
+.settings-section:first-of-type { border-top: none; margin-top: 8px }
+.settings-label { font: 700 8px var(--sans); letter-spacing: 1.5px; color: var(--dim2); text-transform: uppercase }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.03) }
+.settings-key { font: 10px var(--sans); color: var(--txt); letter-spacing: .3px }
+.settings-toggle-group { display: flex; gap: 2px }
+.stg-btn {
+  padding: 4px 10px; border: 1px solid var(--line2); background: transparent;
+  color: var(--dim); font: 700 8px var(--sans); letter-spacing: .8px;
+  cursor: pointer; border-radius: 3px; transition: all .15s;
+}
+.stg-btn:hover { background: var(--panel3); color: var(--txt) }
+.stg-btn.on { background: var(--ai-cyan); color: #000; border-color: var(--ai-cyan); box-shadow: 0 0 10px rgba(0,255,238,.2) }
+.stg-switch { position: relative; width: 34px; height: 18px; display: inline-block }
+.stg-switch input { opacity: 0; width: 0; height: 0 }
+.stg-slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: var(--panel3); border-radius: 18px; transition: .2s;
+  border: 1px solid var(--line2);
+}
+.stg-slider::before {
+  content: ''; position: absolute; height: 12px; width: 12px;
+  left: 2px; bottom: 2px; background: var(--dim);
+  border-radius: 50%; transition: .2s;
+}
+.stg-switch input:checked + .stg-slider { background: rgba(0,255,238,.15); border-color: var(--ai-cyan) }
+.stg-switch input:checked + .stg-slider::before { transform: translateX(16px); background: var(--ai-cyan) }
+
+/* ══════════════════════════════════════════
+   LIGHT THEME — comprehensive overrides
+══════════════════════════════════════════ */
+html.light {
+  --bg:          #f0f2f5;
+  --panel:       #ffffff;
+  --panel2:      #f5f6f8;
+  --panel3:      #e8eaef;
+  --panel4:      #dcdfe6;
+  --strip:       #ebedf2;
+  --line:        #d0d3da;
+  --line2:       #c0c4cc;
+  --txt:         #2c3040;
+  --txt2:        #181c28;
+  --dim:         #6e7280;
+  --dim2:        #9ca0ac;
+
+  --fl-orange:   #d45a10;
+  --fl-green:    #1a9a3a;
+  --fl-red:      #cc2020;
+  --fl-yellow:   #9a8000;
+  --fl-cyan:     #009090;
+  --fl-blue:     #2266dd;
+
+  --ai-blue:     #0077cc;
+  --ai-purple:   #6633cc;
+  --ai-cyan:     #007a6e;
+
+  --glow-cyan:   0 0 8px rgba(0,122,110,0.1);
+  --glow-green:  0 0 8px rgba(26,154,58,0.1);
+  --glow-orange: 0 0 8px rgba(212,90,16,0.1);
+  --glow-purple: 0 0 8px rgba(102,51,204,0.1);
+}
+
+/* ── Base ──────────────────────────────────────────────────── */
+html.light { --badge-l: 50% }
+html.light body { background: var(--bg) }
+html.light #particleCanvasWrap { opacity: 0.03 }
+
+/* ── Transport bar ────────────────────────────────────────── */
+html.light #transport { background: #ffffff; border-bottom-color: var(--line); box-shadow: 0 1px 4px rgba(0,0,0,.06) }
+html.light #rack { background: var(--panel); border-right-color: var(--line) }
+html.light .rack-item { border-bottom-color: var(--line) }
+html.light .rack-item:hover { background: var(--panel3) }
+html.light .rack-item.on { background: var(--panel2) }
+html.light .ai-control { background: rgba(0,0,0,.03) }
+html.light .ai-credit-status { color: var(--dim) }
+html.light #aiSelect, html.light #modelSelect {
+  background: var(--panel2); border-color: var(--line); color: var(--txt);
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+html.light #aiSelect option, html.light #modelSelect option { background: #fff; color: var(--txt) }
+html.light .tp-btn { background: var(--panel2); border-color: var(--line); color: var(--dim) }
+html.light .tp-btn:hover:not(.disabled) { background: var(--panel3); border-color: var(--dim) }
+html.light .ai-icon.antigravity { color: var(--ai-cyan); text-shadow: none }
+html.light .ai-icon.anthropic { color: #c05530; text-shadow: none }
+html.light .ai-icon.openai { color: #0d8a6a; text-shadow: none }
+html.light .ai-icon.aider { color: #c08020; text-shadow: none }
+html.light .ai-auth-dot { box-shadow: 0 0 4px rgba(224,48,48,.3) }
+html.light .ai-auth-dot.connected { box-shadow: 0 0 4px rgba(40,168,40,.3) }
+
+/* ── Clock ────────────────────────────────────────────────── */
+html.light #clockArea { background: rgba(0,0,0,.03); border-right-color: var(--line) }
+html.light .clock-seg { background: var(--panel2); border-color: var(--line); color: var(--fl-green); text-shadow: none }
+html.light .clock-seg.orange { color: var(--fl-orange); text-shadow: none }
+html.light .clock-label { color: var(--dim) }
+
+/* ── Split layout / divider ───────────────────────────────── */
+html.light .split-divider { background: var(--line) }
+html.light .split-divider::after { background: rgba(0,122,110,.15) }
+html.light .split-divider:hover::after { background: rgba(0,122,110,.4) }
+
+/* ── Console / logs ───────────────────────────────────────── */
+html.light .console-log-wrap { background: #fafbfc }
+html.light #log { color: var(--txt) }
+html.light .monitor-status { background: var(--panel); border-bottom-color: var(--line) }
+html.light .metrics-strip { background: var(--panel2); border-bottom-color: var(--line) }
+html.light .feature-strip { background: var(--panel); border-bottom-color: var(--line) }
+html.light .procs-panel { background: var(--panel); border-top-color: var(--line) }
+html.light #rawLogOverlay pre { background: var(--panel2); color: var(--txt) }
+
+/* ── Log entries ──────────────────────────────────────────── */
+html.light .le { color: var(--dim) }
+html.light .le-msg { color: #555 }
+html.light .le-ts { color: var(--dim2) }
+html.light .le-error .le-msg { color: var(--fl-red) }
+html.light .le-usage .le-msg { color: var(--fl-yellow) }
+html.light .le-sleep .le-icon { color: var(--dim2) }
+html.light .le-sleep .le-msg { color: var(--dim2) }
+html.light .le-summary .le-badge { color: var(--ai-purple) }
+html.light .le-summary .le-summary-text { color: #5522aa }
+html.light .le-group { border-color: var(--line) }
+html.light .le-group-header:hover { background: var(--panel3) }
+html.light .le-group-count { background: var(--panel3); color: var(--dim) }
+html.light .le-group-body { background: var(--panel2); border-top-color: var(--line) }
+
+/* ── Usage banner ─────────────────────────────────────────── */
+html.light #usageBanner { background: rgba(180,120,0,.06); border-bottom-color: var(--fl-yellow) }
+
+/* ── Mixer panel ──────────────────────────────────────────── */
+html.light .mixer-panel { background: var(--panel); border-left-color: var(--line) }
+html.light .mixer-tabs { background: var(--panel2); border-bottom-color: var(--line) }
+html.light .mixer-tab { color: var(--dim) }
+html.light .mixer-tab:hover { background: var(--panel3); color: var(--txt) }
+html.light .mixer-tab.on { background: var(--panel); color: var(--txt2); border-bottom-color: var(--ai-cyan) }
+html.light .mixer-strips-v { background: var(--panel2) }
+html.light #mixerStrips { background: var(--panel2) }
+html.light .strip-h { border-bottom-color: var(--line) }
+html.light .strip-h:hover { background: rgba(0,0,0,.02) }
+html.light .strip-h-icon { color: var(--dim) }
+html.light .strip-h-label { color: var(--txt) }
+html.light .strip-h-val {
+  color: var(--txt);
+  background: color-mix(in srgb, var(--strip-color) 8%, var(--panel3));
+  border-color: color-mix(in srgb, var(--strip-color) 20%, var(--line));
+  text-shadow: none;
+}
+html.light .strip-h.off .strip-h-val { color: var(--dim2) }
+html.light .strip-bar-h { background: rgba(0,0,0,.05); border-color: var(--line) }
+html.light .strip-bar-fill-h {
+  box-shadow: 0 0 4px color-mix(in srgb, var(--strip-color) 30%, transparent);
+}
+html.light #mixesHeader { background: var(--panel3); border-bottom-color: var(--line) }
+html.light #mixerFooter { background: var(--panel); border-top-color: var(--line) }
+
+/* ── Saved mixes ──────────────────────────────────────────── */
+html.light .mix-card { background: var(--panel2); border-color: var(--line) }
+html.light .mix-card:hover { background: var(--panel3) }
+html.light .mix-card-name { color: var(--txt) }
+html.light .mix-card-meta { color: var(--dim) }
+html.light .mix-btn { border-color: var(--line); color: var(--dim) }
+html.light .mix-ribbon { box-shadow: 0 0 3px rgba(0,0,0,.1) }
+html.light .mix-import-field { background: var(--panel2); border-color: var(--line); color: var(--txt) }
+
+/* ── Usage bar ────────────────────────────────────────────── */
+html.light .usage-bar { background: rgba(0,0,0,.06) }
+
+/* ── Modals ───────────────────────────────────────────────── */
+html.light .modal-overlay { background: rgba(0,0,0,.25) }
+html.light .modal-card { background: var(--panel); border-color: var(--line); color: var(--txt); box-shadow: 0 8px 30px rgba(0,0,0,.12) }
+html.light .modal-title { color: var(--txt2); text-shadow: none }
+html.light .modal-subtitle { color: var(--ai-cyan); text-shadow: none }
+html.light .modal-body { background: var(--panel2); border-color: var(--line) }
+html.light .about-credits { background: var(--panel3); border-color: var(--line) }
+html.light .modal-footer { color: var(--dim) }
+
+/* ── Settings ─────────────────────────────────────────────── */
+html.light .settings-section { border-top-color: var(--line) }
+html.light .settings-row { border-bottom-color: rgba(0,0,0,.04) }
+html.light .stg-btn { border-color: var(--line); color: var(--dim) }
+html.light .stg-btn:hover { background: var(--panel3); color: var(--txt) }
+html.light .stg-btn.on { background: var(--ai-cyan); color: #fff; border-color: var(--ai-cyan); box-shadow: 0 0 8px rgba(0,122,110,.15) }
+html.light .stg-slider { background: var(--panel3); border-color: var(--line) }
+html.light .stg-switch input:checked + .stg-slider { background: rgba(0,122,110,.12); border-color: var(--ai-cyan) }
+html.light .stg-switch input:checked + .stg-slider::before { background: var(--ai-cyan) }
+
+/* ── Empty state ──────────────────────────────────────────── */
+html.light .empty-ring { border-color: rgba(0,122,110,.15) }
+html.light .empty-glyph { color: var(--ai-cyan); text-shadow: none }
+html.light .empty-title { color: var(--txt2); text-shadow: none }
+html.light .empty-sub { color: var(--dim) }
+
+/* ── Blueprint ────────────────────────────────────────────── */
+html.light .bp-phases { background: var(--panel3); border-bottom-color: var(--line) }
+html.light .bp-phase-pill { background: var(--panel2); border-color: var(--line) }
+html.light .bp-phase-pill:hover { background: var(--panel3); border-color: var(--dim2) }
+html.light .bp-messages { background: var(--panel2) }
+html.light .bp-msg.bp-complete { color: var(--fl-green) }
+html.light .bp-modules-header { background: var(--panel3) }
+html.light .bp-mod-desc, html.light .bp-mod-features, html.light .bp-mod-deps {
+  border-color: var(--line); background: var(--panel2); color: var(--txt);
+}
+
+/* ── Knowledge tab ────────────────────────────────────────── */
+html.light .kn-btn { border-color: var(--line) }
+html.light .kn-btn.on, html.light .kn-btn.warn { border-color: var(--ai-cyan) }
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+html.light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.12) }
+html.light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.22) }
+
+/* ── Collapsible / critique ───────────────────────────────── */
+html.light details.console-collapsible { border-color: var(--line) }
+html.light .collapsible-header { background: var(--panel2) }
+html.light .collapsible-body textarea { background: var(--panel2); color: var(--txt) }

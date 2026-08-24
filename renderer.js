@@ -135,6 +135,92 @@ function getAllSections() {
 let current = null
 let projects = []
 const logCache = new Map()
+let aiCredits = {}
+
+function formatReset(iso) {
+  return iso ? new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso)) : '—'
+}
+async function loadAiCredits() {
+  aiCredits = await window.director.aiCredits() || {}
+  const select = $('#aiSelect')
+  if (!select) return
+  if (aiCredits.selected) select.value = aiCredits.selected
+  for (const option of select.options) {
+    if (aiCredits[option.value]) option.disabled = false
+  }
+  updateAiControl()
+}
+function updateAiControl() {
+  const id = $('#aiSelect')?.value
+  const credit = aiCredits[id]
+  if ($('#aiCreditStatus')) {
+    $('#aiCreditStatus').textContent = credit 
+      ? `${credit.credits}% credits${credit.resetAt ? ' · resets ' + formatReset(credit.resetAt) : ''}` 
+      : 'Select an AI to start'
+  }
+  
+  const modelSelect = $('#modelSelect')
+  
+  const AI_ICONS = {
+    claude: { char: '✣', class: 'anthropic' },
+    agy:    { char: '✦', class: 'antigravity' },
+    codex:  { char: '❂', class: 'openai' },
+    aider:  { char: '⚡', class: 'aider' }
+  }
+  const icon = AI_ICONS[id] || { char: '✦', class: 'antigravity' }
+  
+  if ($('#aiIconMain')) {
+    $('#aiIconMain').textContent = icon.char
+    $('#aiIconMain').className = 'ai-icon ' + icon.class
+  }
+  if ($('#aiIconModel')) {
+    $('#aiIconModel').textContent = icon.char
+    $('#aiIconModel').className = 'ai-icon ' + icon.class
+  }
+
+  if (modelSelect && credit && credit.models) {
+    modelSelect.parentElement.style.display = 'inline-block'
+    modelSelect.style.display = 'inline-block'
+    const prevModel = modelSelect.value
+    modelSelect.innerHTML = credit.models.map(m => `<option value="${m.id}">${m.label}</option>`).join('')
+    if (credit.models.some(m => m.id === prevModel)) {
+      modelSelect.value = prevModel
+    } else {
+      modelSelect.value = credit.defaultModel || credit.models[0].id
+    }
+  } else if (modelSelect) {
+    modelSelect.parentElement.style.display = 'none'
+  }
+
+  updateTransportButtons()
+  checkAiAuth(id)
+
+  if (typeof updateAiUsageDisplay === 'function') {
+    updateAiUsageDisplay(credit)
+  }
+}
+
+async function checkAiAuth(id) {
+  if (!id) return
+  const dot = $('#aiAuthDot')
+  const btn = $('#aiLoginBtn')
+  if (!dot) return
+  try {
+    const status = await window.director.aiAuthStatus(id)
+    if (status.loggedIn) {
+      dot.className = 'ai-auth-dot connected'
+      dot.title = status.email ? `Connected: ${status.email}` : 'Connected'
+      if (btn) btn.style.display = 'none'
+    } else {
+      dot.className = 'ai-auth-dot'
+      dot.title = status.note || 'Not connected'
+      if (btn) btn.style.display = ''
+    }
+  } catch {
+    dot.className = 'ai-auth-dot'
+    dot.title = 'Status unknown'
+  }
+}
 
 // ─── Orchestra State Tracking ────────────────────────────────────────────────
 let orchestraState = 'idle' // idle | started | interpreting | usage_limit | finished
@@ -222,7 +308,7 @@ function logoHTML(p, sm) {
     return `<img class="badge${sm ? ' sm' : ''}" src="${src}" alt="${esc(p.name)}">`
   }
   const cls = sm ? 'badge sm' : 'badge'
-  return `<span class="${cls}" style="background:hsl(${hue(p.name)} 45% 30%)">${initials(esc(p.name))}</span>`
+  return `<span class="${cls}" style="background:hsl(${hue(p.name)} 45% var(--badge-l, 30%))">${initials(esc(p.name))}</span>`
 }
 
 function showToast(msg) {
@@ -264,6 +350,8 @@ function updateTransportButtons() {
   const fineBtn = $('#fineBtn')
   const killBtn = $('#killBtn')
 
+  const agent = $('#aiSelect')?.value
+  const credit = aiCredits[agent]
   if (!p || !p.installed) {
     if (playBtn) { playBtn.classList.add('disabled'); playBtn.innerHTML = '▶' }
     if (fineBtn) { fineBtn.classList.add('disabled'); fineBtn.innerHTML = '◼' }
@@ -279,7 +367,7 @@ function updateTransportButtons() {
     if (fineBtn) { fineBtn.classList.remove('disabled'); fineBtn.innerHTML = '◼' }
     if (killBtn) { killBtn.classList.remove('disabled'); killBtn.innerHTML = '✕' }
   } else {
-    if (playBtn) { playBtn.classList.remove('disabled'); playBtn.innerHTML = '▶' }
+    if (playBtn) { playBtn.classList.toggle('disabled', !agent || !credit); playBtn.innerHTML = '▶' }
     if (fineBtn) { fineBtn.classList.add('disabled'); fineBtn.innerHTML = '◼' }
     if (killBtn) { killBtn.classList.add('disabled'); killBtn.innerHTML = '✕' }
   }
@@ -403,7 +491,7 @@ function paint() {
       badge.appendChild(img)
     } else {
       badge.innerHTML = `<span id="pbadgeText">${initials(esc(p.name))}</span>`
-      badge.style.background = `hsl(${hue(p.name)} 45% 30%)`
+      badge.style.background = `hsl(${hue(p.name)} 45% var(--badge-l, 30%))`
     }
   }
 
@@ -437,6 +525,14 @@ function paint() {
 }
 
 let autoScrollEnabled = true
+if ($('#clearLogBtn')) {
+  $('#clearLogBtn').onclick = async () => {
+    if (!current) return
+    logCache.set(current, '')
+    if ($('#log')) $('#log').innerHTML = ''
+    await window.director.clearLog(current)
+  }
+}
 if ($('#autoScrollBtn')) {
   $('#autoScrollBtn').onclick = (e) => {
     autoScrollEnabled = !autoScrollEnabled
@@ -488,12 +584,60 @@ if ($('#upgradeBtn')) $('#upgradeBtn').onclick = async () => {
 }
 if ($('#playBtn')) $('#playBtn').onclick = async () => {
   const p = proj()
-  if (!p || !p.installed || p.running) return
-  addActionEntry('play', 'CONDUCT', `Order to interpret — project: ${esc(p.name)}`)
+  const agent = $('#aiSelect')?.value
+  const model = $('#modelSelect')?.value
+  if (!p || !p.installed || p.running || !agent) return
+  
+  if (current) {
+    const cfg = await window.director.mixerRead(current) || {}
+    cfg.agent = agent
+    if (model) cfg.model = model
+    await window.director.configWrite(current, cfg)
+  }
+
+  addActionEntry('play', 'START', `${agent} starts the infinite development cycle — ${esc(p.name)}`)
   setOrchestraState('started')
-  await window.director.play(current)
+  const result = await window.director.play(current, agent)
+  if (!result?.ok) {
+    setOrchestraState('idle')
+    showToast(result?.err || 'Unable to start')
+    return
+  }
+  await loadAiCredits()
   setTimeout(() => { if (orchestraState === 'started') setOrchestraState('interpreting') }, 3000)
   refresh()
+}
+if ($('#aiLoginBtn')) $('#aiLoginBtn').onclick = async () => {
+  const id = $('#aiSelect')?.value
+  if (!id) return
+  const result = await window.director.aiLogin(id)
+  showToast(result.msg || (result.ok ? 'Login initiated' : 'Login failed'))
+  if (result.ok) setTimeout(() => checkAiAuth(id), 5000)
+}
+if ($('#aiSelect')) $('#aiSelect').onchange = async event => {
+  const agentId = event.target.value
+  if (!agentId) return updateAiControl()
+  const result = await window.director.aiSelect(agentId)
+  if (!result.ok) { event.target.value = ''; showToast(result.error) }
+  await loadAiCredits()
+  
+  if (current) {
+    const cfg = await window.director.mixerRead(current) || {}
+    cfg.agent = agentId
+    const aiData = aiCredits[agentId]
+    if (aiData && aiData.defaultModel) {
+      cfg.model = aiData.defaultModel
+      if ($('#modelSelect')) $('#modelSelect').value = cfg.model
+    }
+    await window.director.configWrite(current, cfg)
+  }
+}
+if ($('#modelSelect')) $('#modelSelect').onchange = async event => {
+  if (current) {
+    const cfg = await window.director.mixerRead(current) || {}
+    cfg.model = event.target.value
+    await window.director.configWrite(current, cfg)
+  }
 }
 if ($('#fineBtn')) $('#fineBtn').onclick = async () => {
   const p = proj()
@@ -538,16 +682,32 @@ function sortMixerStrips() {
 
 async function loadMixer() {
   if (!current) return
-  const cfg = await window.director.mixerRead(current)
+  const cfg = await window.director.mixerRead(current) || {}
+  
+  if ($('#aiSelect')) {
+    if (cfg.agent && aiCredits[cfg.agent]) {
+      $('#aiSelect').value = cfg.agent
+    } else if (aiCredits.selected) {
+      $('#aiSelect').value = aiCredits.selected
+    }
+  }
+  updateAiControl()
+  if (cfg.model && $('#modelSelect')) {
+    $('#modelSelect').value = cfg.model
+  }
+
   const focus = (cfg && cfg.focus) || {}
   const box = $('#mixerStrips')
   if (!box) return
   box.innerHTML = ''
 
   const allSections = getAllSections()
+  // Normalize focus values so they sum to 100%
+  const normalizedFocus = normalizeMixerValues(focus, allSections)
+
   // Build strips in predefined order (no sorting)
   const stripData = allSections.map(([k, label, color, svg]) => {
-    const v = focus[k] ?? 20
+    const v = normalizedFocus[k] ?? 0
     return { k, label, color, svg, v }
   })
 
@@ -563,7 +723,7 @@ async function loadMixer() {
     <div class="strip-bar-fill-h" style="width:${v}%"></div>
     <input type="range" min="0" max="100" value="${v}" data-k="${k}">
   </div>
-  <div class="strip-h-val">${v}</div>
+  <div class="strip-h-val">${v}%</div>
 `
     box.appendChild(strip)
 
@@ -572,20 +732,100 @@ async function loadMixer() {
     const valEl = strip.querySelector('.strip-h-val')
 
     inp.addEventListener('input', () => {
-      const val = parseInt(inp.value, 10)
-      fill.style.width = val + '%'
-      valEl.textContent = val
-      strip.classList.toggle('on', val > 0)
-      strip.classList.toggle('off', val === 0)
+      const newVal = parseInt(inp.value, 10)
+      rebalanceMixer(k, newVal)
     })
     inp.addEventListener('change', () => {
-      const val = parseInt(inp.value, 10)
-      fill.style.width = val + '%'
-      valEl.textContent = val
-      strip.classList.toggle('on', val > 0)
-      strip.classList.toggle('off', val === 0)
+      const newVal = parseInt(inp.value, 10)
+      rebalanceMixer(k, newVal)
     })
   }
+}
+
+// ─── Mixer Equalizer: all stands always sum to 100% ────────────────────────
+function normalizeMixerValues(focus, sections) {
+  const keys = sections.map(s => s[0])
+  let total = 0
+  for (const k of keys) total += (focus[k] ?? 0)
+  if (total === 0) {
+    // Distribute equally among all sections
+    const each = Math.floor(100 / keys.length)
+    const result = {}
+    keys.forEach((k, i) => { result[k] = i === 0 ? 100 - each * (keys.length - 1) : each })
+    return result
+  }
+  // Scale proportionally to sum to 100
+  const result = {}
+  let assigned = 0
+  keys.forEach((k, i) => {
+    if (i === keys.length - 1) {
+      result[k] = 100 - assigned
+    } else {
+      result[k] = Math.round(((focus[k] ?? 0) / total) * 100)
+      assigned += result[k]
+    }
+  })
+  return result
+}
+
+function rebalanceMixer(changedKey, newVal) {
+  const strips = document.querySelectorAll('#mixerStrips .strip-h')
+  if (!strips.length) return
+
+  // Clamp to 100
+  newVal = Math.min(100, Math.max(0, newVal))
+  const remaining = 100 - newVal
+
+  // Get current values of OTHER strips
+  const others = []
+  let othersTotal = 0
+  strips.forEach(s => {
+    const inp = s.querySelector('input[type="range"]')
+    const k = inp.dataset.k
+    if (k !== changedKey) {
+      const cur = parseInt(inp.value, 10)
+      others.push({ strip: s, inp, k, cur })
+      othersTotal += cur
+    }
+  })
+
+  // Distribute remaining among others proportionally
+  let assigned = 0
+  others.forEach((o, i) => {
+    let share
+    if (i === others.length - 1) {
+      share = remaining - assigned
+    } else if (othersTotal > 0) {
+      share = Math.round((o.cur / othersTotal) * remaining)
+    } else {
+      // All others were 0 — distribute equally
+      share = Math.round(remaining / others.length)
+    }
+    share = Math.max(0, share)
+    assigned += share
+
+    o.inp.value = share
+    const fill = o.strip.querySelector('.strip-bar-fill-h')
+    const valEl = o.strip.querySelector('.strip-h-val')
+    if (fill) fill.style.width = share + '%'
+    if (valEl) valEl.textContent = share + '%'
+    o.strip.classList.toggle('on', share > 0)
+    o.strip.classList.toggle('off', share === 0)
+  })
+
+  // Update the changed strip itself
+  strips.forEach(s => {
+    const inp = s.querySelector('input[type="range"]')
+    if (inp.dataset.k === changedKey) {
+      inp.value = newVal
+      const fill = s.querySelector('.strip-bar-fill-h')
+      const valEl = s.querySelector('.strip-h-val')
+      if (fill) fill.style.width = newVal + '%'
+      if (valEl) valEl.textContent = newVal + '%'
+      s.classList.toggle('on', newVal > 0)
+      s.classList.toggle('off', newVal === 0)
+    }
+  })
 }
 
 // ─── Save Mix ────────────────────────────────────────────────────────────────
@@ -622,7 +862,8 @@ if ($('#mixImportBtn')) $('#mixImportBtn').onclick = async () => {
   try {
     const data = JSON.parse(input.value.trim())
     if (data.focus) {
-      await window.director.mixerSavedSave(current, data.name || 'Imported', data.focus)
+      const normalized = normalizeMixerValues(data.focus, getAllSections())
+      await window.director.mixerSavedSave(current, data.name || 'Imported', normalized)
       input.value = ''
       showToast('Mix imported ✓')
       loadMixes()
@@ -688,7 +929,8 @@ async function loadMixes() {
 
     card.querySelector('.load').onclick = async e => {
       e.stopPropagation()
-      await window.director.mixerWrite(current, m.focus)
+      const normalized = normalizeMixerValues(m.focus, getAllSections())
+      await window.director.mixerWrite(current, normalized)
       loadMixer()
       showToast('Mix "' + m.name + '" loaded')
     }
@@ -1477,25 +1719,44 @@ function updateMetricsDisplay(data) {
   }
 
   // Claude API Usage
-  if (data.claudeUsage) updateClaudeUsageDisplay(data.claudeUsage)
+  if (data.claudeUsage) {
+    const id = $('#aiSelect')?.value
+    updateAiUsageDisplay(aiCredits[id], data.claudeUsage)
+  }
 }
 
-function updateClaudeUsageDisplay(usage) {
-  const valEl  = $('#mmClaudeUsageVal')
+let lastTelemetryUsage = null;
+
+function updateAiUsageDisplay(creditData, telemetryUsage) {
+  if (telemetryUsage !== undefined) lastTelemetryUsage = telemetryUsage;
+  
+  const valEl  = $('#mmAiUsageVal')
   const barEl  = $('#usageBarFill')
   if (!valEl) return
 
-  if (!usage || usage.percent === undefined) {
+  if (!creditData) {
     valEl.textContent = '—'; valEl.className = 'mm-val'
     if (barEl) { barEl.style.width = '0%'; barEl.className = 'usage-bar-fill' }
     return
   }
 
-  const pct = usage.percent
-  valEl.textContent = usage.status === 'exhausted' ? 'LIMIT' : pct + '%'
-  if (usage.detail) valEl.title = usage.detail
+  const id = $('#aiSelect')?.value
+  let pct = 0
+  let isExhausted = creditData.credits <= 0
+  
+  if (isExhausted) {
+    pct = 100
+  } else if (id === 'claude' && lastTelemetryUsage) {
+    pct = lastTelemetryUsage.percent || 0
+  } else {
+    pct = 0 // unlimited or unknown
+  }
 
-  if (usage.status === 'exhausted') {
+  valEl.textContent = isExhausted ? 'LIMIT' : pct + '%'
+  if (creditData.resetAt) valEl.title = `Resets at ${formatReset(creditData.resetAt)}`
+  else valEl.title = 'Unlimited usage'
+
+  if (isExhausted) {
     valEl.className = 'mm-val exhausted'
   } else if (pct >= 90) {
     valEl.className = 'mm-val bad'
@@ -1508,12 +1769,11 @@ function updateClaudeUsageDisplay(usage) {
   }
 
   if (barEl) {
-    barEl.style.width = (usage.status === 'exhausted' ? 100 : pct) + '%'
-    barEl.className = 'usage-bar-fill' + (
-      usage.status === 'exhausted' || usage.status === 'critical' ? ' critical' :
-      usage.status === 'high' ? ' high' :
-      usage.status === 'mid' ? ' mid' : ''
-    )
+    barEl.style.width = Math.min(100, Math.max(0, pct)) + '%'
+    barEl.className = 'usage-bar-fill'
+    if (isExhausted) barEl.classList.add('exhausted')
+    else if (pct >= 90) barEl.classList.add('bad')
+    else if (pct >= 70) barEl.classList.add('warn')
   }
 }
 
@@ -1628,15 +1888,17 @@ window.director.onUsageLimit(({ dir }) => {
   }
 })
 
-window.director.onResumed(({ dir }) => {
+window.director.onResumed(async ({ dir, agent }) => {
   if (dir === current) {
+    await loadAiCredits()
+    if (agent && $('#aiSelect')) $('#aiSelect').value = agent
     showUsageBanner(false)
     setStatus('PLAY')
     startClock()
     setOrchestraState('interpreting')
     updateClaudeUsageDisplay({ percent: 0, status: 'normal', detail: 'Créditos restaurados' })
     usageEntry = null
-    addActionEntry('resume', 'RESUME', 'Quota restored — orchestra resuming interpretation')
+    addActionEntry('resume', 'RESUME', agent ? `${agent} continues the development cycle` : 'Credits restored — cycle resumed')
     addInterpretingEntry()
     refresh()
     showToast('Orchestra resumed automatically ✓')
@@ -2163,9 +2425,85 @@ if (document.getElementById('knBtnPlan')) document.getElementById('knBtnPlan').o
 if (document.getElementById('knBtnDecisions')) document.getElementById('knBtnDecisions').onclick = () => loadKnowledge('DECISIONS.md', 'knBtnDecisions')
 if (document.getElementById('knBtnBlueprint')) document.getElementById('knBtnBlueprint').onclick = () => loadKnowledge('.claude/BLUEPRINT.md', 'knBtnBlueprint')
 
+// ─── Theme & Settings ───────────────────────────────────────────────────────
+function getStoredTheme() { return localStorage.getItem('director-theme') || 'auto' }
+function applyTheme(mode) {
+  const html = document.documentElement
+  html.classList.remove('light')
+  if (mode === 'light') {
+    html.classList.add('light')
+  } else if (mode === 'auto') {
+    if (window.matchMedia('(prefers-color-scheme: light)').matches) html.classList.add('light')
+  }
+  localStorage.setItem('director-theme', mode)
+  // Update toggle group
+  document.querySelectorAll('#themeGroup .stg-btn').forEach(b => {
+    b.classList.toggle('on', b.dataset.theme === mode)
+  })
+}
+if ($('#themeToggle')) {
+  $('#themeToggle').onclick = () => {
+    const modes = ['dark', 'auto', 'light']
+    const cur = getStoredTheme()
+    const next = modes[(modes.indexOf(cur) + 1) % modes.length]
+    applyTheme(next)
+  }
+}
+window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+  if (getStoredTheme() === 'auto') applyTheme('auto')
+})
+if ($('#themeGroup')) {
+  document.querySelectorAll('#themeGroup .stg-btn').forEach(b => {
+    b.onclick = () => applyTheme(b.dataset.theme)
+  })
+}
+applyTheme(getStoredTheme())
+
+// Settings modal
+if ($('#settingsBtn')) $('#settingsBtn').onclick = () => { $('#settingsModal').hidden = false; loadSettings() }
+if ($('#closeSettings')) $('#closeSettings').onclick = () => { $('#settingsModal').hidden = true }
+if ($('#settingsModal')) $('#settingsModal').onclick = e => { if (e.target === $('#settingsModal')) $('#settingsModal').hidden = true }
+
+async function loadSettings() {
+  if (!current) return
+  const cfg = await window.director.mixerRead(current) || {}
+  if ($('#stgCaveman')) $('#stgCaveman').checked = cfg.caveman !== false
+  if ($('#stgCompactAt')) $('#stgCompactAt').value = cfg.compactAt || 50
+  if ($('#stgRunMode')) $('#stgRunMode').value = cfg.mode || 'perpetual'
+  if ($('#stgMaxIter')) $('#stgMaxIter').value = cfg.maxIterations || 0
+  if ($('#stgDefaultAi')) $('#stgDefaultAi').value = cfg.agent || 'claude'
+  if ($('#stgAutoSwitch')) $('#stgAutoSwitch').checked = cfg.autoSwitch !== false
+  if ($('#stgKeepLogs')) $('#stgKeepLogs').value = cfg.keepLogs || 50
+  if ($('#stgAutoScroll')) $('#stgAutoScroll').checked = autoScrollEnabled
+  if ($('#stgMaxHallStreak')) $('#stgMaxHallStreak').value = cfg.maxHallucinationStreak || 5
+}
+
+async function saveSettings() {
+  if (!current) return
+  const cfg = await window.director.mixerRead(current) || {}
+  cfg.caveman = $('#stgCaveman')?.checked ?? true
+  cfg.compactAt = parseInt($('#stgCompactAt')?.value) || 50
+  cfg.mode = $('#stgRunMode')?.value || 'perpetual'
+  cfg.maxIterations = parseInt($('#stgMaxIter')?.value) || 0
+  cfg.agent = $('#stgDefaultAi')?.value || 'claude'
+  cfg.autoSwitch = $('#stgAutoSwitch')?.checked ?? true
+  cfg.keepLogs = parseInt($('#stgKeepLogs')?.value) || 50
+  cfg.maxHallucinationStreak = parseInt($('#stgMaxHallStreak')?.value) || 5
+  await window.director.configWrite(current, cfg)
+  if ($('#aiSelect')) { $('#aiSelect').value = cfg.agent; updateAiControl() }
+}
+// Auto-save settings on change
+document.querySelectorAll('#settingsModal input, #settingsModal select').forEach(el => {
+  el.addEventListener('change', saveSettings)
+})
+
+// About & settings buttons
+if ($('#aboutBtn')) $('#aboutBtn').onclick = () => { $('#aboutModal').hidden = false }
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 // On boot, auto-detect running projects and restore state
 ;(async function initBoot() {
+  await loadAiCredits()
   await refresh()
   // If no project is selected but there's a running one, auto-select it
   if (!current) {
@@ -2178,7 +2516,7 @@ if (document.getElementById('knBtnBlueprint')) document.getElementById('knBtnBlu
   setInterval(refresh, 10000)
 })()
 
-if ($('#brandArea')) $('#brandArea').onclick = () => { $('#aboutModal').hidden = false }
+// brandArea click removed — about is now via settings gear
 if ($('#closeAbout')) $('#closeAbout').onclick = () => { $('#aboutModal').hidden = true }
 
 if ($('#aboutModal')) $('#aboutModal').onclick = (e) => {
@@ -2186,8 +2524,9 @@ if ($('#aboutModal')) $('#aboutModal').onclick = (e) => {
 }
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && $('#aboutModal') && !$('#aboutModal').hidden) {
-    $('#aboutModal').hidden = true
+  if (e.key === 'Escape') {
+    if ($('#settingsModal') && !$('#settingsModal').hidden) { $('#settingsModal').hidden = true; return }
+    if ($('#aboutModal') && !$('#aboutModal').hidden) { $('#aboutModal').hidden = true; return }
   }
 })
 
