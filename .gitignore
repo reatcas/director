@@ -8,3 +8,9 @@ build/
 *.log
 .env
 .claude/settings.local.json
+scratch/
+screenshots/
+Captura*
+*.png
+!logo.svg
+userData/

@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 René Antonio Casaña Amaya. All rights reserved. */
 /* Licensed under the AGPL-3.0 License. See LICENSE in repository root. */
-/* Director Suite v6.0.0 — Split Panel Layout */
+/* Director Suite v0.0.6 — Split Panel Layout */
 
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
@@ -546,7 +546,7 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 #usageBanner span { color: var(--fl-yellow); flex: 1 }
 
 /* ══════════════════════════════════════════
-   SPLIT LAYOUT (v6.0.0)
+   SPLIT LAYOUT (v0.0.6)
 ══════════════════════════════════════════ */
 #splitLayout,
 .split-layout {
@@ -1271,7 +1271,7 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 .le-history .le-time { min-width: 90px }
 
 /* ══════════════════════════════════════════
-   CHAT INPUT AREA (v6.0.0)
+   CHAT INPUT AREA (v0.0.6)
 ══════════════════════════════════════════ */
 .chat-input-area {
   display: flex;
@@ -1380,7 +1380,7 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
 }
 
 /* ══════════════════════════════════════════
-   MIXER PANEL — HORIZONTAL STRIPS (v6.0.0)
+   MIXER PANEL — HORIZONTAL STRIPS (v0.0.6)
 ══════════════════════════════════════════ */
 #mixesHeader {
   display: flex;
@@ -1879,7 +1879,7 @@ html.light .smart-mix-bar.active .smart-toggle { border-color: rgba(0,122,110,.3
 .proc-kill-btn:disabled { opacity: .4; cursor: default }
 
 /* ══════════════════════════════════════════
-   ATRIL MODAL — Color & Icon Pickers (v6.0.0)
+   ATRIL MODAL — Color & Icon Pickers (v0.0.6)
 ══════════════════════════════════════════ */
 .atril-color-grid {
   display: flex;

@@ -1,8 +1,8 @@
 {
   "name": "director",
   "productName": "Director",
-  "version": "6.0.0",
-  "description": "Podium for the Perpetual Dev Orchestra — run, tune and stop infinite Claude orchestration on any project",
+  "version": "0.0.6",
+  "description": "Autonomous AI Orchestration Environment — run infinite development cycles with Claude, Gemini, Codex and more on any project",
   "main": "main.js",
   "license": "AGPL-3.0",
   "author": "René Antonio Casaña Amaya <reatcas@protonmail.com>",
