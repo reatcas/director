@@ -71,15 +71,16 @@ You are running inside Director Orchestra. Your output is verified by an externa
       ;;
   esac
 
-  CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format text --model "$MODEL" --add-dir "$SHARED_MEMORY")
   if [ "$AI_AGENT" = "claude" ]; then
-    CLAUDE_ARGS+=("--mcp" "codebase-memory")
+    # Use stream-json for real-time output (text mode buffers until session end)
+    CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format stream-json --verbose --model "$MODEL" --add-dir "$SHARED_MEMORY")
     if command -v rtk &>/dev/null; then
       CLAUDE_CMD=(rtk -- claude)
     else
       CLAUDE_CMD=(claude)
     fi
   else
+    CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format text --model "$MODEL" --add-dir "$SHARED_MEMORY")
     CLAUDE_CMD=(claude)
   fi
   PROJECT_DIR="$(pwd)"
@@ -147,9 +148,50 @@ You are running inside Director Orchestra. Your output is verified by an externa
 
   # ── Run claude ──────────────────────────────────────────────────────────
   START_COMMIT=$(git log -1 --format=%H 2>/dev/null || echo "none")
-  
-  "${CLAUDE_CMD[@]}" "${CLAUDE_ARGS[@]}" </dev/null 2>&1 \
-    | tee -a "$ITER_LOG" "$MASTER_LOG"
+
+  # For claude: stream-json outputs NDJSON → python extracts text lines in real time.
+  # For other agents: plain text passthrough.
+  if [ "$AI_AGENT" = "claude" ]; then
+    "${CLAUDE_CMD[@]}" "${CLAUDE_ARGS[@]}" </dev/null 2>&1 \
+      | python3 -u -c "
+import sys, json
+for raw in sys.stdin:
+    raw = raw.strip()
+    if not raw: continue
+    try:
+        ev = json.loads(raw)
+    except:
+        print(raw, flush=True)
+        continue
+    t = ev.get('type','')
+    if t == 'assistant':
+        msg = ev.get('message',{})
+        for c in msg.get('content',[]):
+            if c.get('type') == 'text' and c.get('text'):
+                print(c['text'], flush=True)
+    elif t == 'tool_use':
+        name = ev.get('name','')
+        inp = str(ev.get('input',{}).get('command','') or ev.get('input',{}).get('pattern','') or '')[:80]
+        if name: print(f'▸ … [{name}] {inp}', flush=True)
+    elif t == 'tool_result':
+        pass
+    elif t == 'result':
+        r = ev.get('result','')
+        if r: print(r, flush=True)
+" \
+      | while IFS= read -r line; do
+          printf '%s\n' "$line"
+          printf '%s\n' "$line" >> "$ITER_LOG"
+          printf '%s\n' "$line" >> "$MASTER_LOG"
+        done
+  else
+    "${CLAUDE_CMD[@]}" "${CLAUDE_ARGS[@]}" </dev/null 2>&1 \
+      | while IFS= read -r line; do
+          printf '%s\n' "$line"
+          printf '%s\n' "$line" >> "$ITER_LOG"
+          printf '%s\n' "$line" >> "$MASTER_LOG"
+        done
+  fi
   EXIT=${PIPESTATUS[0]}
 
   # ── Anti-Lazy Check (all agents) ────────────────────────────────────────

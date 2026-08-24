@@ -73,6 +73,40 @@ function startTailing(dir, logFile) {
 function stopTailing(dir) {
   const iv = tailers.get(dir)
   if (iv) { clearInterval(iv); tailers.delete(dir) }
+  stopGitWatcher(dir)
+}
+
+// ─── Git commit watcher (real-time progress when stdout is buffered) ─────────
+const gitWatchers = new Map()
+function startGitWatcher(dir) {
+  if (gitWatchers.has(dir)) return
+  let lastHash = ''
+  try { lastHash = require('child_process').execSync('git log -1 --format=%H', { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim() } catch {}
+  const iv = setInterval(() => {
+    if (!isRunning(dir)) return
+    try {
+      const currentHash = require('child_process').execSync('git log -1 --format=%H', { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
+      if (currentHash && currentHash !== lastHash) {
+        // New commit detected — get details
+        const newCommits = require('child_process').execSync(
+          `git log --oneline ${lastHash ? lastHash + '..' : '-1'}`,
+          { cwd: dir, encoding: 'utf8', timeout: 5000 }
+        ).trim().split('\n').filter(Boolean)
+        lastHash = currentHash
+        for (const c of newCommits) {
+          const line = `▸ ✔ [commit] ${c}\n`
+          if (win && !win.isDestroyed()) {
+            win.webContents.send('orchestra:line', { dir, line })
+          }
+        }
+      }
+    } catch {}
+  }, 8000) // Check every 8 seconds
+  gitWatchers.set(dir, iv)
+}
+function stopGitWatcher(dir) {
+  const iv = gitWatchers.get(dir)
+  if (iv) { clearInterval(iv); gitWatchers.delete(dir) }
 }
 
 // ─── JSON helpers ─────────────────────────────────────────────────────────────
@@ -365,6 +399,67 @@ function syncProtocol(dir) {
   }
 }
 
+// ─── Hot-reload: watch protocol source and live-sync to running projects ─────
+let hotReloadDebounce = null
+function startHotReloadWatcher() {
+  const src = orchestraSrc()
+  try {
+    fs.watch(src, { recursive: true }, (eventType, filename) => {
+      if (!filename || filename.startsWith('.')) return
+      // Debounce — batch rapid changes
+      if (hotReloadDebounce) clearTimeout(hotReloadDebounce)
+      hotReloadDebounce = setTimeout(() => hotReloadAllProjects(filename), 500)
+    })
+  } catch {}
+}
+
+function hotReloadAllProjects(changedFile) {
+  const projects = readJSON(store(), [])
+  let resynced = 0
+  for (const p of projects) {
+    if (!p.path) continue
+    // Always sync protocol files to every registered project
+    syncProtocol(p.path)
+    resynced++
+    // If running, restart the orchestra so it picks up the new files
+    if (isRunning(p.path)) {
+      const c = procs.get(p.path)
+      const currentAgent = aiState().selected || 'claude'
+      // Read agent from project config
+      let agent = currentAgent
+      try {
+        const cfg = readJSON(path.join(p.path, '.claude/orchestra.json'), {})
+        if (cfg.agent) agent = cfg.agent
+      } catch {}
+      // Kill current run — do NOT write ALTO (we want it to restart)
+      if (c) {
+        killProcessGroup(c.pid)
+        procs.delete(p.path)
+      } else {
+        const pidFile = path.join(p.path, '.claude/ORCHESTRA_PID')
+        try {
+          const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10)
+          if (pid) killProcessGroup(pid)
+        } catch {}
+      }
+      stopTailing(p.path)
+      // Restart after a brief delay to let the old process clean up
+      setTimeout(() => {
+        if (!isRunning(p.path)) {
+          persistLifecycleEvent(p.path, 'hot_reload', 'RELOAD', `Protocol updated (${changedFile}) — restarting with latest config`)
+          playOrchestra(p.path, agent)
+          if (win && !win.isDestroyed()) {
+            win.webContents.send('orchestra:resumed', { dir: p.path, agent })
+          }
+        }
+      }, 1500)
+    }
+  }
+  if (resynced > 0 && win && !win.isDestroyed()) {
+    win.webContents.send('orchestra:line', { dir: '', line: `[director] Hot-reload: synced ${resynced} project(s) — ${changedFile}\n` })
+  }
+}
+
 // ─── Play orchestra (extracted for reuse in auto-resume) ─────────────────────
 function playOrchestra(dir, agent = 'claude') {
   if (isRunning(dir)) return { ok: false, err: 'already running' }
@@ -407,7 +502,11 @@ function playOrchestra(dir, agent = 'claude') {
   snapshotMixer(dir, 'play')
   child.unref()
   procs.set(dir, child)
-  startTailing(dir, outLog)
+  // Tail both orchestra.log (tee output) and orchestra-stdout.log (spawn fd).
+  // Claude buffers print-mode output, so also watch git log for real-time commit detection.
+  const masterLog = path.join(logDir, 'orchestra.log')
+  startTailing(dir, masterLog)
+  startGitWatcher(dir)
 
   // ── Start periodic metrics sampling ─────────────────────────────────────
   startMetricsSampling(dir)
@@ -644,7 +743,7 @@ ipcMain.handle('orchestra:install', (_e, dir) => {
 })
 
 const AI_DEFAULTS = {
-  claude: { label: 'Claude (Anthropic)', credits: 100, resetAt: null, vendor: 'anthropic', models: [{id: 'sonnet', label: 'Claude Sonnet 4.6'}, {id: 'opus', label: 'Claude Opus 4.6'}, {id: 'haiku', label: 'Claude Haiku 4.5'}], defaultModel: 'sonnet' },
+  claude: { label: 'Claude (Anthropic)', credits: 100, resetAt: null, vendor: 'anthropic', models: [{id: 'claude-opus-4-6', label: 'Claude Opus 4.6'}, {id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6'}, {id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5'}], defaultModel: 'claude-sonnet-4-6' },
   agy: { label: 'Antigravity', credits: 100, resetAt: null, vendor: 'antigravity', models: [{id: 'Gemini 3.1 Pro (High)', label: 'Gemini 3.1 Pro'}, {id: 'Gemini 3.7 Flash (High)', label: 'Gemini 3.7 Flash'}, {id: 'Claude Sonnet 4.6 (Thinking)', label: 'Claude 4.6 via AGY'}], defaultModel: 'Gemini 3.7 Flash (High)' },
   codex: { label: 'Codex (OpenAI)', credits: 100, resetAt: null, vendor: 'openai', models: [{id: 'default', label: 'Codex'}], defaultModel: 'default' },
   aider: { label: 'Aider (Multi)', credits: 100, resetAt: null, vendor: 'aider', models: [{id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6'}, {id: 'gpt-4o', label: 'GPT-4o'}, {id: 'gemini/gemini-2.5-pro', label: 'Gemini 2.5 Pro'}, {id: 'deepseek/deepseek-coder', label: 'DeepSeek Coder'}], defaultModel: 'claude-sonnet-4-6' }
@@ -796,6 +895,11 @@ ipcMain.handle('orchestra:kill', (_e, dir) => {
   return { ok: true }
 })
 
+ipcMain.handle('orchestra:hotReload', (_e) => {
+  hotReloadAllProjects('manual-trigger')
+  return { ok: true }
+})
+
 ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   if (!dir) return
   const stdoutLog = path.join(dir, '.claude/logs/orchestra-stdout.log')
@@ -806,9 +910,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
 
 ipcMain.handle('orchestra:tail', (_e, dir) => {
   if (!dir) return ''
-  const stdoutLog = path.join(dir, '.claude/logs/orchestra-stdout.log')
   const masterLog = path.join(dir, '.claude/logs/orchestra.log')
-  const log = fs.existsSync(stdoutLog) ? stdoutLog : masterLog
+  const log = masterLog
   if (!fs.existsSync(log)) return ''
   const s = fs.readFileSync(log, 'utf8')
   return s.split('\n').slice(-400).join('\n')
@@ -1396,12 +1499,15 @@ app.whenReady().then(() => {
   })
   win.loadFile('index.html')
 
+  // Start hot-reload watcher for protocol files
+  startHotReloadWatcher()
+
   // Re-attach tailers for any already-running projects
   const projects = readJSON(store(), [])
   for (const p of projects) {
     if (!p.path) continue
     if (isRunning(p.path) && !procs.has(p.path)) {
-      const logFile = path.join(p.path, '.claude/logs/orchestra-stdout.log')
+      const logFile = path.join(p.path, '.claude/logs/orchestra.log')
       if (fs.existsSync(logFile)) startTailing(p.path, logFile)
     }
     // Restart resume watch if usage limit was active

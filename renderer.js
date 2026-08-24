@@ -1527,6 +1527,36 @@ function parseLogLine(dir, line) {
     return
   }
 
+  // Audit lines — show per-stand breakdown
+  if (cl.includes('[audit]')) {
+    const m = cl.match(/commits=(\d+).*claimed=(\d+).*product_commits=(\d+).*quality_commits=(\d+)/)
+    if (m) {
+      const [, commits, claimed, prod, qual] = m
+      const parts = []
+      if (+prod > 0) parts.push(`product:${prod}`)
+      if (+qual > 0) parts.push(`quality:${qual}`)
+      const other = +commits - +prod - +qual
+      if (other > 0) parts.push(`other:${other}`)
+      const drift = +commits !== +claimed ? ` (claimed ${claimed})` : ''
+      addSummaryEntry(`AUDIT — ${commits} commits verified [${parts.join(' ')}]${drift}`)
+    } else {
+      addSummaryEntry(cl.replace(/\[orchestra[^\]]*\]\s*/, ''))
+    }
+    return
+  }
+
+  // Hot-reload lines
+  if (cl.includes('[director]') || cl.includes('Hot-reload')) {
+    addActionEntry('reload', 'RELOAD', cl.replace(/\[director\]\s*/, ''))
+    return
+  }
+
+  // ANTI-LAZY / BLOCKED lines — show as warnings
+  if (cl.includes('ANTI-LAZY') || cl.includes('BLOCKED-RETRY') || cl.includes('BLOCKED-LIMIT')) {
+    addErrorEntry(cl.replace(/\[orchestra[^\]]*\]\s*/, ''))
+    return
+  }
+
   // Other [orchestra] prefixed lines
   if (cl.includes('[orchestra')) {
     addCycleEntry(cl.replace(/\[orchestra[^\]]*\]\s*/, ''))
