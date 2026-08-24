@@ -1665,9 +1665,18 @@ function parseLogLine(dir, line) {
       addErrorEntry(cl.replace(/^▸\s*/, ''))
     } else if (cl.includes('▶') || cl.includes('▶')) {
       addFeatureEntry(cl)
+      // Persist feature starts so they survive app restarts
+      if (current) window.director.lifecycleAdd(current, 'feature', 'FEATURE', cl.replace(/^▸\s*▶?\s*/, ''))
+    } else if (cl.includes('✔')) {
+      addCycleEntry(cl)
+      // Persist commits so they survive app restarts
+      if (current) window.director.lifecycleAdd(current, 'commit', 'COMMIT', cl.replace(/^▸\s*✔?\s*/, ''))
     } else {
       // Detect machine-readable COMPLIANCE line from cycle close
-      if (cl.includes('COMPLIANCE')) updateComplianceFromLog(cl)
+      if (cl.includes('COMPLIANCE')) {
+        updateComplianceFromLog(cl)
+        if (current) window.director.lifecycleAdd(current, 'cycle_close', 'CYCLE', cl.replace(/^▸\s*◼?\s*/, ''))
+      }
       addCycleEntry(cl)
     }
     return
@@ -1719,8 +1728,8 @@ async function loadLifecycleHistory() {
   const events = await window.director.lifecycleList(current)
   if (!events || events.length === 0) return
 
-  // Show last 30 events as compact entries
-  const recent = events.slice(-30)
+  // Show last 80 events as compact entries
+  const recent = events.slice(-80)
   for (const ev of recent) {
     const time = new Date(ev.ts).toLocaleTimeString('en-US', { hour12: false })
     const date = new Date(ev.ts).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
@@ -1738,6 +1747,12 @@ async function loadLifecycleHistory() {
       'exit':        { icon: '■', color: '#4488ff' },
       'usage_limit': { icon: '⏸', color: '#ddba00' },
       'resume':      { icon: '↻', color: '#00ffee' },
+      'commit':      { icon: '✔', color: '#40c840' },
+      'feature':     { icon: '▶', color: '#e8631a' },
+      'cycle_close': { icon: '◼', color: '#9955ee' },
+      'hot_reload':  { icon: '↻', color: '#00ffee' },
+      'auto_resume': { icon: '⟳', color: '#00aaff' },
+      'directive':   { icon: '→', color: '#ddba00' },
     }
     const s = HISTORY_STYLES[ev.type] || { icon: '·', color: '#666' }
 

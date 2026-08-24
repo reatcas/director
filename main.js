@@ -98,6 +98,8 @@ function startGitWatcher(dir) {
           if (win && !win.isDestroyed()) {
             win.webContents.send('orchestra:line', { dir, line })
           }
+          // Persist to lifecycle so commits survive app restarts
+          persistLifecycleEvent(dir, 'commit', 'COMMIT', c)
         }
       }
     } catch {}
