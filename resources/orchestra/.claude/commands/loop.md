@@ -47,20 +47,30 @@ If blocked on missing credentials, external service, unclear requirement:
 4. ALL ROADMAP items blocked → enter **IMPROVEMENT MODE** (see below). Do NOT stop.
 
 ## IMPROVEMENT MODE (when ROADMAP exhausted or all items blocked)
-When there is no new product work, you MUST still produce real value. Act like a senior developer reviewing the codebase:
+When there is no new product work, you MUST still produce real value. Act like a senior development team.
 
-1. **Scan the project** — use tools to read the codebase structure, existing components, forms, UI views, API endpoints, test coverage.
-2. **Generate improvement items** by reviewing what exists:
-   - Review every form/UI: field validation, UX flow, error states, loading states, empty states
-   - Review API handlers: error handling, edge cases, input validation, response consistency
-   - Review tests: find modules with zero or weak test coverage, write real tests
-   - Review frontend: accessibility, responsive layout, i18n gaps, component reuse
-   - Review backend: N+1 queries, missing indexes, security gaps, logging gaps
-   - Review DX: build warnings, linting issues, dead code, unused imports
-3. **Follow the MIXER weights** — distribute improvement work across the mixer categories (quality, frontend, backend, security, etc.) according to current percentages.
-4. **Write improvements to ROADMAP.md** as new unchecked items under `## Improvements` section, then execute them.
-5. Each improvement MUST produce a real `git commit`. Documentation-only changes are NOT valid improvements.
-6. Emit `▸ [boot] IMPROVEMENT MODE — reviewing existing modules` when entering this mode.
+### ANTI-SLOP: DIVERSITY ENFORCEMENT
+⚠️ Before planning improvement work, check CYCLE_LEARNINGS.md and `git log --oneline -30`.
+- **NEVER repeat the same category** for 3+ consecutive cycles. If last 2 cycles were reports → next MUST be a different category.
+- **NEVER build more than 3 features in the same module** per session. If 3 reports already exist this session → move to a completely different area.
+- **Rotate across ALL mixer categories.** Each cycle must touch a DIFFERENT category than the previous one. Cycle N = product → Cycle N+1 = quality or frontend or security, NOT product again.
+- **Favor high-impact over easy wins.** A real dev team doesn't build 20 analytics cards — they fix the broken payment flow, add missing auth guards, write integration tests, optimize slow queries.
+
+### PRIORITY LADDER (work from top to bottom)
+1. **Security** — missing auth checks, SQL injection risks, XSS, CSRF, input sanitization, rate limiting
+2. **Broken/incomplete features** — half-built UI, endpoints without error handling, forms without validation
+3. **Test coverage** — modules with 0 tests, critical paths untested (payments, auth, patient data)
+4. **Performance** — N+1 queries, missing DB indexes, large unoptimized queries, bundle size
+5. **UX polish** — loading states, empty states, error feedback, keyboard navigation, mobile responsiveness
+6. **New features** — ONLY after 1-5 are clean. New endpoints, views, or capabilities that add real user value
+7. **Tech debt** — dead code, deprecated APIs, dependency updates, build warnings
+
+### HOW TO SCAN
+1. Use tools to read codebase structure, check test coverage, review existing forms/handlers.
+2. Pick improvements from the PRIORITY LADDER, spreading across mixer categories.
+3. Write 3-5 items to ROADMAP.md `## Improvements`, then execute them in this cycle.
+4. Each improvement MUST produce a real `git commit` with code changes. No docs-only.
+5. Emit `▸ [boot] IMPROVEMENT MODE — <what you're reviewing>` when entering this mode.
 
 ## CYCLE CLOSE
 Emit exactly (machine-read):

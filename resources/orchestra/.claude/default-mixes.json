@@ -1,0 +1,117 @@
+[
+  {
+    "id": "preset-elite-balanced",
+    "name": "Elite Balanced",
+    "preset": true,
+    "ts": "2026-08-25T00:00:00Z",
+    "focus": {
+      "product": 30,
+      "backend": 10,
+      "frontend": 15,
+      "business_logic": 5,
+      "security": 10,
+      "quality_tests": 15,
+      "devops_infra": 0,
+      "performance": 5,
+      "ux_accessibility": 5,
+      "data_db": 3,
+      "documentation": 0,
+      "i18n": 2,
+      "refactoring": 0,
+      "architecture": 0,
+      "api_integrations": 0
+    }
+  },
+  {
+    "id": "preset-quality-first",
+    "name": "Quality First",
+    "preset": true,
+    "ts": "2026-08-25T00:00:00Z",
+    "focus": {
+      "product": 10,
+      "backend": 5,
+      "frontend": 5,
+      "business_logic": 5,
+      "security": 20,
+      "quality_tests": 35,
+      "devops_infra": 0,
+      "performance": 10,
+      "ux_accessibility": 5,
+      "data_db": 5,
+      "documentation": 0,
+      "i18n": 0,
+      "refactoring": 0,
+      "architecture": 0,
+      "api_integrations": 0
+    }
+  },
+  {
+    "id": "preset-ship-fast",
+    "name": "Ship Fast",
+    "preset": true,
+    "ts": "2026-08-25T00:00:00Z",
+    "focus": {
+      "product": 50,
+      "backend": 15,
+      "frontend": 20,
+      "business_logic": 5,
+      "security": 5,
+      "quality_tests": 5,
+      "devops_infra": 0,
+      "performance": 0,
+      "ux_accessibility": 0,
+      "data_db": 0,
+      "documentation": 0,
+      "i18n": 0,
+      "refactoring": 0,
+      "architecture": 0,
+      "api_integrations": 0
+    }
+  },
+  {
+    "id": "preset-hardening",
+    "name": "Hardening",
+    "preset": true,
+    "ts": "2026-08-25T00:00:00Z",
+    "focus": {
+      "product": 0,
+      "backend": 10,
+      "frontend": 5,
+      "business_logic": 5,
+      "security": 30,
+      "quality_tests": 25,
+      "devops_infra": 5,
+      "performance": 15,
+      "ux_accessibility": 0,
+      "data_db": 5,
+      "documentation": 0,
+      "i18n": 0,
+      "refactoring": 0,
+      "architecture": 0,
+      "api_integrations": 0
+    }
+  },
+  {
+    "id": "preset-polish",
+    "name": "UX Polish",
+    "preset": true,
+    "ts": "2026-08-25T00:00:00Z",
+    "focus": {
+      "product": 10,
+      "backend": 0,
+      "frontend": 35,
+      "business_logic": 0,
+      "security": 0,
+      "quality_tests": 5,
+      "devops_infra": 0,
+      "performance": 5,
+      "ux_accessibility": 25,
+      "data_db": 0,
+      "documentation": 0,
+      "i18n": 15,
+      "refactoring": 5,
+      "architecture": 0,
+      "api_integrations": 0
+    }
+  }
+]

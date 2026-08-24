@@ -952,16 +952,14 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
 ipcMain.handle('mixer:saved:list', (_e, dir) => {
   if (!dir) return []
   const p = path.join(dir, '.claude/saved-mixes.json')
-  if (!fs.existsSync(p)) {
-    const defaults = [
-      { id: 'def-prod', name: 'Product Launch', ts: new Date().toISOString(), focus: { product: 90, frontend: 50, backend: 50, quality_tests: 10 } },
-      { id: 'def-sec', name: 'Security Audit', ts: new Date().toISOString(), focus: { cybersecurity: 100, backend: 60, product: 0, quality_tests: 80 } },
-      { id: 'def-ref', name: 'Refactoring Phase', ts: new Date().toISOString(), focus: { architecture: 90, performance: 60, quality_tests: 70, product: 10 } },
-      { id: 'def-qa', name: 'QA & Testing', ts: new Date().toISOString(), focus: { quality_tests: 100, product: 0, architecture: 0 } }
-    ]
-    writeJSON(p, defaults)
-  }
-  return readJSON(p, [])
+  const userMixes = readJSON(p, [])
+  // Load preset mixes from Director's shipped defaults
+  const presetsFile = path.join(orchestraSrc(), '.claude/default-mixes.json')
+  const presets = readJSON(presetsFile, [])
+  // Merge: presets first (if not already in user list), then user mixes
+  const existingIds = new Set(userMixes.map(m => m.id))
+  const merged = [...presets.filter(p => !existingIds.has(p.id)), ...userMixes]
+  return merged
 })
 
 ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
@@ -1206,6 +1204,7 @@ const UPGRADE_FILES = [
   '.claude/skills/db-vision/SKILL.md',
   '.claude/skills/db-vision/db-extract.sh',
   '.claude/skills/cycle-audit/SKILL.md',
+  '.claude/default-mixes.json',
   '.claude/ORCHESTRA_VERSION',
 ]
 

@@ -44,6 +44,7 @@ Missing→Phase 0 `team-orchestra` skill.
 19. **ROADMAP CITATION.** Product unit MUST cite ROADMAP.md item ID (F-XX)+acceptance. No ref→reclassified as quality.
 20. **NO BACKFILL.** Product unit finishes early→next ROADMAP item, never tests/refactors.
 21. **ANTI-DRIFT.** Before each unit ask: "New user-visible capability?"→no=not product. "Test for unchanged code?"→STOP=quality. "Cleaner without new capability?"→refactor, not product.
+22. **ANTI-SLOP.** Check `git log --oneline -10` before planning. NEVER build 3+ features in the same module per session. NEVER repeat the same category 3 cycles in a row. Rotate: security→tests→performance→UX→features→tech-debt. Favor fixing broken things over building new things. A real team doesn't build 20 reports — they fix payments, add auth guards, write tests, optimize queries.
 
 22. **COMPLIANCE.** Cycle close→emit exactly:
     `▸ ◼ Cycle N cerrado — COMPLIANCE product:A/P cat:A/P ... DRIFT:none|cat+N`
