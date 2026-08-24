@@ -1,5 +1,29 @@
 [
   {
+    "id": "preset-smart",
+    "name": "Smart Mix",
+    "preset": true,
+    "smart": true,
+    "ts": "2026-08-25T00:00:00Z",
+    "focus": {
+      "product": 25,
+      "backend": 10,
+      "frontend": 15,
+      "business_logic": 5,
+      "security": 10,
+      "quality_tests": 15,
+      "devops_infra": 0,
+      "performance": 5,
+      "ux_accessibility": 5,
+      "data_db": 5,
+      "documentation": 0,
+      "i18n": 3,
+      "refactoring": 2,
+      "architecture": 0,
+      "api_integrations": 0
+    }
+  },
+  {
     "id": "preset-elite-balanced",
     "name": "Elite Balanced",
     "preset": true,

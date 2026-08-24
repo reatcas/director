@@ -365,9 +365,12 @@
               </div>
               <div id="mixerStrips" class="mixer-strips-v"></div>
               <div id="mixerFooter">
-                <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:140px">
+                <button id="smartMixBtn" class="tp-action smart-mix-btn" title="Smart Mix — self-regulating">⚡ SMART</button>
+                <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:100px">
                 <button id="saveMixer" class="tp-action">SAVE</button>
                 <button id="addAtrilBtn" class="tp-action" title="Add custom stand">+ STAND</button>
+                <button id="exportMixesBtn" class="tp-action dim" title="Export all mixes to JSON">↥</button>
+                <button id="importMixesBtn" class="tp-action dim" title="Import mixes library from JSON">↧</button>
                 <span id="mixerSaved" class="saved-msg" hidden>✓</span>
               </div>
             </div>

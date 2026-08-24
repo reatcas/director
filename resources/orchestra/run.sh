@@ -263,45 +263,119 @@ for raw in sys.stdin:
     fi
   fi
 
-  # ── Smart Mix Auto-Switch ───────────────────────────────────────────────
-  # Every 5 iterations, analyze commit patterns and auto-adjust the mix profile.
-  if [ $((ITER % 5)) -eq 0 ] && [ "$ITER" -gt 0 ] && [ -f .claude/CYCLE_LEARNINGS.md ]; then
-    # Count recent commit categories from git log (last 15 commits)
-    RECENT_PRODUCT=$(git log --oneline -15 2>/dev/null | grep -ciE 'feat' || echo 0)
-    RECENT_QUALITY=$(git log --oneline -15 2>/dev/null | grep -ciE 'test|fix' || echo 0)
-    RECENT_SECURITY=$(git log --oneline -15 2>/dev/null | grep -ciE 'security|auth|xss|sql.inject|csrf' || echo 0)
-    RECENT_TOTAL=$((RECENT_PRODUCT + RECENT_QUALITY + RECENT_SECURITY))
-    [ "$RECENT_TOTAL" -eq 0 ] && RECENT_TOTAL=1
+  # ── Smart Mix: continuous per-stand self-regulation ──────────────────────
+  # Every 3 iterations, analyze recent commits and nudge each stand ±3%.
+  # Stands that are over-represented shrink, under-represented grow.
+  # Enforces minimums (security≥5%, quality≥5%) and anti-slop diversity.
+  SMART_MIX=$(json_val smartMix false)
+  if [ "$SMART_MIX" = "true" ] && [ $((ITER % 3)) -eq 0 ] && [ "$ITER" -gt 0 ]; then
+    python3 -u - "$CFG" <<'SMARTMIX_PY'
+import json, subprocess, sys, re
 
-    # Detect slop: >60% in one category → switch to complement
-    PRODUCT_PCT=$((RECENT_PRODUCT * 100 / RECENT_TOTAL))
-    QUALITY_PCT=$((RECENT_QUALITY * 100 / RECENT_TOTAL))
+cfg_path = sys.argv[1]
+cfg = json.load(open(cfg_path))
+focus = cfg.get("focus", {})
 
-    NEW_MIX=""
-    if [ "$PRODUCT_PCT" -gt 60 ]; then
-      NEW_MIX="quality-first"
-      stamp "AUTO-MIX: Product slop detected (${PRODUCT_PCT}%) — switching to Quality First"
-    elif [ "$QUALITY_PCT" -gt 60 ]; then
-      NEW_MIX="ship-fast"
-      stamp "AUTO-MIX: Quality heavy (${QUALITY_PCT}%) — switching to Ship Fast"
-    elif [ "$RECENT_SECURITY" -eq 0 ] && [ "$ITER" -ge 10 ]; then
-      NEW_MIX="hardening"
-      stamp "AUTO-MIX: Zero security work in 15 commits — switching to Hardening"
-    fi
+# Classify last 20 commits into categories
+try:
+    log = subprocess.check_output(["git", "log", "--oneline", "-20"], text=True, timeout=5)
+except:
+    sys.exit(0)
 
-    if [ -n "$NEW_MIX" ] && [ -f .claude/default-mixes.json ]; then
-      # Apply the new mix from presets
-      python3 -c "
-import json, sys
-mixes = json.load(open('.claude/default-mixes.json'))
-cfg = json.load(open('$CFG'))
-target = [m for m in mixes if m['id'] == 'preset-$NEW_MIX']
-if target:
-    cfg['focus'] = target[0]['focus']
-    json.dump(cfg, open('$CFG', 'w'), indent=2)
-    print('Applied: ' + target[0]['name'])
-" 2>/dev/null | tee -a "$MASTER_LOG"
-      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) AUTO-MIX=$NEW_MIX product_pct=$PRODUCT_PCT quality_pct=$QUALITY_PCT" >> .claude/CYCLE_LEARNINGS.md
+lines = [l.strip() for l in log.strip().split("\n") if l.strip()]
+if len(lines) < 3:
+    sys.exit(0)
+
+# Category detection from commit messages
+cat_map = {
+    "product":       r"feat\((?!test|ui|api|report)",
+    "frontend":      r"feat\(ui|feat\(webapp|feat\(mobile|fix\(ui|fix\(i18n|i18n",
+    "backend":       r"feat\(api|feat\(backend|fix\(api|fix\(backend",
+    "security":      r"security|auth|xss|csrf|inject|sanitiz|rate.limit",
+    "quality_tests": r"test\(|test:|add.*test|validation test|handler test",
+    "performance":   r"perf|optim|index|cache|lazy|bundle",
+    "ux_accessibility": r"a11y|accessib|aria|keyboard|responsive|empty.state|loading.state",
+    "data_db":       r"migrat|schema|database|query|sql",
+}
+
+counts = {k: 0 for k in cat_map}
+for line in lines:
+    matched = False
+    for cat, pat in cat_map.items():
+        if re.search(pat, line, re.I):
+            counts[cat] += 1
+            matched = True
+            break
+    if not matched:
+        # Default unmatched to product
+        counts["product"] += 1
+
+total = max(sum(counts.values()), 1)
+
+# Calculate actual % vs target %
+adjustments = {}
+STEP = 3  # max adjustment per cycle
+MIN_FLOORS = {"security": 5, "quality_tests": 5, "product": 5}
+
+for cat in focus:
+    target = focus[cat]
+    actual = int(counts.get(cat, 0) * 100 / total)
+
+    if target == 0:
+        continue  # user explicitly zeroed this
+
+    delta = target - actual
+    if abs(delta) < 8:
+        # Close enough — no adjustment
+        adjustments[cat] = 0
+    elif delta > 0:
+        # Under-represented → boost
+        adjustments[cat] = min(STEP, delta // 2)
+    else:
+        # Over-represented → shrink
+        adjustments[cat] = max(-STEP, delta // 2)
+
+# Apply adjustments
+new_focus = {}
+for cat in focus:
+    new_val = focus[cat] + adjustments.get(cat, 0)
+    # Enforce floors
+    floor = MIN_FLOORS.get(cat, 0)
+    new_val = max(floor, min(60, new_val))  # cap at 60% to prevent slop
+    new_focus[cat] = new_val
+
+# Normalize to 100%
+total_new = sum(new_focus.values())
+if total_new > 0 and total_new != 100:
+    factor = 100.0 / total_new
+    remainder = 0
+    for cat in new_focus:
+        exact = new_focus[cat] * factor + remainder
+        rounded = int(exact)
+        remainder = exact - rounded
+        new_focus[cat] = rounded
+    # Fix rounding
+    diff = 100 - sum(new_focus.values())
+    if diff != 0:
+        # Add remainder to largest category
+        largest = max(new_focus, key=lambda k: new_focus[k])
+        new_focus[largest] += diff
+
+# Check if anything changed
+changed = {k: new_focus[k] - focus.get(k, 0) for k in new_focus if new_focus[k] != focus.get(k, 0)}
+if changed:
+    cfg["focus"] = new_focus
+    json.dump(cfg, open(cfg_path, "w"), indent=2)
+    parts = [f"{k}:{'+' if v > 0 else ''}{v}" for k, v in changed.items() if v != 0]
+    print(f"SMART-MIX adjusted: {', '.join(parts)}")
+else:
+    print("SMART-MIX: balanced — no adjustment needed")
+SMARTMIX_PY
+    SMART_RESULT=$?
+    if [ "$SMART_RESULT" -eq 0 ]; then
+      # Log the adjustment
+      SMART_OUT=$(tail -1 "$MASTER_LOG" 2>/dev/null | grep "SMART-MIX" || echo "")
+      [ -n "$SMART_OUT" ] && echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $SMART_OUT" >> .claude/CYCLE_LEARNINGS.md
     fi
   fi
 

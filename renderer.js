@@ -696,6 +696,8 @@ async function loadMixer() {
     $('#modelSelect').value = cfg.model
   }
 
+  updateSmartMixIndicator(!!cfg.smartMix)
+
   const focus = (cfg && cfg.focus) || {}
   const box = $('#mixerStrips')
   if (!box) return
@@ -854,6 +856,60 @@ if ($('#saveMixer')) $('#saveMixer').onclick = async () => {
   loadMixes()
 }
 
+// ─── Smart Mix Toggle ───────────────────────────────────────────────────────
+function updateSmartMixIndicator(active) {
+  const btn = $('#smartMixBtn')
+  if (!btn) return
+  btn.classList.toggle('active', active)
+  btn.title = active ? 'Smart Mix ACTIVE — self-regulating every 3 cycles' : 'Enable Smart Mix — self-regulating'
+}
+if ($('#smartMixBtn')) $('#smartMixBtn').onclick = async () => {
+  if (!current) return
+  const cfg = await window.director.mixerRead(current) || {}
+  const newState = !cfg.smartMix
+  cfg.smartMix = newState
+  await window.director.configWrite(current, cfg)
+  updateSmartMixIndicator(newState)
+  showToast(newState ? 'Smart Mix activated — stands will self-regulate' : 'Smart Mix disabled')
+}
+
+// ─── Export All Mixes ───────────────────────────────────────────────────────
+if ($('#exportMixesBtn')) $('#exportMixesBtn').onclick = async () => {
+  if (!current) return
+  const mixes = await window.director.mixerSavedList(current)
+  if (!mixes || !mixes.length) { showToast('No mixes to export'); return }
+  const json = JSON.stringify({ version: 1, exported: new Date().toISOString(), mixes }, null, 2)
+  await navigator.clipboard.writeText(json)
+  showToast(`${mixes.length} mixes copied to clipboard as JSON`)
+}
+
+// ─── Import Mixes Library ───────────────────────────────────────────────────
+if ($('#importMixesBtn')) $('#importMixesBtn').onclick = () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = async e => {
+    const file = e.target.files[0]
+    if (!file || !current) return
+    const text = await file.text()
+    try {
+      const data = JSON.parse(text)
+      const mixes = data.mixes || (Array.isArray(data) ? data : [data])
+      let imported = 0
+      for (const m of mixes) {
+        if (m.focus) {
+          const normalized = normalizeMixerValues(m.focus, getAllSections())
+          await window.director.mixerSavedSave(current, m.name || 'Imported', normalized)
+          imported++
+        }
+      }
+      showToast(`${imported} mix${imported !== 1 ? 'es' : ''} imported`)
+      loadMixes()
+    } catch { showToast('Invalid JSON file') }
+  }
+  input.click()
+}
+
 // ─── Import Mix ──────────────────────────────────────────────────────────────
 if ($('#mixImportBtn')) $('#mixImportBtn').onclick = async () => {
   if (!current) return
@@ -931,8 +987,15 @@ async function loadMixes() {
       e.stopPropagation()
       const normalized = normalizeMixerValues(m.focus, getAllSections())
       await window.director.mixerWrite(current, normalized)
+      // Enable/disable smart mix based on preset flag
+      if (current) {
+        const cfg = await window.director.mixerRead(current) || {}
+        cfg.smartMix = !!m.smart
+        await window.director.configWrite(current, cfg)
+      }
       loadMixer()
-      showToast('Mix "' + m.name + '" loaded')
+      updateSmartMixIndicator(!!m.smart)
+      showToast(m.smart ? 'Smart Mix activated — self-regulating' : 'Mix "' + m.name + '" loaded')
     }
     card.querySelector('.share').onclick = async e => {
       e.stopPropagation()

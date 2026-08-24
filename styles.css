@@ -1580,6 +1580,17 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
   flex-shrink: 0;
 }
 .mixer-hint { font: 8px var(--sans); color: var(--dim2); margin-left: auto; text-transform: uppercase; white-space: nowrap; overflow: hidden }
+.smart-mix-btn { font-size: 8px !important; letter-spacing: .5px }
+.smart-mix-btn.active {
+  background: rgba(0,255,238,.08) !important; color: var(--ai-cyan) !important;
+  border-color: var(--ai-cyan) !important; box-shadow: 0 0 10px rgba(0,255,238,.15);
+  animation: smartPulse 3s ease-in-out infinite;
+}
+@keyframes smartPulse { 0%,100%{box-shadow:0 0 8px rgba(0,255,238,.1)} 50%{box-shadow:0 0 16px rgba(0,255,238,.25)} }
+html.light .smart-mix-btn.active {
+  background: rgba(0,122,110,.06) !important; color: var(--ai-cyan) !important;
+  border-color: var(--ai-cyan) !important; box-shadow: 0 0 8px rgba(0,122,110,.12);
+}
 .save-mix { background: var(--bg); color: var(--fl-orange); border: 1px solid var(--fl-orange); font-size: 9px; padding: 3px 8px }
 .save-mix:hover { background: rgba(232,99,26,.08); box-shadow: var(--glow-orange) }
 .saved-msg { font: 9px var(--mono); color: var(--fl-green); transition: opacity .3s }
