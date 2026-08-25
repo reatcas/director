@@ -71,6 +71,39 @@ describe('CoordinationProtocol', () => {
       coord.unregister('/a')
       expect(coord.locks.size).toBe(0)
     })
+
+    it('releases multiple locks held by unregistered instance', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      coord.acquireLock('/a', 'gpu:0')
+      coord.acquireLock('/a', 'gpu:1')
+      coord.acquireLock('/a', 'network')
+      expect(coord.locks.size).toBe(3)
+      coord.unregister('/a')
+      expect(coord.locks.size).toBe(0)
+    })
+
+    it('preserves locks held by other instances on unregister', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      coord.register('/b', 200, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      coord.acquireLock('/a', 'gpu:0')
+      coord.acquireLock('/b', 'network')
+      expect(coord.locks.size).toBe(2)
+      coord.unregister('/a')
+      expect(coord.locks.size).toBe(1)
+      expect(coord.locks.get('network').holder).toBe('/b')
+    })
   })
 
   describe('acquireLock', () => {
@@ -282,6 +315,31 @@ describe('CoordinationProtocol', () => {
       expect(infoB.rank).toBeDefined()
       expect(infoA.resourceShare).toBe(0.5)
       expect(infoB.resourceShare).toBe(0.5)
+    })
+
+    it('ranks three instances by priority (lower number = higher rank)', () => {
+      coord.register('/low', 100, {
+        nice: 15, avgIntensity: 10, maxIntensity: 10,
+        memBudgetMB: 1024, tokenBudget: 200000,
+        totalWeight: 10, categoryBudgets: {}
+      })
+      coord.register('/mid', 200, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 500000,
+        totalWeight: 50, categoryBudgets: {}
+      })
+      coord.register('/high', 300, {
+        nice: 0, avgIntensity: 90, maxIntensity: 90,
+        memBudgetMB: 4096, tokenBudget: 900000,
+        totalWeight: 90, categoryBudgets: {}
+      })
+      const lo = coord.instances.get('/low')
+      const mi = coord.instances.get('/mid')
+      const hi = coord.instances.get('/high')
+      expect(hi.rank).toBe(1)
+      expect(mi.rank).toBe(2)
+      expect(lo.rank).toBe(3)
+      expect(lo.resourceShare).toBeCloseTo(1/3, 5)
     })
   })
 
