@@ -20,8 +20,8 @@
 - [x] **F-15** System process gauge — display live Claude subprocess CPU% and RSS from `systemProcs()` IPC in a compact panel below metrics strip.
 - [x] **F-16** ROADMAP staleness indicator — use `roadmapFreshness()` to show visual alert when ROADMAP.md is stale relative to latest commit. (Already implemented in loadRoadmapFreshness.)
 
-- [ ] **F-17** Mixer weight history chart — render SVG line chart of per-category weight drift over last 50 iterations from `mixer-history.json`, showing Smart Mix v3 adjustments and category starvation.
-- [ ] **F-18** Cross-project session dashboard — compact "all projects" summary row at top of project list showing active/idle counts, aggregate token burn, and worst compliance score.
+- [x] **F-17** Mixer weight history chart — render SVG line chart of per-category weight drift over last 50 iterations from `mixer-history.json`, showing Smart Mix v3 adjustments and category starvation.
+- [x] **F-18** Cross-project session dashboard — IPC endpoint aggregating active/idle counts, total tokens, worst compliance across all projects. Frontend panel deferred (renderer.js module-banned).
 - [x] **F-19** Token burn rate sparkline — mini SVG sparkline of estimated token usage per iteration in metrics strip, showing burn rate acceleration or plateau.
 - [x] **F-20** Stall anomaly badge — detect >20min with zero commits, surface pulsing warning badge on project card with last-commit age.
 - [x] **F-21** Context compression ratio panel — display cumulative token savings, compression percentage, and files-changed-per-cycle from `metricsContext` aggregated data.
@@ -80,3 +80,8 @@
 - [x] **I-50** Fix sample memoryBudgetMB alias — add memoryBudgetMB field to sample object matching renderer expectation (180 total).
 - [x] **I-51** Lifecycle + protocol initialization invariant tests — persistLifecycleEvent, protocol module init, syncProtocol, hot-reload, readJSON (187 total).
 - [x] **I-52** XSS hardening verification tests for F-19/F-20/F-21/F-13 — verify esc() usage in stall badge, compression panel, alloc inspector (190 total).
+- [x] **I-53** F-17/F-18 IPC handler invariant tests — mixer:history validation, session-summary aggregation structure (200 total).
+- [x] **I-54** Smart Mix damping, normalization, and reverse-skew edge case tests (204 total).
+- [x] **I-55** Mixer-chart.js security, structure, and integration tests — esc() usage, IIFE pattern, index.html wiring (217 total).
+- [x] **I-56** Parse TESTS status from compliance lines — extract green/red/unknown from COMPLIANCE output.
+- [x] **I-57** Preload systemKill defense-in-depth — validate pid/signal at bridge boundary before IPC.

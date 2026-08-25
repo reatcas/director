@@ -1,19 +1,13 @@
-# Cycle 35 Plan — PRODUCT MODE
+# Cycle 47 Plan — PRODUCT MODE (F-17, F-18)
 
 ## Budget (from mixer)
 product=30% backend=20% quality=20% frontend=15% security=10% perf=5%
 
 ## Units
-1. [product] F-21 Context compression ratio panel — cumulative token savings from metricsContext ✔ d8291aa
-2. [product] F-20 Stall anomaly badge — pulsing badge on project cards for stalled sessions ✔ 9a6d4ee
-3. [product] F-19 Token burn rate sparkline ✔ dabad28
-4. [test] I-43 Main.js IPC handler invariant tests (156 total) ✔ 5de99bb
-5. [fix] I-44 Count added file sections in sectionsTotal (157 total) ✔ e80e850
-6. [perf] I-45 Cache os.cpus() in resource-scheduler (158 total) ✔ f42c0e4
-7. [security] I-46 Coordination + HTML security invariant tests (165 total) ✔ 4c19c92
-8. [test] I-47 Smart Mix edge case tests (169 total) ✔ 01c6883
-9. [chore] I-48 Resource-scheduler API expansion (174 total) ✔ 985c2ce
-10. [style] I-49 CSS design system invariant tests (179 total) ✔ 7f943f8
-11. [fix] I-50 Fix sample memoryBudgetMB alias (180 total) ✔ 865e130
-12. [test] I-51 Lifecycle + protocol initialization invariant tests (187 total) ✔ 58e5979
-13. [security] I-52 XSS hardening verification tests for F-19/F-20/F-21/F-13 (190 total) ✔ 5e2160d
+1. [product] F-17 Mixer weight history chart — SVG line chart + IPC + preload ✔ 8aa1d7f
+2. [product] F-18 Cross-project session summary IPC endpoint ✔ 8078abb
+3. [test] I-53 F-17/F-18 IPC handler invariant tests (200 total) ✔ 3cefea9
+4. [fix] I-56 Parse TESTS status from compliance lines ✔ 0525a2a
+5. [security] I-57 Preload systemKill defense-in-depth validation ✔ 8203de9
+6. [test] I-54 Smart Mix damping, normalization, reverse-skew tests (204 total) ✔ bb67079
+7. [test] I-55 Mixer-chart.js security, structure, integration tests (217 total) ✔ 4c106f7
