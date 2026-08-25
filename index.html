@@ -1,7 +1,7 @@
 <!-- Copyright (c) 2026 René Antonio Casaña Amaya. All rights reserved. -->
 <!-- Licensed under the AGPL-3.0 License. See LICENSE in repository root. -->
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <title>Director Suite</title>
@@ -12,7 +12,7 @@
   <!-- ABOUT MODAL -->
   <div id="aboutModal" class="modal-overlay" hidden>
     <div class="modal-card about-card">
-      <button id="closeAbout" class="modal-close">✕</button>
+      <button id="closeAbout" class="modal-close" aria-label="Cerrar">✕</button>
       <div class="about-hero">
         <img src="logo.svg" class="about-logo" alt="Director Suite">
       </div>
@@ -55,7 +55,7 @@
   <!-- SETTINGS MODAL -->
   <div id="settingsModal" class="modal-overlay" hidden>
     <div class="modal-card" style="width:480px;max-height:80vh;overflow-y:auto">
-      <button id="closeSettings" class="modal-close">✕</button>
+      <button id="closeSettings" class="modal-close" aria-label="Cerrar">✕</button>
       <h2 class="modal-title" style="font-size:14px">SETTINGS</h2>
 
       <div class="settings-section">
@@ -164,9 +164,9 @@
       </div>
     </div>
     <div id="transportControls">
-      <button id="playBtn" class="tp-btn tp-play disabled" title="Start development cycle">▶</button>
-      <button id="fineBtn" class="tp-btn tp-fine disabled" title="Fine">◼</button>
-      <button id="killBtn" class="tp-btn tp-kill disabled" title="Hard cut">✕</button>
+      <button id="playBtn" class="tp-btn tp-play disabled" title="Start development cycle" aria-label="Iniciar ciclo">▶</button>
+      <button id="fineBtn" class="tp-btn tp-fine disabled" title="Fine" aria-label="Detener">◼</button>
+      <button id="killBtn" class="tp-btn tp-kill disabled" title="Hard cut" aria-label="Cortar">✕</button>
     </div>
     <div id="aiControl" class="ai-control">
       <label for="aiSelect">AI DEVELOPER</label>
@@ -214,9 +214,9 @@
       <button id="removeBtn" class="tp-action dim">REMOVE</button>
     </div>
     <div id="transportUtils">
-      <button id="themeToggle" class="tp-btn" title="Toggle theme">◐</button>
-      <button id="settingsBtn" class="tp-btn" title="Settings">⚙</button>
-      <button id="aboutBtn" class="tp-btn" title="About">?</button>
+      <button id="themeToggle" class="tp-btn" title="Toggle theme" aria-label="Cambiar tema">◐</button>
+      <button id="settingsBtn" class="tp-btn" title="Settings" aria-label="Configuración">⚙</button>
+      <button id="aboutBtn" class="tp-btn" title="About" aria-label="Acerca de">?</button>
     </div>
   </header>
 
@@ -268,7 +268,7 @@
                 <div class="ms-icon-wrap"><span class="ms-icon">◇</span></div>
                 <span class="ms-label">SILENT</span>
               </div>
-              <input id="logFilterInput" type="text" placeholder="Filtrar logs..." class="mix-import-field mono" style="margin-left:auto; margin-right:10px; width:150px; background:transparent">
+              <input id="logFilterInput" type="text" placeholder="Filtrar logs..." aria-label="Filtrar logs" class="mix-import-field mono" style="margin-left:auto; margin-right:10px; width:150px; background:transparent">
               <span id="logFilterCount" class="mono" style="font-size:9px;color:var(--dim);margin-right:6px;display:none"></span>
               <div class="console-actions">
                 <button id="clearLogBtn" class="ms-copy" title="Clear terminal log" style="color:var(--txt)">CLEAR</button>
