@@ -249,6 +249,45 @@ describe('CoordinationProtocol', () => {
     })
   })
 
+  describe('detectConflicts caching', () => {
+    it('returns cached result on repeated calls', () => {
+      coord.register('/a', 100, {
+        nice: 0, avgIntensity: 80, maxIntensity: 80,
+        memBudgetMB: 4096, tokenBudget: 800000,
+        categoryBudgets: { product: { weight: 60 } }
+      })
+      coord.register('/b', 200, {
+        nice: 0, avgIntensity: 80, maxIntensity: 80,
+        memBudgetMB: 4096, tokenBudget: 800000,
+        categoryBudgets: { product: { weight: 60 } }
+      })
+      const first = coord.detectConflicts()
+      const second = coord.detectConflicts()
+      expect(first).toBe(second)
+    })
+
+    it('invalidates cache on register', () => {
+      coord.register('/a', 100, {
+        nice: 0, avgIntensity: 80, maxIntensity: 80,
+        memBudgetMB: 4096, tokenBudget: 800000,
+        categoryBudgets: { product: { weight: 60 } }
+      })
+      coord.register('/b', 200, {
+        nice: 0, avgIntensity: 80, maxIntensity: 80,
+        memBudgetMB: 4096, tokenBudget: 800000,
+        categoryBudgets: { product: { weight: 60 } }
+      })
+      const first = coord.detectConflicts()
+      coord.register('/c', 300, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: { security: { weight: 80 } }
+      })
+      const second = coord.detectConflicts()
+      expect(first).not.toBe(second)
+    })
+  })
+
   describe('_computePriority', () => {
     it('returns 100 for null allocation', () => {
       expect(coord._computePriority(null)).toBe(100)

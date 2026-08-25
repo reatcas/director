@@ -37,6 +37,7 @@ class CoordinationProtocol {
     this.locks       = new Map()   // resource → lock info
     this.conflictLog = []          // historical conflicts (max 100)
     this.events      = []          // coordination events log (max 200)
+    this._cachedConflicts = null   // cached detectConflicts result
   }
 
   // ─── Instance registration ─────────────────────────────────────────────
@@ -185,6 +186,8 @@ class CoordinationProtocol {
   // Detects when multiple orchestras have overlapping high-weight domains,
   // which causes resource contention.
   detectConflicts() {
+    if (this._cachedConflicts) return this._cachedConflicts
+
     const entries = Array.from(this.instances.entries())
     const conflicts = []
 
@@ -236,6 +239,7 @@ class CoordinationProtocol {
       }
     }
 
+    this._cachedConflicts = conflicts
     return conflicts
   }
 
@@ -243,6 +247,7 @@ class CoordinationProtocol {
   // When instances change, recompute relative priorities and detect
   // new conflicts.
   _rebalance() {
+    this._cachedConflicts = null
     const entries = Array.from(this.instances.entries())
     if (entries.length <= 1) return
 
