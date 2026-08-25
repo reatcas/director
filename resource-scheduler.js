@@ -136,6 +136,8 @@ class ResourceScheduler {
   // ─── Apply allocation to a spawned process ──────────────────────────────
   applyToProcess(child, allocation) {
     if (!child || !child.pid) return false
+    if (!Number.isInteger(child.pid) || child.pid <= 0) return false
+    if (!Number.isInteger(allocation.nice)) return false
 
     // Set process priority via renice (Unix only)
     if (process.platform !== 'win32') {

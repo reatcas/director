@@ -27,6 +27,8 @@
 // domain-specific weights, with measurable priority inheritance, preemption,
 // and conflict detection — beyond standard file locks or process signals.
 
+const os = require('os')
+
 class CoordinationProtocol {
   constructor() {
     this.instances   = new Map()   // dir → instance info
@@ -213,7 +215,6 @@ class CoordinationProtocol {
         if (overlapping.length > 0) {
           // Compute combined memory pressure
           const combinedMemMB = infoA.memBudgetMB + infoB.memBudgetMB
-          const os = require('os')
           const totalMem = Math.floor(os.totalmem() / 1048576)
           const memPressure = combinedMemMB / totalMem
 

@@ -377,6 +377,7 @@ class ContextProtocol {
     this.snapshots.delete(dir)
     this.deltaHistory.delete(dir)
     this.aggregated.delete(dir)
+    this._mtimes.delete(dir)
   }
 }
 

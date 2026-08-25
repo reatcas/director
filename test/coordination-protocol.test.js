@@ -134,6 +134,25 @@ describe('CoordinationProtocol', () => {
       expect(result.reason).toBe('lower_priority')
     })
 
+    it('denies equal-priority requester (incumbent wins)', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 500000,
+        totalWeight: 50,
+        categoryBudgets: {}
+      })
+      coord.register('/b', 200, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 500000,
+        totalWeight: 50,
+        categoryBudgets: {}
+      })
+      coord.acquireLock('/a', 'gpu:0')
+      const result = coord.acquireLock('/b', 'gpu:0')
+      expect(result.acquired).toBe(false)
+      expect(result.reason).toBe('lower_priority')
+    })
+
     it('rejects unregistered instance', () => {
       const result = coord.acquireLock('/unknown', 'gpu:0')
       expect(result.acquired).toBe(false)

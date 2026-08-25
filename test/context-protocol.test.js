@@ -166,4 +166,19 @@ describe('ContextProtocol', () => {
       expect(result.retentionPlan.tokensSaved).toBe(0)
     })
   })
+
+  describe('cleanup', () => {
+    it('clears snapshots, history, aggregated, and _mtimes', () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ctx-clean-'))
+      fs.writeFileSync(path.join(dir, 'PLAN.md'), '# Plan\ncontent')
+      proto.computeDelta(dir, { product: 50 })
+      expect(proto.snapshots.has(dir)).toBe(true)
+      expect(proto._mtimes.has(dir)).toBe(true)
+      proto.cleanup(dir)
+      expect(proto.snapshots.has(dir)).toBe(false)
+      expect(proto.deltaHistory.has(dir)).toBe(false)
+      expect(proto.aggregated.has(dir)).toBe(false)
+      expect(proto._mtimes.has(dir)).toBe(false)
+    })
+  })
 })
