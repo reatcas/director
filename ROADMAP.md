@@ -23,3 +23,5 @@
 - [x] **I-08** Log filter match count + i18n placeholder — show result count and localize filter placeholder to Spanish.
 - [x] **I-09** Context protocol delta + retention tests — 11 new tests for computeDelta and _computeRetention (84 total).
 - [x] **I-10** Widen commit type regex in analyze handler — add style, security, i18n to detection regex.
+- [x] **I-11** Atomic writes for telemetry JSON in protocol modules — fix ADR-002 violation in context-protocol and resource-scheduler.
+- [x] **I-12** Resource-scheduler efficiency + edge case tests — 6 new tests (90 total).
