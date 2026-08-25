@@ -9,10 +9,13 @@
   "scripts": {
     "start": "electron .",
     "build:mac": "electron-packager . Director --platform=darwin --out=dist --overwrite",
-    "build:linux": "electron-packager . Director --platform=linux --out=dist --overwrite"
+    "build:linux": "electron-packager . Director --platform=linux --out=dist --overwrite",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
-    "electron": "^43.4.1"
+    "electron": "^43.4.1",
+    "vitest": "^4.1.11"
   }
 }

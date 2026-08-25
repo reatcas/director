@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "focus": {
+    "product": 30,
+    "backend": 20,
+    "frontend": 15,
+    "quality_tests": 20,
+    "security": 10,
+    "performance": 5,
+    "ux_accessibility": 0,
+    "data_db": 0,
+    "documentation": 0,
+    "i18n": 0,
+    "refactoring": 0,
+    "architecture": 0,
+    "api_integrations": 0,
+    "error_handling": 0,
+    "devops_infra": 0,
+    "business_logic": 0
+  },
+  "smartMix": true,
+  "agent": "claude",
+  "model": "claude-opus-4-6",
+  "caveman": true
+}
