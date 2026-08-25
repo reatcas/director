@@ -89,3 +89,28 @@ describe('I-03: stale USAGE_LIMIT cleanup on startup', () => {
     expect(watchIdx).toBeGreaterThan(pidCheckIdx)
   })
 })
+
+describe('I-05: security hardening', () => {
+  it('restricts kill-proc signals to allowlist', () => {
+    expect(mainJs).toContain("const allowed = ['SIGTERM', 'SIGKILL']")
+    expect(mainJs).toContain('allowed.includes(signal)')
+  })
+})
+
+describe('main.js invariants', () => {
+  it('uses atomic writes for all JSON output', () => {
+    const rawWrites = mainJs.match(/fs\.writeFileSync\([^)]+\.json/g) || []
+    const safeWrites = rawWrites.filter(w => !w.includes('.tmp'))
+    expect(safeWrites.length).toBe(0)
+  })
+
+  it('has USAGE_LIMIT_SIGNAL constant defined', () => {
+    expect(mainJs).toContain("const USAGE_LIMIT_SIGNAL = '.claude/USAGE_LIMIT'")
+  })
+
+  it('cleans up PID file on exit', () => {
+    const exitBlock = mainJs.split("child.on('exit'")[1] || ''
+    expect(exitBlock).toContain('ORCHESTRA_PID')
+    expect(exitBlock).toContain('unlinkSync')
+  })
+})
