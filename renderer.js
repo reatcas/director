@@ -1982,16 +1982,35 @@ async function loadMetrics() {
 }
 
 // ─── Compliance Display ───────────────────────────────────────────────────────
+function renderSparkline(svgEl, scores) {
+  if (!svgEl || !scores || scores.length < 2) { if (svgEl) svgEl.style.display = 'none'; return }
+  const w = 60, h = 16, pad = 1
+  const min = Math.min(...scores), max = Math.max(...scores)
+  const range = max - min || 1
+  const points = scores.map((s, i) => {
+    const x = pad + (i / (scores.length - 1)) * (w - 2 * pad)
+    const y = h - pad - ((s - min) / range) * (h - 2 * pad)
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(' ')
+  const lastScore = scores[scores.length - 1]
+  const color = lastScore >= 90 ? '#40c840' : lastScore >= 70 ? '#ddba00' : '#e03030'
+  svgEl.innerHTML = `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
+  svgEl.style.display = ''
+}
+
 function updateComplianceDisplay(data) {
   const el = $('#mmComplianceVal')
   if (!el) return
   if (!data || data.last === null) {
-    el.textContent = '—'; el.className = 'mm-val'; return
+    el.textContent = '—'; el.className = 'mm-val'
+    renderSparkline($('#complianceSpark'), null)
+    return
   }
   const score = data.last ? data.last.score : data.avgScore
-  if (score === null) { el.textContent = '—'; el.className = 'mm-val'; return }
+  if (score === null) { el.textContent = '—'; el.className = 'mm-val'; renderSparkline($('#complianceSpark'), null); return }
   el.textContent = score + '%' + (data.cycles > 1 ? ` (${data.cycles}c)` : '')
   el.className = 'mm-val ' + (score >= 90 ? 'ok' : score >= 70 ? 'warn' : 'bad')
+  renderSparkline($('#complianceSpark'), data.history)
 }
 
 function updateComplianceFromLog(line) {
