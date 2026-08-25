@@ -263,4 +263,48 @@ describe('Smart Mix v3', () => {
     const result = runSmartMix(baseFocus, over)
     expect(result.quality_tests).toBeLessThanOrEqual(baseFocus.quality_tests + 5)
   })
+
+  it('two-category focus with extreme skew stays balanced', () => {
+    const twoFocus = { product: 50, quality_tests: 50 }
+    const skewed = Array(50).fill('product')
+    const result = runSmartMix(twoFocus, skewed)
+    expect(result.product + result.quality_tests).toBeGreaterThanOrEqual(90)
+    expect(result.quality_tests).toBeGreaterThanOrEqual(35)
+  })
+
+  it('damping prevents step > 6 per iteration', () => {
+    const extreme = Array(50).fill('performance')
+    const result = runSmartMix(baseFocus, extreme)
+    for (const [k, v] of Object.entries(baseFocus)) {
+      if (v === 0) continue
+      expect(Math.abs((result[k] || 0) - v)).toBeLessThanOrEqual(16)
+    }
+  })
+
+  it('normalization ensures exact 100% sum with many categories', () => {
+    const broadFocus = {
+      product: 20, backend: 15, frontend: 15, quality_tests: 15,
+      security: 10, performance: 10, ux_accessibility: 5,
+      data_db: 5, i18n: 5
+    }
+    const mixed = [
+      ...Array(10).fill('product'), ...Array(10).fill('backend'),
+      ...Array(10).fill('security'), ...Array(10).fill('i18n'),
+      ...Array(10).fill('performance')
+    ]
+    const result = runSmartMix(broadFocus, mixed)
+    const sum = Object.values(result).reduce((a, b) => a + b, 0)
+    expect(sum).toBe(100)
+  })
+
+  it('reverse-skew boosts neglected categories proportionally', () => {
+    const noBackendNoFrontend = [
+      ...Array(30).fill('product'),
+      ...Array(15).fill('quality_tests'),
+      ...Array(5).fill('security'),
+    ]
+    const result = runSmartMix(baseFocus, noBackendNoFrontend)
+    expect(result.backend).toBeGreaterThanOrEqual(baseFocus.backend - 2)
+    expect(result.frontend).toBeGreaterThanOrEqual(baseFocus.frontend - 2)
+  })
 })
