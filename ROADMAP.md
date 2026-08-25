@@ -56,3 +56,4 @@
 - [x] **I-32** Coordination protocol integration tests — conflict log cap, weighted shares sum-to-1, full lifecycle flow (122 total).
 - [x] **I-33** Smart Mix edge case tests — empty commits, all-same-category, neglected category boost (125 total).
 - [x] **I-34** Compact JSON for telemetry writes — remove pretty-printing from protocol module telemetry to reduce I/O.
+- [x] **I-35** Input validation in coordination-protocol register() — null guard + default values for missing allocation fields (126 total).

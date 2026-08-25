@@ -33,6 +33,12 @@ describe('CoordinationProtocol', () => {
       expect(status.activeInstances).toBe(1)
     })
 
+    it('rejects null dir or allocation', () => {
+      expect(coord.register(null, 100, {})).toBeNull()
+      expect(coord.register('/a', 100, null)).toBeNull()
+      expect(coord.instances.size).toBe(0)
+    })
+
     it('detects conflicts between overlapping high-weight categories', () => {
       coord.register('/a', 100, {
         nice: 0, avgIntensity: 80, maxIntensity: 80,

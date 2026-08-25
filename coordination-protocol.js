@@ -39,15 +39,16 @@ class CoordinationProtocol {
 
   // ─── Instance registration ─────────────────────────────────────────────
   register(dir, pid, allocation) {
+    if (!dir || !allocation) return null
     const priority = this._computePriority(allocation)
 
     this.instances.set(dir, {
       pid,
       priority,
-      nice:           allocation.nice,
-      avgIntensity:   allocation.avgIntensity,
-      memBudgetMB:    allocation.memBudgetMB,
-      tokenBudget:    allocation.tokenBudget,
+      nice:           allocation.nice || 10,
+      avgIntensity:   allocation.avgIntensity || 0,
+      memBudgetMB:    allocation.memBudgetMB || 0,
+      tokenBudget:    allocation.tokenBudget || 0,
       categoryWeights: allocation.categoryBudgets || {},
       registeredAt:   new Date().toISOString(),
       status:         'active'
