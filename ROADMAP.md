@@ -79,3 +79,4 @@
 - [x] **I-49** CSS design system invariant tests — verify core color variables, font families, light theme, focus-visible, stall animation (179 total).
 - [x] **I-50** Fix sample memoryBudgetMB alias — add memoryBudgetMB field to sample object matching renderer expectation (180 total).
 - [x] **I-51** Lifecycle + protocol initialization invariant tests — persistLifecycleEvent, protocol module init, syncProtocol, hot-reload, readJSON (187 total).
+- [x] **I-52** XSS hardening verification tests for F-19/F-20/F-21/F-13 — verify esc() usage in stall badge, compression panel, alloc inspector (190 total).

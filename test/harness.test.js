@@ -142,6 +142,29 @@ describe('XSS hardening in renderer.js', () => {
   it('escapes process command in system monitor', () => {
     expect(rendererJs).toContain('${esc(p.cmd)}')
   })
+
+  it('F-20 stall badge escapes minutes display', () => {
+    expect(rendererJs).toContain('${esc(String(stallMin))}min')
+    expect(rendererJs).toContain('${esc(String(stallMin))}m')
+  })
+
+  it('F-21 compression panel uses esc() for all stat values', () => {
+    const comprBlock = rendererJs.split('function updateCompressionPanel')[1]?.split('\nfunction ')[0] || ''
+    const asValInterps = comprBlock.match(/as-val">\$\{[^}]+\}/g) || []
+    expect(asValInterps.length).toBeGreaterThan(0)
+    for (const interp of asValInterps) {
+      expect(interp).toContain('esc(')
+    }
+  })
+
+  it('F-13 alloc inspector uses esc() for value spans', () => {
+    const allocBlock = rendererJs.split('function updateAllocInspector')[1]?.split('\n// ───')[0] || ''
+    const asValInterps = allocBlock.match(/as-val">\$\{[^}]+\}/g) || []
+    expect(asValInterps.length).toBeGreaterThan(0)
+    for (const interp of asValInterps) {
+      expect(interp).toContain('esc(')
+    }
+  })
 })
 
 describe('protocol module atomic writes', () => {

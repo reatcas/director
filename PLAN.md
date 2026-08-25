@@ -15,4 +15,5 @@ product=30% backend=20% quality=20% frontend=15% security=10% perf=5%
 9. [chore] I-48 Resource-scheduler API expansion (174 total) ✔ 985c2ce
 10. [style] I-49 CSS design system invariant tests (179 total) ✔ 7f943f8
 11. [fix] I-50 Fix sample memoryBudgetMB alias (180 total) ✔ 865e130
-12. [test] I-51 Lifecycle + protocol initialization invariant tests (187 total)
+12. [test] I-51 Lifecycle + protocol initialization invariant tests (187 total) ✔ 58e5979
+13. [security] I-52 XSS hardening verification tests for F-19/F-20/F-21/F-13 (190 total)
