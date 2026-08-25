@@ -70,3 +70,4 @@
 - [x] **I-40** Validate resource parameter in acquireLock/releaseLock — reject empty, null, and non-string resource identifiers (143 total).
 - [x] **I-41** Context-protocol API + telemetry tests — getMetrics, getFullHistory, history cap, _persist atomic write verification (149 total).
 - [x] **I-42** Track removed sections in context-protocol delta — detect deleted markdown sections in section-level analysis (150 total).
+- [x] **I-43** Main.js IPC handler invariant tests — metrics validation, readJSON usage, writeJSON atomic pattern, pidAlive/killProcessGroup (156 total).

@@ -114,3 +114,36 @@ describe('main.js invariants', () => {
     expect(exitBlock).toContain('unlinkSync')
   })
 })
+
+describe('IPC handler invariants', () => {
+  it('validates dir parameter in metrics handlers', () => {
+    expect(mainJs).toMatch(/metrics:context.*if \(!dir\) return null/s)
+    expect(mainJs).toMatch(/metrics:claude-usage.*if \(!dir\) return null/s)
+  })
+
+  it('uses readJSON with fallback for all JSON reads', () => {
+    const readCalls = mainJs.match(/readJSON\([^)]+,\s*[^)]+\)/g) || []
+    expect(readCalls.length).toBeGreaterThan(5)
+  })
+
+  it('exposes readFile IPC with string validation (I-07)', () => {
+    expect(mainJs).toContain("typeof subpath !== 'string'")
+  })
+
+  it('defines writeJSON with atomic tmp+rename pattern', () => {
+    expect(mainJs).toContain('const writeJSON')
+    expect(mainJs).toContain('.tmp')
+    expect(mainJs).toContain('renameSync')
+  })
+
+  it('defines pidAlive for process liveness check', () => {
+    expect(mainJs).toContain('function pidAlive')
+    expect(mainJs).toContain('process.kill(pid, 0)')
+  })
+
+  it('defines killProcessGroup with SIGTERM escalation', () => {
+    expect(mainJs).toContain('function killProcessGroup')
+    expect(mainJs).toContain('SIGTERM')
+    expect(mainJs).toContain('SIGKILL')
+  })
+})
