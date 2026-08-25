@@ -2427,6 +2427,21 @@ async function bpLoad() {
   bpUpdateCompleteness()
   renderBpPhases()
   renderBpModules()
+  loadBpReadiness()
+}
+
+async function loadBpReadiness() {
+  if (!current) return
+  const el = $('#bpReadiness')
+  if (!el) return
+  const r = await window.director.blueprintReadiness(current)
+  if (!r || !r.hasBlueprint) { el.style.display = 'none'; return }
+  const pct = r.completeness || 0
+  const color = r.ready ? '#40c840' : pct >= 50 ? '#ddba00' : '#e03030'
+  const parts = [`${r.answeredFields} campos`, `${r.modules} módulos`, `${r.sessions} sesiones`]
+  el.innerHTML = `<span style="color:${color}">● ${pct}%</span> <span style="color:var(--dim)">${parts.join(' · ')}</span>`
+  if (!r.ready && r.missing.length) el.title = 'Faltan: ' + r.missing.join(', ')
+  el.style.display = ''
 }
 
 function bpStartSession() {
