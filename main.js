@@ -1019,7 +1019,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
       const commits = gitErr ? [] : (gitOut || '').trim().split('\n').filter(Boolean)
       const cat = {}
       for (const c of commits) {
-        const m = c.match(/ (feat|fix|test|refactor|chore|sec|perf|docs)[:(]/)
+        const m = c.match(/ (feat|fix|test|refactor|chore|security|sec|perf|docs|style|i18n)[:(]/)
         const k = m ? m[1] : 'other'
         cat[k] = (cat[k] || 0) + 1
       }
