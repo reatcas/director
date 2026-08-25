@@ -74,3 +74,4 @@
 - [x] **I-44** Count added file sections in sectionsTotal — fix computeDelta to include sections from newly added files in the total count (157 total).
 - [x] **I-45** Cache os.cpus() in resource-scheduler — avoid repeated syscall for static CPU info (158 total).
 - [x] **I-46** Coordination + HTML security invariant tests — atomic write verification, input validation guards, lang attribute, no inline scripts (165 total).
+- [x] **I-47** Smart Mix edge case tests — single commit, unknown categories, weight ordering, freeze multiplier (169 total).

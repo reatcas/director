@@ -229,4 +229,38 @@ describe('Smart Mix v3', () => {
     const result = runSmartMix(baseFocus, noProduct)
     expect(result.product).toBeGreaterThanOrEqual(baseFocus.product)
   })
+
+  it('single commit produces valid weights', () => {
+    const result = runSmartMix(baseFocus, ['product'])
+    const sum = Object.values(result).reduce((a, b) => a + b, 0)
+    expect(sum).toBe(100)
+  })
+
+  it('all non-focus categories map to refactoring', () => {
+    const unknowns = Array(20).fill('documentation')
+    const result = runSmartMix(baseFocus, unknowns)
+    const sum = Object.values(result).reduce((a, b) => a + b, 0)
+    expect(sum).toBe(100)
+  })
+
+  it('maintains weight order after adjustment', () => {
+    const balanced = [
+      ...Array(15).fill('product'),
+      ...Array(5).fill('backend'),
+      ...Array(7).fill('frontend'),
+      ...Array(7).fill('quality_tests'),
+      ...Array(5).fill('security'),
+    ]
+    const result = runSmartMix(baseFocus, balanced)
+    expect(result.product).toBeGreaterThan(result.backend || 0)
+  })
+
+  it('freeze multiplier caps overrepresented category', () => {
+    const over = [
+      ...Array(45).fill('quality_tests'),
+      ...Array(5).fill('product'),
+    ]
+    const result = runSmartMix(baseFocus, over)
+    expect(result.quality_tests).toBeLessThanOrEqual(baseFocus.quality_tests + 5)
+  })
 })
