@@ -261,7 +261,7 @@ for raw in sys.stdin:
       FAKE_COUNT=0
       while IFS= read -r hash; do
         git cat-file -t "$hash" >/dev/null 2>&1 || FAKE_COUNT=$((FAKE_COUNT + 1))
-      done < <(grep '▸ ✔' "$ITER_LOG" | grep -oE '[0-9a-f]{7,}' || true)
+      done < <(grep -A1 '▸ ✔' "$ITER_LOG" | grep -oiE '[0-9a-f]{7,}' || true)
       if [ "$FAKE_COUNT" -gt 0 ]; then
         stamp "AUDIT-WARN: $FAKE_COUNT fake commit hashes detected in claimed output"
         echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) FAKE_HASHES=$FAKE_COUNT agent=$AI_AGENT" >> .claude/CYCLE_LEARNINGS.md
@@ -272,13 +272,13 @@ for raw in sys.stdin:
   # ── Anti-slop: detect category repetition + mislabeled commits ──────────
   if [ "$START_COMMIT" != "$END_COMMIT" ] && [ "$END_COMMIT" != "none" ]; then
     # Detect mislabeled feat() commits (i18n/UUID/style work labeled as feat)
-    MISLABELED=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'feat\(.*i18n|feat\(.*uuid|feat\(.*bind|feat\(.*translat|feat\(.*hex|feat\(.*color.token|feat\(.*primeflex' || echo 0)
+    MISLABELED=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'feat\(.*i18n|feat\(.*l10n|feat\(.*locali[zs]|feat\(.*uuid|feat\(.*bind|feat\(.*translat|feat\(.*hex|feat\(.*color.token|feat\(.*primeflex|feat\(.*sanitiz|feat\(.*valid' || echo 0)
     if [ "$MISLABELED" -gt 0 ]; then
       stamp "ANTI-SLOP: $MISLABELED mislabeled feat() commits detected (i18n/security/style work labeled as feat)"
       echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) MISLABELED_FEAT=$MISLABELED agent=$AI_AGENT — i18n/uuid/style work falsely labeled as feat()" >> .claude/CYCLE_LEARNINGS.md
     fi
     # Detect mechanical busywork (many tiny same-pattern commits)
-    MECHANICAL=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'bind [0-9]+ .*label|bind [0-9]+ .*header|translate [0-9]+ .*label|validate uuid|validate UUID' || echo 0)
+    MECHANICAL=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'bind [0-9]+ |translate [0-9]+ |validate uuid|validate UUID|replace.*hardcoded|rename.*variable|update.*import|fix.*typo|add.*missing.*type' || echo 0)
     if [ "$MECHANICAL" -gt 3 ]; then
       stamp "ANTI-SLOP: $MECHANICAL mechanical commits detected — should be batched into 1-2 commits"
       echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) MECHANICAL_BUSYWORK=$MECHANICAL agent=$AI_AGENT — unbatched repetitive commits" >> .claude/CYCLE_LEARNINGS.md
@@ -359,6 +359,8 @@ cat_rules = [
     ("product",         r"feat\((?!i18n|test|style|chore)"),
     # docs
     ("documentation",   r"docs[\(:]|readme|documentation"),
+    # architecture — state files, conventions, ADRs, Phase 0 setup
+    ("architecture",    r"DECISIONS|PLAN\.md|PENDING|convention|ADR|phase.0|architecture"),
 ]
 
 counts = {k: 0 for k in focus}

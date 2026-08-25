@@ -7,9 +7,9 @@
 - [x] **F-03** PRODUCT_DIRECTIVE.md growth cap — overwrite instead of append when injecting `## NEXT ITEM` on auto-restart, preventing the file from growing to megabytes after many restarts.
 - [x] **F-04** Credits floor at zero — prevent `credits` from going negative in `ai-credits.json`. Clamp to 0 instead of decrementing below.
 - [x] **F-05** Log filter for grouped normal lines — fix `logObserver` to also apply filter matching to `.le-group-body` text elements, not just `.le` entries.
-- [ ] **F-06** DECISIONS.md category mapping — map DECISIONS.md to `architecture` or a high-floor category instead of `backend` only, so cross-cutting conventions aren't lost when backend weight is 0%.
-- [ ] **F-07** Anti-slop pattern hardening — widen mislabeled detection regex to catch `feat(localization)`, `feat(l10n)`, and other alternate wordings. Widen mechanical detection beyond numeric patterns.
-- [ ] **F-08** Mixed-case hash detection — update fake hash regex to be case-insensitive and support hashes on separate lines from `▸ ✔`.
+- [x] **F-06** DECISIONS.md category mapping — map DECISIONS.md to `architecture` or a high-floor category instead of `backend` only, so cross-cutting conventions aren't lost when backend weight is 0%.
+- [x] **F-07** Anti-slop pattern hardening — widen mislabeled detection regex to catch `feat(localization)`, `feat(l10n)`, and other alternate wordings. Widen mechanical detection beyond numeric patterns.
+- [x] **F-08** Mixed-case hash detection — update fake hash regex to be case-insensitive and support hashes on separate lines from `▸ ✔`.
 
 ## Improvements
 
