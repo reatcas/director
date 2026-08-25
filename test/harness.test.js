@@ -208,6 +208,34 @@ describe('coordination-protocol security invariants', () => {
   })
 })
 
+describe('styles.css design system invariants', () => {
+  const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8')
+
+  it('defines all core color variables', () => {
+    const vars = ['--bg', '--panel', '--txt', '--dim', '--fl-orange', '--fl-green', '--fl-red', '--fl-yellow', '--fl-cyan', '--fl-blue']
+    for (const v of vars) {
+      expect(css).toContain(v + ':')
+    }
+  })
+
+  it('defines font family variables', () => {
+    expect(css).toContain('--mono:')
+    expect(css).toContain('--sans:')
+  })
+
+  it('has light theme overrides', () => {
+    expect(css).toContain('html.light')
+  })
+
+  it('has focus-visible outline for keyboard navigation', () => {
+    expect(css).toContain(':focus-visible')
+  })
+
+  it('defines stall-badge animation', () => {
+    expect(css).toContain('@keyframes stall-pulse')
+  })
+})
+
 describe('index.html security invariants', () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
 
