@@ -13,6 +13,7 @@
 
 ## Improvements
 
-- [ ] **I-01** Increase test coverage to 60+ tests — add tests for renderer logic (mock DOM), main.js IPC handlers (mock Electron), and edge cases in Smart Mix normalization.
-- [ ] **I-02** Auto-restart try/catch — wrap `playOrchestra` call in `child.on('exit')` with try/catch to prevent uncaught exceptions from crashing the Electron app.
-- [ ] **I-03** Stale `USAGE_LIMIT` cleanup — detect and remove stale USAGE_LIMIT files from previous sessions on app startup.
+- [x] **I-01** Increase test coverage to 60+ tests — add tests for renderer logic (mock DOM), main.js IPC handlers (mock Electron), and edge cases in Smart Mix normalization.
+- [x] **I-02** Auto-restart try/catch — wrap `playOrchestra` call in `child.on('exit')` with try/catch to prevent uncaught exceptions from crashing the Electron app.
+- [x] **I-03** Stale `USAGE_LIMIT` cleanup — detect and remove stale USAGE_LIMIT files from previous sessions on app startup.
+- [x] **I-04** Cache iter-log scan in getClaudeUsage — skip readdirSync+statSync rescan within 25s to reduce main-thread I/O during metrics sampling.
