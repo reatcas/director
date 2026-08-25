@@ -1379,7 +1379,7 @@ if ($('#logFilterInput')) {
       logEl.classList.remove('filtering')
     } else {
       logEl.classList.add('filtering')
-      const entries = logEl.querySelectorAll('.le')
+      const entries = logEl.querySelectorAll('.le, .le-group')
       for (const el of entries) {
         if (el.textContent.toLowerCase().includes(q)) {
           el.classList.add('match')
@@ -1395,7 +1395,8 @@ if ($('#logFilterInput')) {
     if (!q) return
     for (const m of mutations) {
       for (const node of m.addedNodes) {
-        if (node.nodeType === 1 && node.classList.contains('le')) {
+        if (node.nodeType !== 1) continue
+        if (node.classList.contains('le') || node.classList.contains('le-group')) {
           if (node.textContent.toLowerCase().includes(q)) {
             node.classList.add('match')
           }
