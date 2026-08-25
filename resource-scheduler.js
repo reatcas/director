@@ -26,14 +26,18 @@ class ResourceScheduler {
     this.baselines   = new Map()      // dir → baseline snapshot at play
     this.samples     = new Map()      // dir → time-series of resource samples
     this.efficiency  = new Map()      // dir → computed efficiency metrics
+    this._cpuCache   = null           // cached { count, model }
   }
 
   // ─── System resource snapshot ────────────────────────────────────────────
   systemSnapshot() {
-    const cpus = os.cpus()
+    if (!this._cpuCache) {
+      const cpus = os.cpus()
+      this._cpuCache = { count: cpus.length, model: cpus[0] ? cpus[0].model : 'unknown' }
+    }
     return {
-      cpuCount:     cpus.length,
-      cpuModel:     cpus[0] ? cpus[0].model : 'unknown',
+      cpuCount:     this._cpuCache.count,
+      cpuModel:     this._cpuCache.model,
       totalMemMB:   Math.floor(os.totalmem() / 1048576),
       freeMemMB:    Math.floor(os.freemem() / 1048576),
       loadAvg1:     os.loadavg()[0],

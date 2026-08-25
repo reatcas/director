@@ -72,3 +72,4 @@
 - [x] **I-42** Track removed sections in context-protocol delta — detect deleted markdown sections in section-level analysis (150 total).
 - [x] **I-43** Main.js IPC handler invariant tests — metrics validation, readJSON usage, writeJSON atomic pattern, pidAlive/killProcessGroup (156 total).
 - [x] **I-44** Count added file sections in sectionsTotal — fix computeDelta to include sections from newly added files in the total count (157 total).
+- [x] **I-45** Cache os.cpus() in resource-scheduler — avoid repeated syscall for static CPU info (158 total).

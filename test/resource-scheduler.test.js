@@ -89,6 +89,17 @@ describe('ResourceScheduler', () => {
     })
   })
 
+  describe('systemSnapshot caching', () => {
+    it('caches CPU info across calls', () => {
+      const snap1 = scheduler.systemSnapshot()
+      const snap2 = scheduler.systemSnapshot()
+      expect(snap1.cpuCount).toBe(snap2.cpuCount)
+      expect(snap1.cpuModel).toBe(snap2.cpuModel)
+      expect(scheduler._cpuCache).toBeDefined()
+      expect(scheduler._cpuCache.count).toBe(snap1.cpuCount)
+    })
+  })
+
   describe('_retentionCurve edge cases', () => {
     it('is monotonically increasing', () => {
       let prev = 0
