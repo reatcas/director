@@ -75,3 +75,26 @@ describe('mixer-chart.js + index.html integration', () => {
     expect(html).toContain('aria-label="Alternar historial de pesos"')
   })
 })
+
+describe('mixer-chart.js refresh behavior', () => {
+  it('defines periodic refresh interval constant', () => {
+    expect(chartJs).toContain('REFRESH_MS')
+    expect(chartJs).toContain('60_000')
+  })
+
+  it('tracks last load timestamp', () => {
+    expect(chartJs).toContain('_lastLoad')
+    expect(chartJs).toContain('Date.now()')
+  })
+
+  it('refreshes on toggle click', () => {
+    const toggleListeners = chartJs.match(/toggle\.addEventListener\('click'/g) || []
+    expect(toggleListeners.length).toBe(2)
+    const refreshBlock = chartJs.split("toggle.addEventListener('click'")[2]?.split('}')[0] || ''
+    expect(refreshBlock).toContain('loadMixerHistory')
+  })
+
+  it('refreshes when stale on metrics update', () => {
+    expect(chartJs).toContain('Date.now() - _lastLoad > REFRESH_MS')
+  })
+})
