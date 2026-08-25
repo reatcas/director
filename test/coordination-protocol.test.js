@@ -313,8 +313,8 @@ describe('CoordinationProtocol', () => {
       const infoB = coord.instances.get('/b')
       expect(infoA.rank).toBeDefined()
       expect(infoB.rank).toBeDefined()
-      expect(infoA.resourceShare).toBe(0.5)
-      expect(infoB.resourceShare).toBe(0.5)
+      expect(infoB.resourceShare).toBeGreaterThan(infoA.resourceShare)
+      expect(infoA.resourceShare + infoB.resourceShare).toBeCloseTo(1.0, 1)
     })
 
     it('ranks three instances by priority (lower number = higher rank)', () => {
@@ -339,7 +339,8 @@ describe('CoordinationProtocol', () => {
       expect(hi.rank).toBe(1)
       expect(mi.rank).toBe(2)
       expect(lo.rank).toBe(3)
-      expect(lo.resourceShare).toBeCloseTo(1/3, 5)
+      expect(hi.resourceShare).toBeGreaterThan(mi.resourceShare)
+      expect(mi.resourceShare).toBeGreaterThan(lo.resourceShare)
     })
   })
 

@@ -246,11 +246,12 @@ class CoordinationProtocol {
     // Sort by priority (ascending = highest priority first)
     entries.sort((a, b) => a[1].priority - b[1].priority)
 
+    const inversePriorities = entries.map(([, info]) => 101 - info.priority)
+    const totalInverse = inversePriorities.reduce((s, v) => s + v, 0) || 1
     entries.forEach(([dir, info], idx) => {
       info.rank = idx + 1
       info.totalInstances = entries.length
-      // Fractional resource share for each instance
-      info.resourceShare = 1 / entries.length
+      info.resourceShare = Math.round((inversePriorities[idx] / totalInverse) * 1000) / 1000
     })
 
     this._logEvent('rebalance', 'system', {
