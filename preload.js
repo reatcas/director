@@ -43,7 +43,11 @@ contextBridge.exposeInMainWorld('director', {
   claudeUsage:         p       => ipcRenderer.invoke('metrics:claude-usage', p),
   // System process monitor
   systemProcs:   ()        => ipcRenderer.invoke('system:claude-procs'),
-  systemKill:    (pid, sig) => ipcRenderer.invoke('system:kill-proc', pid, sig),
+  systemKill:    (pid, sig) => {
+    if (!Number.isInteger(pid) || pid <= 0) return Promise.resolve(false)
+    if (typeof sig !== 'string' || !['SIGTERM', 'SIGKILL'].includes(sig)) return Promise.resolve(false)
+    return ipcRenderer.invoke('system:kill-proc', pid, sig)
+  },
   // Compliance & health metrics
   complianceMetrics:   p  => ipcRenderer.invoke('metrics:compliance', p),
   roadmapFreshness:    p  => ipcRenderer.invoke('metrics:roadmap-freshness', p),
