@@ -11,6 +11,10 @@
 - [x] **F-07** Anti-slop pattern hardening — widen mislabeled detection regex to catch `feat(localization)`, `feat(l10n)`, and other alternate wordings. Widen mechanical detection beyond numeric patterns.
 - [x] **F-08** Mixed-case hash detection — update fake hash regex to be case-insensitive and support hashes on separate lines from `▸ ✔`.
 
+- [x] **F-09** Knowledge tab: PENDING.md + CYCLE_LEARNINGS.md — expose blocked items and learned lessons in the Knowledge tab for operator situational awareness. No new IPC needed.
+- [x] **F-10** Commit category breakdown — parse existing By type JSON from analysis report and render a stacked bar chart with color-coded segments + legend.
+- [x] **F-11** Compliance score sparkline — render SVG sparkline of score history from existing `complianceMetrics` data. Color-coded trend line.
+
 ## Improvements
 
 - [x] **I-01** Increase test coverage to 60+ tests — add tests for renderer logic (mock DOM), main.js IPC handlers (mock Electron), and edge cases in Smart Mix normalization.
