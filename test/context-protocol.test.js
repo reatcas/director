@@ -187,6 +187,66 @@ describe('ContextProtocol', () => {
     })
   })
 
+  describe('getMetrics', () => {
+    it('returns nulls for unknown directory', () => {
+      const m = proto.getMetrics('/unknown')
+      expect(m.lastDelta).toBeNull()
+      expect(m.aggregated).toBeNull()
+      expect(m.historySize).toBe(0)
+    })
+
+    it('returns last delta after computeDelta', () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ctx-gm-'))
+      fs.writeFileSync(path.join(dir, 'PLAN.md'), '# Plan\ncontent')
+      proto.computeDelta(dir, { product: 50 })
+      const m = proto.getMetrics(dir)
+      expect(m.lastDelta).toBeDefined()
+      expect(m.historySize).toBe(1)
+      expect(m.aggregated.cycles).toBe(1)
+    })
+  })
+
+  describe('getFullHistory', () => {
+    it('returns empty array for unknown directory', () => {
+      expect(proto.getFullHistory('/unknown')).toEqual([])
+    })
+
+    it('accumulates multiple deltas', () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ctx-fh-'))
+      fs.writeFileSync(path.join(dir, 'PLAN.md'), '# Plan\nv1')
+      proto.computeDelta(dir, { product: 50 })
+      fs.writeFileSync(path.join(dir, 'PLAN.md'), '# Plan\nv2')
+      proto.computeDelta(dir, { product: 50 })
+      expect(proto.getFullHistory(dir)).toHaveLength(2)
+    })
+  })
+
+  describe('delta history cap', () => {
+    it('caps at 100 entries', () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ctx-cap-'))
+      fs.writeFileSync(path.join(dir, 'PLAN.md'), '# Plan\ncontent')
+      for (let i = 0; i < 105; i++) {
+        fs.writeFileSync(path.join(dir, 'PLAN.md'), `# Plan\nv${i}`)
+        proto.computeDelta(dir, { product: 50 })
+      }
+      expect(proto.getFullHistory(dir).length).toBeLessThanOrEqual(100)
+    })
+  })
+
+  describe('_persist', () => {
+    it('writes telemetry with atomic write', () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ctx-persist-'))
+      fs.writeFileSync(path.join(dir, 'PLAN.md'), '# Plan\ncontent')
+      proto.computeDelta(dir, { product: 50 })
+      const file = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
+      expect(fs.existsSync(file)).toBe(true)
+      const data = JSON.parse(fs.readFileSync(file, 'utf8'))
+      expect(data.length).toBeGreaterThan(0)
+      expect(data[0].totalTokens).toBeDefined()
+      expect(fs.existsSync(file + '.tmp')).toBe(false)
+    })
+  })
+
   describe('cleanup', () => {
     it('clears snapshots, history, aggregated, and _mtimes', () => {
       const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ctx-clean-'))
