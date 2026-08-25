@@ -29,3 +29,4 @@
 - [x] **I-14** Complete XSS hardening — escape all remaining innerHTML injections across all log entry types.
 - [x] **I-15** XSS + atomic write invariant tests — 7 XSS verification + 2 atomic write protocol tests (97 total).
 - [x] **I-16** Focus-visible keyboard navigation styles — global outline for buttons, inputs, selects.
+- [x] **I-17** Coordination protocol comprehensive tests — priority, status, rebalance, event log cap (103 total).
