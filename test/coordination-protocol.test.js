@@ -365,5 +365,106 @@ describe('CoordinationProtocol', () => {
       }
       expect(coord.events.length).toBe(200)
     })
+
+    it('caps conflict log at 100 per preemption', () => {
+      for (let i = 0; i < 100; i++) {
+        coord.conflictLog.push({ i })
+      }
+      coord.register('/x', 100, {
+        nice: 10, avgIntensity: 20, maxIntensity: 20,
+        memBudgetMB: 2048, tokenBudget: 200000,
+        totalWeight: 20, categoryBudgets: {}
+      })
+      coord.register('/y', 200, {
+        nice: 0, avgIntensity: 90, maxIntensity: 90,
+        memBudgetMB: 4096, tokenBudget: 900000,
+        totalWeight: 90, categoryBudgets: {}
+      })
+      coord.acquireLock('/x', 'test-r')
+      coord.acquireLock('/y', 'test-r')
+      expect(coord.conflictLog.length).toBe(100)
+    })
+  })
+
+  describe('weighted resource shares', () => {
+    it('sums to approximately 1.0 across all instances', () => {
+      coord.register('/a', 1, {
+        nice: 15, avgIntensity: 10, maxIntensity: 10,
+        memBudgetMB: 1024, tokenBudget: 200000,
+        totalWeight: 10, categoryBudgets: {}
+      })
+      coord.register('/b', 2, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 500000,
+        totalWeight: 50, categoryBudgets: {}
+      })
+      coord.register('/c', 3, {
+        nice: 0, avgIntensity: 90, maxIntensity: 90,
+        memBudgetMB: 4096, tokenBudget: 900000,
+        totalWeight: 90, categoryBudgets: {}
+      })
+      const shares = ['/a', '/b', '/c'].map(d => coord.instances.get(d).resourceShare)
+      const total = shares.reduce((s, v) => s + v, 0)
+      expect(total).toBeCloseTo(1.0, 1)
+    })
+
+    it('gives higher share to higher priority instance', () => {
+      coord.register('/lo', 1, {
+        nice: 15, avgIntensity: 10, maxIntensity: 10,
+        memBudgetMB: 1024, tokenBudget: 200000,
+        totalWeight: 10, categoryBudgets: {}
+      })
+      coord.register('/hi', 2, {
+        nice: 0, avgIntensity: 90, maxIntensity: 90,
+        memBudgetMB: 4096, tokenBudget: 900000,
+        totalWeight: 90, categoryBudgets: {}
+      })
+      const loShare = coord.instances.get('/lo').resourceShare
+      const hiShare = coord.instances.get('/hi').resourceShare
+      expect(hiShare).toBeGreaterThan(loShare)
+    })
+  })
+
+  describe('full lifecycle flow', () => {
+    it('register → lock → conflict → preempt → unregister', () => {
+      const r1 = coord.register('/proj-a', 100, {
+        nice: 10, avgIntensity: 30, maxIntensity: 30,
+        memBudgetMB: 2048, tokenBudget: 300000,
+        totalWeight: 30,
+        categoryBudgets: { product: { weight: 60 } }
+      })
+      expect(r1.status).toBe('active')
+
+      const r2 = coord.register('/proj-b', 200, {
+        nice: 0, avgIntensity: 80, maxIntensity: 80,
+        memBudgetMB: 4096, tokenBudget: 800000,
+        totalWeight: 80,
+        categoryBudgets: { product: { weight: 70 } }
+      })
+      expect(r2.priority).toBeLessThan(r1.priority)
+
+      const lock1 = coord.acquireLock('/proj-a', 'gpu:0')
+      expect(lock1.acquired).toBe(true)
+
+      const lock2 = coord.acquireLock('/proj-b', 'gpu:0')
+      expect(lock2.acquired).toBe(true)
+      expect(lock2.preempted).toBe('/proj-a')
+
+      const conflicts = coord.detectConflicts()
+      expect(conflicts.length).toBe(1)
+      expect(conflicts[0].overlappingCategories[0].category).toBe('product')
+
+      const status = coord.getStatus()
+      expect(status.activeInstances).toBe(2)
+      expect(status.conflictHistory.length).toBeGreaterThan(0)
+
+      coord.unregister('/proj-a')
+      expect(coord.instances.size).toBe(1)
+      expect(coord.locks.get('gpu:0').holder).toBe('/proj-b')
+
+      coord.unregister('/proj-b')
+      expect(coord.instances.size).toBe(0)
+      expect(coord.locks.size).toBe(0)
+    })
   })
 })
