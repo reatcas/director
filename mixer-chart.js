@@ -82,10 +82,13 @@
   }
 
   let _lastDir = null
+  let _lastLoad = 0
+  const REFRESH_MS = 60_000
 
   async function loadMixerHistory(dir) {
     if (!dir || typeof window.director?.mixerHistory !== 'function') return
     _lastDir = dir
+    _lastLoad = Date.now()
     try {
       const entries = await window.director.mixerHistory(dir, 50)
       if (Array.isArray(entries)) renderChart(entries)
@@ -94,9 +97,21 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     initMixerChart()
+
+    const toggle = document.querySelector('#mixerHistoryToggle')
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        if (_lastDir) loadMixerHistory(_lastDir)
+      })
+    }
+
     if (window.director?.onMetrics) {
       window.director.onMetrics((data) => {
-        if (data.dir && data.dir !== _lastDir) loadMixerHistory(data.dir)
+        if (data.dir && data.dir !== _lastDir) {
+          loadMixerHistory(data.dir)
+        } else if (data.dir && Date.now() - _lastLoad > REFRESH_MS) {
+          loadMixerHistory(data.dir)
+        }
       })
     }
   })
