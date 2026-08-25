@@ -431,6 +431,60 @@ describe('CoordinationProtocol', () => {
     })
   })
 
+  describe('persistTelemetry', () => {
+    it('writes coordination metrics with atomic write', async () => {
+      const fs = await import('fs')
+      const osM = await import('os')
+      const pathM = await import('path')
+      const tmpDir = fs.mkdtempSync(pathM.join(osM.tmpdir(), 'coord-tel-'))
+
+      coord.register(tmpDir, 100, {
+        nice: 10, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        totalWeight: 50, categoryBudgets: {}
+      })
+      coord.persistTelemetry(tmpDir)
+
+      const file = pathM.join(tmpDir, '.claude', 'telemetry', 'coordination-metrics.json')
+      expect(fs.existsSync(file)).toBe(true)
+      const data = JSON.parse(fs.readFileSync(file, 'utf8'))
+      expect(data).toHaveLength(1)
+      expect(data[0].instances).toBe(1)
+      expect(data[0].eventsLogged).toBeGreaterThan(0)
+      expect(fs.existsSync(file + '.tmp')).toBe(false)
+    })
+
+    it('skips when no events or conflicts exist', () => {
+      const fresh = new CoordinationProtocol()
+      fresh.persistTelemetry('/nonexistent')
+    })
+  })
+
+  describe('cleanup', () => {
+    it('persists telemetry and unregisters', async () => {
+      const fs = await import('fs')
+      const osM = await import('os')
+      const pathM = await import('path')
+      const tmpDir = fs.mkdtempSync(pathM.join(osM.tmpdir(), 'coord-clean-'))
+
+      coord.register(tmpDir, 100, {
+        nice: 10, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        totalWeight: 50, categoryBudgets: {}
+      })
+      coord.acquireLock(tmpDir, 'gpu:0')
+      expect(coord.instances.has(tmpDir)).toBe(true)
+      expect(coord.locks.has('gpu:0')).toBe(true)
+
+      coord.cleanup(tmpDir)
+      expect(coord.instances.has(tmpDir)).toBe(false)
+      expect(coord.locks.has('gpu:0')).toBe(false)
+
+      const file = pathM.join(tmpDir, '.claude', 'telemetry', 'coordination-metrics.json')
+      expect(fs.existsSync(file)).toBe(true)
+    })
+  })
+
   describe('full lifecycle flow', () => {
     it('register → lock → conflict → preempt → unregister', () => {
       const r1 = coord.register('/proj-a', 100, {

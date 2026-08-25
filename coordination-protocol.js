@@ -28,6 +28,8 @@
 // and conflict detection — beyond standard file locks or process signals.
 
 const os = require('os')
+const fs = require('fs')
+const path = require('path')
 
 class CoordinationProtocol {
   constructor() {
@@ -295,6 +297,35 @@ class CoordinationProtocol {
 
   getInstanceCount() {
     return this.instances.size
+  }
+
+  persistTelemetry(dir) {
+    if (this.events.length === 0 && this.conflictLog.length === 0) return
+
+    try {
+      const telDir = path.join(dir, '.claude', 'telemetry')
+      fs.mkdirSync(telDir, { recursive: true })
+      const file = path.join(telDir, 'coordination-metrics.json')
+      let hist = []
+      try { hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
+      hist.push({
+        timestamp:      new Date().toISOString(),
+        instances:      this.instances.size,
+        locks:          this.locks.size,
+        eventsLogged:   this.events.length,
+        conflictsTotal: this.conflictLog.length,
+        recentEvents:   this.events.slice(-10)
+      })
+      if (hist.length > 300) hist.splice(0, hist.length - 300)
+      const tmp = file + '.tmp'
+      fs.writeFileSync(tmp, JSON.stringify(hist))
+      fs.renameSync(tmp, file)
+    } catch {}
+  }
+
+  cleanup(dir) {
+    this.persistTelemetry(dir)
+    this.unregister(dir)
   }
 }
 

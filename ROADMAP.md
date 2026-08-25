@@ -59,3 +59,4 @@
 - [x] **I-35** Input validation in coordination-protocol register() — null guard + default values for missing allocation fields (126 total).
 - [x] **I-36** Track filesAdded/filesRemoved in context-protocol metrics — complete the delta metrics with add/remove counts (127 total).
 - [x] **I-37** Resource-scheduler efficiency + telemetry tests — efficiency edge cases, getMetrics, getAllAllocations, persistTelemetry atomic write (136 total).
+- [x] **I-38** Coordination-protocol telemetry persistence + cleanup — add persistTelemetry and cleanup methods with atomic writes, matching resource-scheduler pattern (139 total).
