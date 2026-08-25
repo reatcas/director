@@ -148,4 +148,36 @@ describe('ResourceScheduler', () => {
       expect(total).toBeCloseTo(1.0, 5)
     })
   })
+
+  describe('applyToProcess', () => {
+    it('rejects non-integer pid', () => {
+      expect(scheduler.applyToProcess({ pid: 'abc' }, { nice: 5 })).toBe(false)
+    })
+
+    it('rejects zero or negative pid', () => {
+      expect(scheduler.applyToProcess({ pid: 0 }, { nice: 5 })).toBe(false)
+      expect(scheduler.applyToProcess({ pid: -1 }, { nice: 5 })).toBe(false)
+    })
+
+    it('rejects non-integer nice value', () => {
+      expect(scheduler.applyToProcess({ pid: 1234 }, { nice: 'bad' })).toBe(false)
+    })
+
+    it('rejects null/undefined child', () => {
+      expect(scheduler.applyToProcess(null, { nice: 5 })).toBe(false)
+      expect(scheduler.applyToProcess(undefined, { nice: 5 })).toBe(false)
+    })
+  })
+
+  describe('cleanup', () => {
+    it('clears all maps for a directory', () => {
+      const alloc = scheduler.computeAllocation('/cleanup-test', { product: 50 })
+      expect(scheduler.allocations.has('/cleanup-test')).toBe(true)
+      scheduler.cleanup('/cleanup-test')
+      expect(scheduler.allocations.has('/cleanup-test')).toBe(false)
+      expect(scheduler.baselines.has('/cleanup-test')).toBe(false)
+      expect(scheduler.samples.has('/cleanup-test')).toBe(false)
+      expect(scheduler.efficiency.has('/cleanup-test')).toBe(false)
+    })
+  })
 })

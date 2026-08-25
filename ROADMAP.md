@@ -36,3 +36,9 @@
 - [x] **I-15** XSS + atomic write invariant tests — 7 XSS verification + 2 atomic write protocol tests (97 total).
 - [x] **I-16** Focus-visible keyboard navigation styles — global outline for buttons, inputs, selects.
 - [x] **I-17** Coordination protocol comprehensive tests — priority, status, rebalance, event log cap (103 total).
+- [x] **I-18** PID + nice integer validation in applyToProcess — prevent shell injection from non-integer pid/nice values.
+- [x] **I-19** Clean up _mtimes in context-protocol cleanup() — prevent memory leak on long-running sessions.
+- [x] **I-20** Hoist require('os') in coordination-protocol — remove redundant module lookup from O(n²) detectConflicts loop.
+- [x] **I-21** Equal-priority lock contention test + cleanup coverage — 105 total tests.
+- [x] **I-22** PID validation in sampleProcess + live cpuCount — prevent stale CPU count and shell injection in metrics sampling.
+- [x] **I-23** applyToProcess guard tests + cleanup coverage — 110 total tests.

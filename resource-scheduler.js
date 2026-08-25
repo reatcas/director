@@ -171,6 +171,7 @@ class ResourceScheduler {
   sampleProcess(dir) {
     const baseline = this.baselines.get(dir)
     if (!baseline) return null
+    if (!Number.isInteger(baseline.pid) || baseline.pid <= 0) return null
 
     const allocation = this.allocations.get(dir)
     if (!allocation) return null
@@ -204,7 +205,8 @@ class ResourceScheduler {
     const rssMB   = rssKB / 1024
     const elapsed = (Date.now() - baseline.startTime) / 1000
     const memUtil  = allocation.memBudgetMB > 0 ? rssMB / allocation.memBudgetMB : 0
-    const cpuNorm  = allocation.system.cpuCount > 0 ? cpuPct / (allocation.system.cpuCount * 100) : 0
+    const cpuCount = os.cpus().length || 1
+    const cpuNorm  = cpuPct / (cpuCount * 100)
 
     const sample = {
       timestamp: new Date().toISOString(),
