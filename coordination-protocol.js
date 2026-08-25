@@ -110,6 +110,7 @@ class CoordinationProtocol {
   // Resources are abstract identifiers (e.g., 'gpu:0', 'high_memory',
   // 'network_bandwidth'). The protocol manages contention.
   acquireLock(dir, resource) {
+    if (!resource || typeof resource !== 'string') return { acquired: false, reason: 'invalid_resource' }
     const requester = this.instances.get(dir)
     if (!requester) return { acquired: false, reason: 'not_registered' }
 
@@ -173,6 +174,7 @@ class CoordinationProtocol {
   }
 
   releaseLock(dir, resource) {
+    if (!resource || typeof resource !== 'string') return false
     const lock = this.locks.get(resource)
     if (lock && lock.holder === dir) {
       this.locks.delete(resource)

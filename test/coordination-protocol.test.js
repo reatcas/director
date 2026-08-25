@@ -197,6 +197,17 @@ describe('CoordinationProtocol', () => {
       expect(result.acquired).toBe(false)
       expect(result.reason).toBe('not_registered')
     })
+
+    it('rejects empty resource string', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      expect(coord.acquireLock('/a', '').reason).toBe('invalid_resource')
+      expect(coord.acquireLock('/a', null).reason).toBe('invalid_resource')
+      expect(coord.acquireLock('/a', 123).reason).toBe('invalid_resource')
+    })
   })
 
   describe('releaseLock', () => {
@@ -213,6 +224,12 @@ describe('CoordinationProtocol', () => {
 
     it('returns false for non-holder', () => {
       expect(coord.releaseLock('/nobody', 'gpu:0')).toBe(false)
+    })
+
+    it('rejects non-string resource', () => {
+      expect(coord.releaseLock('/a', '')).toBe(false)
+      expect(coord.releaseLock('/a', null)).toBe(false)
+      expect(coord.releaseLock('/a', 42)).toBe(false)
     })
   })
 

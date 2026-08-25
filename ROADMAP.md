@@ -61,3 +61,4 @@
 - [x] **I-37** Resource-scheduler efficiency + telemetry tests — efficiency edge cases, getMetrics, getAllAllocations, persistTelemetry atomic write (136 total).
 - [x] **I-38** Coordination-protocol telemetry persistence + cleanup — add persistTelemetry and cleanup methods with atomic writes, matching resource-scheduler pattern (139 total).
 - [x] **I-39** Cache detectConflicts in coordination-protocol — avoid O(n²) recomputation on every getStatus call, invalidate on register/unregister (141 total).
+- [x] **I-40** Validate resource parameter in acquireLock/releaseLock — reject empty, null, and non-string resource identifiers (143 total).
