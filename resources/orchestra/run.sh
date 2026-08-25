@@ -2,7 +2,7 @@
 # Copyright (c) 2026 René Antonio Casaña Amaya. All rights reserved.
 # Licensed under the AGPL-3.0 License. See LICENSE in repository root.
 # Orchestra v3 — Token Economy Edition
-set -u
+set -uo pipefail
 cd "$(dirname "$0")"
 
 PROMPT_FILE=".claude/commands/loop.md"
@@ -36,6 +36,7 @@ trap cleanup SIGTERM SIGINT
 BACKOFF_STEPS=(30 60 120 300 600 900)
 BACKOFF_IDX=0
 HALLUCINATION_STREAK=0
+BLOCKED_STREAK=0
 MAX_HALLUCINATION_STREAK=5
 IMPROVEMENT_STREAK=0
 MAX_IMPROVEMENT_STREAK=10
@@ -186,6 +187,7 @@ for raw in sys.stdin:
           printf '%s\n' "$line" >> "$ITER_LOG"
           printf '%s\n' "$line" >> "$MASTER_LOG"
         done
+    EXIT=${PIPESTATUS[0]}
   else
     "${CLAUDE_CMD[@]}" "${CLAUDE_ARGS[@]}" </dev/null 2>&1 \
       | while IFS= read -r line; do
@@ -193,8 +195,8 @@ for raw in sys.stdin:
           printf '%s\n' "$line" >> "$ITER_LOG"
           printf '%s\n' "$line" >> "$MASTER_LOG"
         done
+    EXIT=${PIPESTATUS[0]}
   fi
-  EXIT=${PIPESTATUS[0]}
 
   # ── Anti-Lazy Check (all agents) ────────────────────────────────────────
   END_COMMIT=$(git log -1 --format=%H 2>/dev/null || echo "none")
@@ -205,17 +207,15 @@ for raw in sys.stdin:
       grep -qE 'CICLO BLOQUEADO|BLOCKED:' "$ITER_LOG" && LEGIT_BLOCK=true
     fi
     if [ "$LEGIT_BLOCK" = true ]; then
-      # Agent reported blocked but should enter improvement mode on next iteration
-      # Only count as hallucination if it keeps reporting blocked without trying improvements
-      HALLUCINATION_STREAK=$((HALLUCINATION_STREAK + 1))
-      stamp "BLOCKED-RETRY: $AI_AGENT reported BLOCKED ($HALLUCINATION_STREAK/$MAX_HALLUCINATION_STREAK). Next iteration should enter IMPROVEMENT MODE."
+      # Agent honestly reported BLOCKED — don't count against hallucination streak
+      BLOCKED_STREAK=$((BLOCKED_STREAK + 1))
+      stamp "BLOCKED-RETRY: $AI_AGENT reported BLOCKED ($BLOCKED_STREAK/$MAX_HALLUCINATION_STREAK). Next iteration should enter IMPROVEMENT MODE."
       EXIT=1
-      if [ "$HALLUCINATION_STREAK" -ge "$MAX_HALLUCINATION_STREAK" ]; then
+      if [ "$BLOCKED_STREAK" -ge "$MAX_HALLUCINATION_STREAK" ]; then
         stamp "BLOCKED-LIMIT: $AI_AGENT could not find work after $MAX_HALLUCINATION_STREAK attempts. Stopping."
         touch .claude/ALTO
         break
       fi
-      # Short backoff for blocked — give it one more chance with improvement mode
       sleep 10
       continue
     fi
@@ -230,6 +230,7 @@ for raw in sys.stdin:
     fi
   else
     HALLUCINATION_STREAK=0
+    BLOCKED_STREAK=0
   fi
 
   # ── Iteration summary ──────────────────────────────────────────────────
@@ -292,9 +293,9 @@ for raw in sys.stdin:
     fi
 
     # ── Improvement mode streak detection ──────────────────────────────────
-    # If ZERO product commits in this iteration but product weight > 0, count as improvement-only cycle
+    # Only count as improvement-only if there WERE real commits but none were product
     PRODUCT_W_CHECK=$(json_val "focus.product" "0" 2>/dev/null || echo 0)
-    if [ "${PRODUCT_COMMITS:-0}" -eq 0 ] && [ "$PRODUCT_W_CHECK" -gt 0 ]; then
+    if [ "${REAL_COMMITS:-0}" -gt 0 ] && [ "${PRODUCT_COMMITS:-0}" -eq 0 ] && [ "$PRODUCT_W_CHECK" -gt 0 ]; then
       IMPROVEMENT_STREAK=$((IMPROVEMENT_STREAK + 1))
       if [ "$IMPROVEMENT_STREAK" -ge "$MAX_IMPROVEMENT_STREAK" ]; then
         stamp "IMPROVEMENT-LIMIT: $IMPROVEMENT_STREAK consecutive cycles with ZERO product work (budget=$PRODUCT_W_CHECK%). Injecting PRODUCT_REQUIRED directive."
@@ -316,7 +317,7 @@ for raw in sys.stdin:
   SMART_MIX=$(json_val smartMix false)
   if [ "$SMART_MIX" = "true" ] && [ $((ITER % 3)) -eq 0 ] && [ "$ITER" -gt 0 ]; then
     python3 -u - "$CFG" <<'SMARTMIX_PY'
-import json, subprocess, sys, re
+import json, subprocess, sys, re, os
 
 cfg_path = sys.argv[1]
 cfg = json.load(open(cfg_path))
@@ -375,10 +376,12 @@ for line in lines:
 
 total = max(sum(counts.values()), 1)
 
-# Calculate deviations and corrections
-STEP = 8          # max adjustment per check (v1 was 3 — too weak)
-DEAD_ZONE = 3     # tolerance in percentage points (v1 was 8 — too wide)
+# Calculate deviations and corrections — Smart Mix v3 (damped)
+STEP = 6          # max adjustment per check (v2 was 8 — caused oscillation)
+DEAD_ZONE = 5     # tolerance in percentage points (v2 was 3 — too tight)
 FREEZE_MULT = 2.0 # freeze category if actual > target × this multiplier
+SMOOTHING = 0.3   # exponential smoothing: 30% new signal, 70% current weight
+SESSION_CAP = 15  # max total drift from original per session (prevents runaway)
 
 adjustments = {}
 frozen = []
@@ -390,7 +393,6 @@ for cat in focus:
 
     if target == 0:
         if actual > 5:
-            # Category should be zero but has work — shrink it hard
             adjustments[cat] = -STEP
         continue
 
@@ -399,34 +401,35 @@ for cat in focus:
     # FREEZE: if category is >2× its budget, block it entirely
     if target > 0 and actual > target * FREEZE_MULT and actual > 10:
         frozen.append(f"{cat}({actual}%>{target}%)")
-        adjustments[cat] = -STEP  # aggressive shrink
+        adjustments[cat] = -STEP
         continue
 
     # STARVED: if category has 0% actual but >0% target
     if actual == 0 and target >= 5:
         starved.append(f"{cat}(0%<{target}%)")
-        adjustments[cat] = STEP  # aggressive boost
+        adjustments[cat] = STEP
         continue
 
     if abs(deviation) <= DEAD_ZONE:
         adjustments[cat] = 0
     elif deviation > 0:
-        # Over-represented — shrink proportionally
         adjustments[cat] = max(-STEP, -deviation // 2)
     else:
-        # Under-represented — boost proportionally
         adjustments[cat] = min(STEP, (-deviation) // 2)
 
-# Apply adjustments with floor enforcement
-# Floors = configured budget (not a hardcoded 5% like v1)
+# Apply adjustments with damping and floor enforcement
 new_focus = {}
 for cat in focus:
     base = original_focus[cat]
     adj = adjustments.get(cat, 0)
-    new_val = focus[cat] + adj
-    # Floor = half of original budget (never let a category go below half its intended weight)
+    # Exponential smoothing: blend suggested adjustment with zero (current weight)
+    damped_adj = round(adj * SMOOTHING)
+    new_val = focus[cat] + damped_adj
+    # Session cap: don't let any category drift more than SESSION_CAP from its original
+    new_val = max(base - SESSION_CAP, min(base + SESSION_CAP, new_val))
+    # Floor = half of original budget
     floor = max(base // 2, 1) if base > 0 else 0
-    new_val = max(floor, min(50, new_val))  # cap at 50%
+    new_val = max(floor, min(50, new_val))
     new_focus[cat] = new_val
 
 # Normalize to 100%
@@ -454,12 +457,14 @@ if starved:
 
 if changed:
     cfg["focus"] = new_focus
-    json.dump(cfg, open(cfg_path, "w"), indent=2)
+    tmp_path = cfg_path + ".tmp"
+    json.dump(cfg, open(tmp_path, "w"), indent=2)
+    os.replace(tmp_path, cfg_path)
     adj_parts = [f"{k}:{'+' if v > 0 else ''}{v}" for k, v in changed.items() if v != 0]
     parts.append(f"adj:[{','.join(adj_parts)}]")
-    print(f"SMART-MIX v2: {' '.join(parts)}")
+    print(f"SMART-MIX v3: {' '.join(parts)}")
 else:
-    print("SMART-MIX v2: balanced — no adjustment needed")
+    print("SMART-MIX v3: balanced — no adjustment needed")
 SMARTMIX_PY
     SMART_RESULT=$?
     if [ "$SMART_RESULT" -eq 0 ]; then

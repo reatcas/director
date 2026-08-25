@@ -50,9 +50,16 @@ function startTailing(dir, logFile) {
           staleCount++
           // After 15 quiet polls (~12s) with no live process → orphan detected
           if (staleCount >= 15) {
-            // Double-check: if PID file still exists, process is probably just thinking
+            // Double-check: verify PID in file is actually alive, not just a stale file
             const pidFile = path.join(dir, '.claude/ORCHESTRA_PID')
+            let pidStillAlive = false
             if (fs.existsSync(pidFile)) {
+              try {
+                const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim())
+                pidStillAlive = pid > 0 && pidAlive(pid)
+              } catch {}
+            }
+            if (pidStillAlive) {
               staleCount = 0
             } else {
               stopTailing(dir)
@@ -115,7 +122,9 @@ function stopGitWatcher(dir) {
 const readJSON  = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return fb } }
 const writeJSON = (p, o) => {
   fs.mkdirSync(path.dirname(p), { recursive: true });
-  fs.writeFileSync(p, JSON.stringify(o, null, 2))
+  const tmp = p + '.tmp'
+  fs.writeFileSync(tmp, JSON.stringify(o, null, 2))
+  fs.renameSync(tmp, p)
 }
 
 // ─── PID helpers ──────────────────────────────────────────────────────────────

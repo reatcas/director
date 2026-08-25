@@ -398,18 +398,25 @@ async function refresh() {
 
 function proj() { return projects.find(p => p.path === current) }
 
-function saveMixerState() {
+async function saveMixerState() {
   if (!current) return
   const inputs = document.querySelectorAll('#mixerStrips input[type="range"]')
   if (!inputs.length) return
   const focus = {}
   inputs.forEach(i => { focus[i.dataset.k] = +i.value })
-  window.director.mixerWrite(current, focus)
+  await window.director.mixerWrite(current, focus)
+}
+
+let _mixerSaveTimer = null
+function debouncedMixerSave() {
+  clearTimeout(_mixerSaveTimer)
+  _mixerSaveTimer = setTimeout(() => saveMixerState(), 500)
 }
 
 async function open(dir) {
   if (current) {
-    saveMixerState()
+    clearTimeout(_mixerSaveTimer)
+    await saveMixerState()
   }
   current = dir
   await refresh()
@@ -737,11 +744,13 @@ async function loadMixer() {
       const newVal = parseInt(inp.value, 10)
       rebalanceMixer(k, newVal)
       updateSmartAuroraColors()
+      debouncedMixerSave()
     })
     inp.addEventListener('change', () => {
       const newVal = parseInt(inp.value, 10)
       rebalanceMixer(k, newVal)
       updateSmartAuroraColors()
+      debouncedMixerSave()
     })
   }
   // Update aurora colors from the freshly built strips
@@ -1325,6 +1334,7 @@ function addNormalLine(text) {
 function trimLog() {
   const logEl = $('#log')
   if (logEl && logEl.childElementCount > 300) logEl.removeChild(logEl.firstChild)
+  if (rawLogBuffer.length > 2000) rawLogBuffer.splice(0, rawLogBuffer.length - 2000)
 }
 
 // Copy full log
