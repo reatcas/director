@@ -332,7 +332,9 @@ class ContextProtocol {
       try { hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
       hist.push(metrics)
       if (hist.length > 300) hist.splice(0, hist.length - 300)
-      fs.writeFileSync(file, JSON.stringify(hist, null, 2))
+      const tmp = file + '.tmp'
+      fs.writeFileSync(tmp, JSON.stringify(hist, null, 2))
+      fs.renameSync(tmp, file)
     } catch {}
   }
 

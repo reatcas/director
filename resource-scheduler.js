@@ -292,7 +292,9 @@ class ResourceScheduler {
       try { hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
       hist.push(eff)
       if (hist.length > 500) hist.splice(0, hist.length - 500)
-      fs.writeFileSync(file, JSON.stringify(hist, null, 2))
+      const tmp = file + '.tmp'
+      fs.writeFileSync(tmp, JSON.stringify(hist, null, 2))
+      fs.renameSync(tmp, file)
     } catch {}
   }
 
