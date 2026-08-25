@@ -85,37 +85,45 @@ function stopTailing(dir) {
 
 // ─── Git commit watcher (real-time progress when stdout is buffered) ─────────
 const gitWatchers = new Map()
+const gitLastHash = new Map()
+
+function pollGitCommits(dir) {
+  const lastHash = gitLastHash.get(dir) || ''
+  try {
+    const currentHash = require('child_process').execSync('git log -1 --format=%H', { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
+    if (currentHash && currentHash !== lastHash) {
+      const newCommits = require('child_process').execSync(
+        `git log --oneline ${lastHash ? lastHash + '..' : '-1'}`,
+        { cwd: dir, encoding: 'utf8', timeout: 5000 }
+      ).trim().split('\n').filter(Boolean)
+      gitLastHash.set(dir, currentHash)
+      for (const c of newCommits) {
+        const line = `▸ ✔ [commit] ${c}\n`
+        if (win && !win.isDestroyed()) {
+          win.webContents.send('orchestra:line', { dir, line })
+        }
+        persistLifecycleEvent(dir, 'commit', 'COMMIT', c)
+      }
+    }
+  } catch {}
+}
+
 function startGitWatcher(dir) {
   if (gitWatchers.has(dir)) return
-  let lastHash = ''
-  try { lastHash = require('child_process').execSync('git log -1 --format=%H', { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim() } catch {}
+  try {
+    const hash = require('child_process').execSync('git log -1 --format=%H', { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
+    gitLastHash.set(dir, hash)
+  } catch {}
   const iv = setInterval(() => {
     if (!isRunning(dir)) return
-    try {
-      const currentHash = require('child_process').execSync('git log -1 --format=%H', { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
-      if (currentHash && currentHash !== lastHash) {
-        // New commit detected — get details
-        const newCommits = require('child_process').execSync(
-          `git log --oneline ${lastHash ? lastHash + '..' : '-1'}`,
-          { cwd: dir, encoding: 'utf8', timeout: 5000 }
-        ).trim().split('\n').filter(Boolean)
-        lastHash = currentHash
-        for (const c of newCommits) {
-          const line = `▸ ✔ [commit] ${c}\n`
-          if (win && !win.isDestroyed()) {
-            win.webContents.send('orchestra:line', { dir, line })
-          }
-          // Persist to lifecycle so commits survive app restarts
-          persistLifecycleEvent(dir, 'commit', 'COMMIT', c)
-        }
-      }
-    } catch {}
-  }, 8000) // Check every 8 seconds
+    pollGitCommits(dir)
+  }, 8000)
   gitWatchers.set(dir, iv)
 }
 function stopGitWatcher(dir) {
   const iv = gitWatchers.get(dir)
   if (iv) { clearInterval(iv); gitWatchers.delete(dir) }
+  gitLastHash.delete(dir)
 }
 
 // ─── JSON helpers ─────────────────────────────────────────────────────────────
@@ -596,6 +604,7 @@ function playOrchestra(dir, agent = 'claude') {
   child.on('exit', code => {
     snapshotMixer(dir, 'exit')
     procs.delete(dir)
+    pollGitCommits(dir)
     stopTailing(dir)
     stopMetricsSampling(dir)
 
@@ -644,6 +653,8 @@ function playOrchestra(dir, agent = 'claude') {
             persistLifecycleEvent(dir, 'directive', 'DIRECTOR', `Siguiente item indicado: ${nextItem}`)
             const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
             let content = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+            const nextIdx = content.indexOf('## NEXT ITEM')
+            if (nextIdx !== -1) content = content.substring(0, nextIdx).trimEnd()
             content += `\n\n## NEXT ITEM\nEl proceso ha parado. Tu siguiente objetivo es:\n${nextItem}\n`
             fs.writeFileSync(directivePath, content)
           }
@@ -826,7 +837,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   const state = aiState()
   if (!agent || !state[agent]) return { ok: false, err: 'Select an AI developer first' }
   state.selected = agent
-  state[agent].credits -= 1
+  state[agent].credits = Math.max(0, state[agent].credits - 1)
   writeJSON(aiStateFile(), state)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
   return playOrchestra(dir, agent)
