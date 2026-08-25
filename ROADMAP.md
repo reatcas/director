@@ -47,3 +47,4 @@
 - [x] **I-26** Multi-lock coordination tests — unregister with multiple locks, cross-instance preservation, 3-instance priority ranking (114 total).
 - [x] **I-27** Eliminate double token estimation in computeDelta — derive file tokens from section sums instead of re-scanning entire content.
 - [x] **I-28** Priority-weighted resource shares in _rebalance — higher-priority orchestras get proportionally larger share instead of equal 1/n split.
+- [x] **I-29** Preload.js security invariant tests — verify contextBridge, no send/sendSync, no require/process/fs exposure, event wrapper isolation (118 total).

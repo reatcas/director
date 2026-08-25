@@ -157,3 +157,31 @@ describe('protocol module atomic writes', () => {
     expect(rs).toContain('renameSync')
   })
 })
+
+describe('preload.js security invariants', () => {
+  const preload = fs.readFileSync(path.join(ROOT, 'preload.js'), 'utf8')
+
+  it('uses contextBridge.exposeInMainWorld', () => {
+    expect(preload).toContain('contextBridge.exposeInMainWorld')
+  })
+
+  it('only uses ipcRenderer.invoke for request-response', () => {
+    expect(preload).not.toContain('ipcRenderer.send(')
+    expect(preload).not.toContain('ipcRenderer.sendSync(')
+    expect(preload).not.toContain('ipcRenderer.sendTo(')
+  })
+
+  it('does not expose require, process, or fs to renderer', () => {
+    const exposed = preload.split('exposeInMainWorld')[1] || ''
+    expect(exposed).not.toContain('require(')
+    expect(exposed).not.toContain('process.')
+    expect(exposed).not.toMatch(/\bfs\b/)
+  })
+
+  it('wraps event listeners to strip IPC event object', () => {
+    const listeners = preload.match(/ipcRenderer\.on\(/g) || []
+    const wrappers = preload.match(/\(_e, d\) => cb\(d\)/g) || []
+    expect(listeners.length).toBeGreaterThan(0)
+    expect(wrappers.length).toBe(listeners.length)
+  })
+})
