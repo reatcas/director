@@ -55,3 +55,4 @@
 - [x] **I-31** ARIA labels + lang="es" — add aria-label to transport controls, modals, filters; fix html lang to Spanish primary.
 - [x] **I-32** Coordination protocol integration tests — conflict log cap, weighted shares sum-to-1, full lifecycle flow (122 total).
 - [x] **I-33** Smart Mix edge case tests — empty commits, all-same-category, neglected category boost (125 total).
+- [x] **I-34** Compact JSON for telemetry writes — remove pretty-printing from protocol module telemetry to reduce I/O.
