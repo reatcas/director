@@ -183,3 +183,62 @@ describe('lifecycle and protocol invariants', () => {
     expect(mainJs).toMatch(/readJSON\s*=.*try.*catch/s)
   })
 })
+
+describe('F-17: mixer history IPC', () => {
+  it('defines mixer:history handler', () => {
+    expect(mainJs).toContain("'mixer:history'")
+  })
+
+  it('reads mixer-history.json via readJSON', () => {
+    const block = mainJs.split("'mixer:history'")[1]?.split('ipcMain')[0] || ''
+    expect(block).toContain('mixer-history.json')
+    expect(block).toContain('readJSON')
+  })
+
+  it('validates dir parameter', () => {
+    const block = mainJs.split("'mixer:history'")[1]?.split('ipcMain')[0] || ''
+    expect(block).toContain('if (!dir)')
+  })
+
+  it('defaults to 50 entries when limit not specified', () => {
+    const block = mainJs.split("'mixer:history'")[1]?.split('ipcMain')[0] || ''
+    expect(block).toContain('50')
+    expect(block).toContain('.slice(-n)')
+  })
+})
+
+describe('F-18: session summary IPC', () => {
+  it('defines metrics:session-summary handler', () => {
+    expect(mainJs).toContain("'metrics:session-summary'")
+  })
+
+  it('reads projects from store', () => {
+    const block = mainJs.split("'metrics:session-summary'")[1]?.split('ipcMain')[0] || ''
+    expect(block).toContain('readJSON(store()')
+  })
+
+  it('tracks active and idle counts', () => {
+    const block = mainJs.split("'metrics:session-summary'")[1]?.split('ipcMain')[0] || ''
+    expect(block).toContain('isRunning(p.path)')
+    expect(block).toContain('active++')
+    expect(block).toContain('idle++')
+  })
+
+  it('aggregates totalTokens from context protocol', () => {
+    const block = mainJs.split("'metrics:session-summary'")[1]?.split('ipcMain')[0] || ''
+    expect(block).toContain('totalTokensProcessed')
+  })
+
+  it('finds worst compliance across projects', () => {
+    const block = mainJs.split("'metrics:session-summary'")[1]?.split('ipcMain')[0] || ''
+    expect(block).toContain('worstCompliance')
+    expect(block).toContain('last.score < worstCompliance.score')
+  })
+
+  it('returns structured summary object', () => {
+    const block = mainJs.split("'metrics:session-summary'")[1]?.split('ipcMain')[0] || ''
+    expect(block).toContain('active, idle, total:')
+    expect(block).toContain('totalTokens')
+    expect(block).toContain('worstCompliance')
+  })
+})
