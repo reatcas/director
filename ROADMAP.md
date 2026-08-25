@@ -42,3 +42,5 @@
 - [x] **I-21** Equal-priority lock contention test + cleanup coverage — 105 total tests.
 - [x] **I-22** PID validation in sampleProcess + live cpuCount — prevent stale CPU count and shell injection in metrics sampling.
 - [x] **I-23** applyToProcess guard tests + cleanup coverage — 110 total tests.
+- [x] **I-24** DECISIONS.md mapped to architecture category in context-protocol — ensures cross-cutting decisions retain context when backend weight is 0%.
+- [x] **I-25** Architecture floor retention test — DECISIONS.md always gets at least average-weight retention (111 total).

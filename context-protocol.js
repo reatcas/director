@@ -35,7 +35,7 @@ const STATE_FILES = [
 // Used for weight-based retention decisions.
 const FILE_CATEGORY_MAP = {
   'PLAN.md':              'product',
-  'DECISIONS.md':         'backend',
+  'DECISIONS.md':         'architecture',
   'PENDING.md':           'quality_tests',
   'AUDIT_LOG.md':         'security',
   'ENTITY_BINDINGS.md':   'data_db',
@@ -285,7 +285,9 @@ class ContextProtocol {
 
     for (const [file, data] of Object.entries(snapshot)) {
       const category = FILE_CATEGORY_MAP[file] || 'product'
-      const weight   = fw[category] || 0
+      const weight   = category === 'architecture'
+        ? Math.max(fw[category] || 0, totalWeight / Object.keys(fw).length)
+        : (fw[category] || 0)
       const share    = weight / totalWeight
 
       // Retention factor: S-curve centered at share=0.25

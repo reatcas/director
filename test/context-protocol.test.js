@@ -160,6 +160,13 @@ describe('ContextProtocol', () => {
       expect(auditRetention).toBeLessThan(50)
     })
 
+    it('DECISIONS.md gets architecture floor retention even with 0 architecture weight', () => {
+      fs.writeFileSync(path.join(tmpDir, 'DECISIONS.md'), '# Decisions\n' + 'pattern '.repeat(100))
+      const result = proto.computeDelta(tmpDir, { product: 80, security: 20 })
+      const decisionsRetention = result.retentionPlan.summary['DECISIONS.md']?.retentionPct
+      expect(decisionsRetention).toBeGreaterThan(30)
+    })
+
     it('returns empty plan for zero total weight', () => {
       fs.writeFileSync(path.join(tmpDir, 'PLAN.md'), '# Plan\ncontent')
       const result = proto.computeDelta(tmpDir, {})
