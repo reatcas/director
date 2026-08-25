@@ -186,6 +186,7 @@ class ContextProtocol {
 
       if (!previous[file]) {
         fileLevelDelta.added.push(file)
+        sectionsTotal += sections.length
       } else if (previous[file].hash !== fileHash) {
         fileLevelDelta.changed.push(file)
         changedTokens += fileTokens

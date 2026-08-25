@@ -97,6 +97,12 @@ describe('ContextProtocol', () => {
       expect(result.metrics.totalTokens).toBeGreaterThan(0)
     })
 
+    it('counts sections of newly added files in sectionsTotal', () => {
+      fs.writeFileSync(path.join(tmpDir, 'PLAN.md'), '# A\nfoo\n## B\nbar\n## C\nbaz')
+      const result = proto.computeDelta(tmpDir, { product: 50 })
+      expect(result.metrics.sectionsTotal).toBe(3)
+    })
+
     it('detects unchanged files on second scan', () => {
       fs.writeFileSync(path.join(tmpDir, 'PLAN.md'), '# Plan\nstatic')
       proto.computeDelta(tmpDir, { product: 50 })
