@@ -1,91 +1,106 @@
-# Director: Autonomous AI Agent Orchestrator
+# Director: Autonomous AI Orchestration Environment
 
 ![Director UI](thumbnail.png)
 
 **DISCLAIMER: THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. USE AT YOUR OWN RISK. THE AUTONOMOUS AGENT HAS DIRECT WRITE ACCESS TO YOUR LOCAL FILESYSTEM.**
 
-Welcome to **Director**, an Electron-based desktop application designed to orchestrate autonomous AI agents (Claude) across software engineering projects.
+**Director** is an Electron desktop app that orchestrates autonomous AI agents across software projects. It runs infinite development cycles where AI agents read your codebase, plan work from a roadmap, write code, run tests, commit, and repeat — continuously and without human intervention.
 
-Here, software development is not a series of isolated tasks, but a continuous, living symphony. You are the conductor, and the AI is your orchestra. As long as the music plays, the software evolves. Director manages this software development as a continuous execution loop. The user defines the parameters, and the AI autonomously iterates, tests, refactors, and builds code. 
+You define the priorities. The AI executes. As long as the orchestra plays, the software evolves.
 
-## System Components
+## Supported AI Agents
 
-### 🎼 Workspace Management (The Repertoire)
-Load repositories by clicking or dragging and dropping folders into the interface. The workspace displays the project name, initialization status, and current execution state. If a project lacks the necessary configuration, Director automatically installs a drop-in `v2 orchestra` dependency into the repository without altering existing settings.
+| Agent | Provider | Models |
+|-------|----------|--------|
+| **Claude** | Anthropic | Fable 5, Opus 5, Sonnet 5, Opus 4.6, Sonnet 4.6, Haiku 4.5 |
+| **Antigravity** | AGY | Gemini 3.1 Pro, Gemini 3.7 Flash, Claude 4.6 via AGY |
+| **Codex** | OpenAI | Codex |
+| **Aider** | Multi-provider | Claude Sonnet 4.6, GPT-4o, Gemini 2.5 Pro, DeepSeek Coder |
 
-### 🪄 Execution Control (The Baton and *Fine*)
-*   **Start:** Initiates the execution loop. The agent evaluates the codebase state, reads the roadmap, and begins generating code continuously.
-*   **Stop:** Interrupts the loop. The agent is forced to complete its current operation, execute a clean commit of the modifications, and terminate the process.
+## Key Features
 
-### 📜 Execution Logs (The Score)
-The system outputs a real-time stream of the agent's reasoning and execution steps. All events are appended to `orchestra.log` within the project directory for auditing and debugging purposes, ensuring that every note, every decision, and every downbeat is recorded.
+### Workspace Management
+Load repositories by clicking or dragging folders into the interface. Director automatically installs the orchestra protocol into any project that lacks it — no manual setup required.
 
-### 🎻 Algorithmic Focus Weights (The Mix / Atriles)
-The execution logic relies on 12 dynamic faders (values 0–100) that define the AI's operational priorities. The agent re-evaluates these weights at the start of every cycle.
-Parameters include:
-- **Product & Features**
-- **Backend Architecture**
-- **Frontend & UI**
-- **Business Logic**
-- **Cybersecurity**
-- **Quality & Tests**
-- **DevOps & Infrastructure**
-- **Performance**
-- **UX & Accessibility**
-- **Data & Databases**
-- **Documentation**
-- **Internationalization (i18n)**
+### Focus Mixer (Atriles)
+16 dynamic faders (0–100) define the AI's operational priorities. The agent re-evaluates weights at the start of every cycle:
 
-Adjust the weights to fit the current development phase (e.g., maximize Frontend for UI iterations, or maximize Cybersecurity for auditing phases). You mix the effort, and the orchestra follows.
+Product & Features, Backend, Frontend & UI, Business Logic, Security, Quality & Tests, DevOps, Performance, UX & Accessibility, Data & Databases, Documentation, i18n, Refactoring, Architecture, API Integrations, Error Handling.
 
-### 🧐 Session Analysis (The Critique)
-Upon stopping the execution, the analysis engine generates a comprehensive text summary detailing the commit history, roadmap progress, pending tasks, and the tail of the execution log. This output is formatted for direct review and planning of the subsequent execution cycle.
+Save custom mixes as presets, export/import mix libraries, and load from 5 built-in presets (Elite Balanced, Quality First, Ship Fast, Hardening, UX Polish).
+
+### Smart Mix
+A self-regulating algorithm that continuously adjusts the focus mixer based on actual commit patterns. Every 3 iterations it analyzes the last 50 git commits, detects over/under-represented categories, and nudges weights to keep development balanced. Categories that exceed 2x their budget are automatically frozen.
+
+### Anti-Slop Enforcement
+Harness-level detection and correction for autonomous agent misbehavior:
+- **Category repetition ban** — same category 3+ consecutive cycles triggers violation
+- **Module concentration ban** — 3+ commits to the same file/module per session blocked
+- **Commit mislabeling detection** — `feat()` for non-features (i18n, UUID checks) is flagged
+- **Mechanical busywork detection** — unbatched repetitive commits are logged
+- **Category budget cap** — categories exceeding 2x budget are frozen
+- **Test health gate** — failing tests block all other work until fixed
+- **Improvement mode cap** — max 10 consecutive improvement cycles before requiring human input
+- **Product starvation alert** — auto-injects product directive after sustained zero-product work
+
+### Anti-Hallucination System
+External verification of every claimed commit. The harness compares git HEAD before and after each session. Fake commit hashes, fabricated test results, or zero-commit sessions trigger a 5-strike breaker with exponential backoff.
+
+### Lifecycle History
+Persistent event timeline that survives app restarts, log clears, and git operations. Tracks commits, features, cycle closes, hot reloads, and auto-resumes with color-coded icons.
+
+### Hot Reload
+When Director's own files change, protocol updates are synced to running projects without killing the AI mid-work. The agent picks up changes at the next iteration start.
+
+### Session Analysis
+Stop an orchestra to generate a summary of commit history, roadmap progress, pending tasks, and execution logs — formatted for planning the next session.
 
 ## Getting Started
 
 ### Requirements
 - **Node.js** 18+
-- **macOS / Linux** (Requires bash environment support)
-- **Claude CLI** accessible in the system PATH with valid authentication.
+- **macOS / Linux** (bash environment required)
+- At least one AI CLI in PATH: `claude`, `agy`, `codex`, or `aider`
 
-### Installation & Placement
-
-Because Director manages multiple local repositories, it is recommended to place the `director` folder in a permanent and accessible location, such as `~/Development/` or `~/Applications/`.
+### Installation
 
 ```bash
-# Clone the repository into your preferred workspace
 cd ~/Development
 git clone https://github.com/reatcas/director.git
 cd director
-
-# Install dependencies
 npm install
 ```
 
-### Running from Source
-To start the application directly in development mode, run:
+### Run from Source
 ```bash
 npm start
 ```
 
-### Compiling to an Executable
-If you prefer to compile Director into a standalone desktop application (`.app` for Mac or an executable for Linux), you can use the included build scripts. The compiled application will be placed in the `dist/` directory.
-
-**For macOS:**
+### Compile to Desktop App
 ```bash
+# macOS
 npm run build:mac
-```
 
-**For Linux:**
-```bash
+# Linux
 npm run build:linux
 ```
 
-## Licensing
+Compiled output goes to `dist/`.
 
-**Director** and its embedded **Orchestra v2** framework are licensed under the **AGPL-3.0 License**.
+## Orchestra Protocol
 
-Software is meant to be free, and the music should be shared with the world. Feel free to fork, contribute, and orchestrate your own infinite masterpieces. See the [LICENSE](LICENSE) file for details.
+Director embeds a complete development protocol that gets installed into each project:
+
+- **CLAUDE.md** — Constitution with 29 rules covering product gates, anti-slop enforcement, token economy, and autonomy
+- **loop.md** — Per-session instruction set with boot sequence, execution flow, and compliance reporting
+- **run.sh** — Harness script managing the infinite loop, Smart Mix algorithm, anti-hallucination checks, and usage limit handling
+- **Skills** — Modular capabilities: verification-gate, browser-vision, db-vision, roadmap-sync, backlog-generator, cycle-audit, ip-protection
+
+## License
+
+**Director** and its embedded **Orchestra** framework are licensed under the **AGPL-3.0 License**.
+
+Software is meant to be free, and the music should be shared with the world. See the [LICENSE](LICENSE) file for details.
 
 ---
 
