@@ -178,8 +178,8 @@ class ContextProtocol {
       try { content = fs.readFileSync(fp, 'utf8') } catch { continue }
 
       const fileHash = this._hash(content)
-      const fileTokens = this._estimateTokens(content)
       const sections = this._splitSections(content)
+      const fileTokens = sections.reduce((s, sec) => s + sec.tokens, 0)
       totalTokens += fileTokens
 
       current[file] = { hash: fileHash, tokens: fileTokens, sections }

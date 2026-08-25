@@ -45,3 +45,4 @@
 - [x] **I-24** DECISIONS.md mapped to architecture category in context-protocol — ensures cross-cutting decisions retain context when backend weight is 0%.
 - [x] **I-25** Architecture floor retention test — DECISIONS.md always gets at least average-weight retention (111 total).
 - [x] **I-26** Multi-lock coordination tests — unregister with multiple locks, cross-instance preservation, 3-instance priority ranking (114 total).
+- [x] **I-27** Eliminate double token estimation in computeDelta — derive file tokens from section sums instead of re-scanning entire content.
