@@ -2239,7 +2239,16 @@ async function loadProcs() {
     return
   }
   if (countEl) countEl.textContent = `${procs.length} process${procs.length > 1 ? 'es' : ''}`
-  const myPid = window.director.systemProcs._myPid // not exposed, skip
+
+  const totalCpu = procs.reduce((s, p) => s + (parseFloat(p.cpu) || 0), 0)
+  const totalMem = procs.reduce((s, p) => s + (parseFloat(p.mem) || 0), 0)
+  const gaugeEl = document.createElement('div')
+  gaugeEl.className = 'proc-gauge'
+  const cpuColor = totalCpu > 80 ? '#e03030' : totalCpu > 40 ? '#ddba00' : '#40c840'
+  const memColor = totalMem > 50 ? '#e03030' : totalMem > 25 ? '#ddba00' : '#40c840'
+  gaugeEl.innerHTML = `<span class="pg-item">CPU <span class="pg-val" style="color:${cpuColor}">${totalCpu.toFixed(1)}%</span></span><span class="pg-item">MEM <span class="pg-val" style="color:${memColor}">${totalMem.toFixed(1)}%</span></span><span class="pg-item">${procs.length} proc${procs.length > 1 ? 's' : ''}</span>`
+  list.appendChild(gaugeEl)
+
   for (const p of procs) {
     const s = PROC_TYPE_STYLE[p.type] || PROC_TYPE_STYLE.claude
     const row = document.createElement('div')

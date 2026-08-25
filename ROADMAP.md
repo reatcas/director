@@ -17,8 +17,8 @@
 - [x] **F-12** Blueprint readiness indicator — visual progress gauge showing discovery completeness from `blueprintReadiness()` IPC. Renders in Blueprint tab header.
 - [x] **F-13** Resource allocation inspector — display memory budgets, token budgets, and process priority from `metricsAllocation()` IPC. New collapsible panel in metrics area.
 - [x] **F-14** Lifecycle timeline — render chronological event stream (play/exit/commit/usage_limit) from `lifecycleList()` IPC as compact vertical timeline in project view.
-- [ ] **F-15** System process gauge — display live Claude subprocess CPU% and RSS from `systemProcs()` IPC in a compact panel below metrics strip.
-- [ ] **F-16** ROADMAP staleness indicator — use `roadmapFreshness()` to show visual alert when ROADMAP.md is stale relative to latest commit.
+- [x] **F-15** System process gauge — display live Claude subprocess CPU% and RSS from `systemProcs()` IPC in a compact panel below metrics strip.
+- [x] **F-16** ROADMAP staleness indicator — use `roadmapFreshness()` to show visual alert when ROADMAP.md is stale relative to latest commit. (Already implemented in loadRoadmapFreshness.)
 
 ## Improvements
 

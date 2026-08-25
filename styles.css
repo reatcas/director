@@ -1916,6 +1916,19 @@ html.light .smart-mix-bar.active .smart-toggle { border-color: rgba(0,122,110,.3
   flex: 1;
   min-height: 0;
 }
+.proc-gauge {
+  display: flex;
+  gap: 16px;
+  padding: 4px 12px;
+  font: 700 8px var(--sans);
+  letter-spacing: 0.5px;
+  color: var(--dim);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: rgba(0,0,0,0.15);
+}
+.pg-item { white-space: nowrap }
+.pg-val { font: 10px var(--mono); font-weight: 400 }
+
 .proc-row {
   display: grid;
   grid-template-columns: 70px 50px 180px 1fr auto;
