@@ -1,13 +1,10 @@
-# Cycle 47 Plan — PRODUCT MODE (F-17, F-18)
+# Cycle 48 Plan — IMPROVEMENT MODE
 
 ## Budget (from mixer)
 product=30% backend=20% quality=20% frontend=15% security=10% perf=5%
 
 ## Units
-1. [product] F-17 Mixer weight history chart — SVG line chart + IPC + preload ✔ 8aa1d7f
-2. [product] F-18 Cross-project session summary IPC endpoint ✔ 8078abb
-3. [test] I-53 F-17/F-18 IPC handler invariant tests (200 total) ✔ 3cefea9
-4. [fix] I-56 Parse TESTS status from compliance lines ✔ 0525a2a
-5. [security] I-57 Preload systemKill defense-in-depth validation ✔ 8203de9
-6. [test] I-54 Smart Mix damping, normalization, reverse-skew tests (204 total) ✔ bb67079
-7. [test] I-55 Mixer-chart.js security, structure, integration tests (217 total) ✔ 4c106f7
+1. [test] I-58 Preload.js security + F-17/F-18 bridge invariant tests (227 total) ✔ 7167bf9
+2. [test] I-59 Compliance parser + metrics IPC invariant tests (240 total) ✔ f13f93e
+3. [frontend] Mixer-chart periodic refresh + toggle-to-reload ✔ ecfe1a9
+4. [test] I-60 Mixer-chart refresh behavior invariant tests (244 total) ✔ 7519cdf

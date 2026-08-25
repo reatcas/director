@@ -85,3 +85,6 @@
 - [x] **I-55** Mixer-chart.js security, structure, and integration tests — esc() usage, IIFE pattern, index.html wiring (217 total).
 - [x] **I-56** Parse TESTS status from compliance lines — extract green/red/unknown from COMPLIANCE output.
 - [x] **I-57** Preload systemKill defense-in-depth — validate pid/signal at bridge boundary before IPC.
+- [x] **I-58** Preload.js security + F-17/F-18 bridge invariant tests — systemKill validation, event channels, bridge methods (227 total).
+- [x] **I-59** Compliance parser + metrics IPC invariant tests — TESTS field extraction, ORCHESTRA_REPORT parsing (240 total).
+- [x] **I-60** Mixer-chart refresh behavior tests — periodic refresh, toggle-to-reload, stale detection (244 total).
