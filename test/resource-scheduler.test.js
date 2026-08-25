@@ -88,4 +88,64 @@ describe('ResourceScheduler', () => {
       expect(snap.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/)
     })
   })
+
+  describe('_retentionCurve edge cases', () => {
+    it('is monotonically increasing', () => {
+      let prev = 0
+      for (let s = 0; s <= 1.0; s += 0.1) {
+        const r = scheduler._retentionCurve(s)
+        expect(r).toBeGreaterThanOrEqual(prev)
+        prev = r
+      }
+    })
+
+    it('handles negative input gracefully', () => {
+      const r = scheduler._retentionCurve(-0.5)
+      expect(r).toBeGreaterThanOrEqual(0.10)
+      expect(r).toBeLessThan(0.15)
+    })
+  })
+
+  describe('_updateEfficiency', () => {
+    it('computes efficiency from sample history', () => {
+      const alloc = scheduler.computeAllocation('/eff-test', { product: 50, quality: 50 })
+      scheduler.samples.set('/eff-test', [
+        { rssMB: 100, cpuPct: 30, memBudgetMB: alloc.memBudgetMB },
+        { rssMB: 150, cpuPct: 40, memBudgetMB: alloc.memBudgetMB },
+        { rssMB: 120, cpuPct: 35, memBudgetMB: alloc.memBudgetMB }
+      ])
+      scheduler._updateEfficiency('/eff-test')
+      const eff = scheduler.efficiency.get('/eff-test')
+      expect(eff).toBeDefined()
+      expect(eff.avgMemMB).toBeCloseTo(123.3, 0)
+      expect(eff.peakMemMB).toBe(150)
+      expect(eff.samplesCount).toBe(3)
+    })
+
+    it('skips computation with fewer than 2 samples', () => {
+      scheduler.computeAllocation('/short', { product: 50 })
+      scheduler.samples.set('/short', [{ rssMB: 100, cpuPct: 30 }])
+      scheduler._updateEfficiency('/short')
+      expect(scheduler.efficiency.get('/short')).toBeUndefined()
+    })
+  })
+
+  describe('computeAllocation edge cases', () => {
+    it('handles single category at 100%', () => {
+      const alloc = scheduler.computeAllocation('/solo', { product: 100 })
+      expect(alloc.avgIntensity).toBe(100)
+      expect(alloc.categoryBudgets.product.normalizedShare).toBe(1)
+    })
+
+    it('handles many categories with small weights', () => {
+      const focus = {
+        product: 5, backend: 5, frontend: 5, quality_tests: 5,
+        security: 5, performance: 5, ux_accessibility: 5,
+        data_db: 5, i18n: 5, refactoring: 5
+      }
+      const alloc = scheduler.computeAllocation('/spread', focus)
+      const total = Object.values(alloc.categoryBudgets).reduce((s, b) => s + b.normalizedShare, 0)
+      expect(total).toBeCloseTo(1.0, 5)
+    })
+  })
 })
