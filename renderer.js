@@ -1210,7 +1210,7 @@ function addCycleEntry(text) {
   el.innerHTML = `
     <span class="le-icon">▸</span>
     <span class="le-time">${time}</span>
-    <span class="le-msg">${text}</span>
+    <span class="le-msg">${esc(text)}</span>
   `
   logEl.appendChild(el)
   currentGroup = null
@@ -1232,7 +1232,7 @@ function addErrorEntry(text) {
     <span class="le-icon">✕</span>
     <span class="le-time">${time}</span>
     <span class="le-badge" style="background:rgba(224,48,48,.15);color:#e03030;border:1px solid rgba(224,48,48,.25)">ERROR</span>
-    <span class="le-msg">${text}</span>
+    <span class="le-msg">${esc(text)}</span>
   `
   logEl.appendChild(el)
   currentGroup = null
@@ -1254,7 +1254,7 @@ function addClaudeMessageEntry(text) {
     <span class="le-icon" style="background:rgba(136,68,255,0.12);color:#8844ff;text-shadow:0 0 6px #8844ff">◈</span>
     <span class="le-time">${time}</span>
     <span class="le-badge" style="background:rgba(136,68,255,.10);color:#aa77ff;border:1px solid rgba(136,68,255,.20)">MILESTONE</span>
-    <span class="le-msg" style="color:#c4b5e0">${text}</span>
+    <span class="le-msg" style="color:#c4b5e0">${esc(text)}</span>
   `
   logEl.appendChild(el)
   currentGroup = null
@@ -1280,7 +1280,7 @@ function addConclusionEntry(text, issues) {
     <span class="le-icon" style="background:${color}1a;color:${color};text-shadow:0 0 6px ${color}">${icon}</span>
     <span class="le-time">${time}</span>
     <span class="le-badge" style="background:${color}15;color:${color};border:1px solid ${color}30">CONCLUSION</span>
-    <span class="le-msg" style="color:${color}cc;white-space:normal;line-height:1.5">${text}${hasIssues ? '<br><span style="color:#ff8888;font-size:10px">⚠ ' + issues.join(' · ') + '</span>' : ''}</span>
+    <span class="le-msg" style="color:${color}cc;white-space:normal;line-height:1.5">${esc(text)}${hasIssues ? '<br><span style="color:#ff8888;font-size:10px">⚠ ' + esc(issues.join(' · ')) + '</span>' : ''}</span>
   `
   logEl.appendChild(el)
   currentGroup = null
@@ -1320,10 +1320,10 @@ function addNormalLine(text) {
       <span class="le-icon" style="color:#666;background:rgba(255,255,255,.04)">·</span>
       <span class="le-time">${time}</span>
       <span class="le-group-count">1</span>
-      <span class="le-msg" style="color:#666;font-size:10px">${preview}</span>
+      <span class="le-msg" style="color:#666;font-size:10px">${esc(preview)}</span>
       <span class="le-group-expand">▾</span>
     </div>
-    <div class="le-group-body">${text}\n</div>
+    <div class="le-group-body">${esc(text)}\n</div>
   `
   logEl.appendChild(grp)
   currentGroup = grp
@@ -1496,7 +1496,7 @@ function addSummaryEntry(text) {
     <span class="le-icon">◆</span>
     <span class="le-time">${time}</span>
     <span class="le-badge">RESULT</span>
-    <span class="le-msg le-summary-text">${text}</span>
+    <span class="le-msg le-summary-text">${esc(text)}</span>
   `
   logEl.appendChild(el)
   currentGroup = null

@@ -1284,6 +1284,8 @@ ipcMain.handle('system:claude-procs', () => {
 
 ipcMain.handle('system:kill-proc', (_e, pid, signal = 'SIGTERM') => {
   if (!pid || pid === process.pid) return { ok: false, err: 'invalid pid' }
+  const allowed = ['SIGTERM', 'SIGKILL']
+  if (!allowed.includes(signal)) return { ok: false, err: 'signal not allowed' }
   try {
     process.kill(pid, signal)
     return { ok: true }
