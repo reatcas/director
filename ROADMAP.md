@@ -91,3 +91,5 @@
 - [x] **I-61** Session summary + mixer history handler structure tests (258 total).
 - [x] **I-62** Process lifecycle + management invariant tests — pidAlive, killProcessGroup, isRunning, watchForResume (275 total).
 - [x] **I-63** Git watcher, IPC architecture catalog, preload→main alignment tests (293 total).
+- [x] **I-64** Data flow, hot-reload, startup/shutdown sequence invariant tests (314 total).
+- [x] **I-65** Renderer.js feature invariant tests — F-09 through F-21 coverage verification (334 total).
