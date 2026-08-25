@@ -88,3 +88,6 @@
 - [x] **I-58** Preload.js security + F-17/F-18 bridge invariant tests — systemKill validation, event channels, bridge methods (227 total).
 - [x] **I-59** Compliance parser + metrics IPC invariant tests — TESTS field extraction, ORCHESTRA_REPORT parsing (240 total).
 - [x] **I-60** Mixer-chart refresh behavior tests — periodic refresh, toggle-to-reload, stale detection (244 total).
+- [x] **I-61** Session summary + mixer history handler structure tests (258 total).
+- [x] **I-62** Process lifecycle + management invariant tests — pidAlive, killProcessGroup, isRunning, watchForResume (275 total).
+- [x] **I-63** Git watcher, IPC architecture catalog, preload→main alignment tests (293 total).
