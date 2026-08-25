@@ -373,6 +373,24 @@ function updateTransportButtons() {
   }
 }
 
+// ─── Stall Anomaly Detection (F-20) ──────────────────────────────────────────
+const _stallTracker = new Map()
+const STALL_THRESHOLD_MS = 20 * 60 * 1000
+
+function trackCommit(dir) {
+  _stallTracker.set(dir, Date.now())
+}
+
+function trackPlay(dir) {
+  if (!_stallTracker.has(dir)) _stallTracker.set(dir, Date.now())
+}
+
+function getStallMinutes(dir) {
+  const last = _stallTracker.get(dir)
+  if (!last) return 0
+  return Math.floor((Date.now() - last) / 60000)
+}
+
 // ─── Core UI Logic ────────────────────────────────────────────────────────────
 async function refresh() {
   projects = await window.director.list()
@@ -381,10 +399,12 @@ async function refresh() {
   for (const p of projects) {
     const li = document.createElement('li')
     li.className = (current === p.path ? 'sel ' : '') + (p.running ? 'live' : '')
+    const stallMin = p.running ? getStallMinutes(p.path) : 0
+    const stallBadge = stallMin >= 20 ? `<span class="stall-badge" title="${esc(String(stallMin))}min sin commits">${esc(String(stallMin))}m</span>` : ''
     li.innerHTML = `<span class="led"></span>
       ${logoHTML(p, true)}
       <span class="pn">${esc(p.name)}</span>
-      <span class="pv">${p.running ? 'LIVE' : p.installed ? 'v' + p.version : '—'}</span>`
+      <span class="pv">${p.running ? 'LIVE' : p.installed ? 'v' + p.version : '—'}${stallBadge}</span>`
     li.onclick = () => open(p.path)
     ul.appendChild(li)
   }
@@ -605,6 +625,7 @@ if ($('#playBtn')) $('#playBtn').onclick = async () => {
 
   addActionEntry('play', 'START', `${agent} starts the infinite development cycle — ${esc(p.name)}`)
   setOrchestraState('started')
+  if (current) trackPlay(current)
   const result = await window.director.play(current, agent)
   if (!result?.ok) {
     setOrchestraState('idle')
@@ -1724,7 +1745,7 @@ function parseLogLine(dir, line) {
       if (current) window.director.lifecycleAdd(current, 'feature', 'FEATURE', cl.replace(/^▸\s*▶?\s*/, ''))
     } else if (cl.includes('✔')) {
       addCycleEntry(cl)
-      // Persist commits so they survive app restarts
+      if (current) trackCommit(current)
       if (current) window.director.lifecycleAdd(current, 'commit', 'COMMIT', cl.replace(/^▸\s*✔?\s*/, ''))
     } else {
       // Detect machine-readable COMPLIANCE line from cycle close

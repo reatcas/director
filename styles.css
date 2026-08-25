@@ -451,6 +451,20 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 #projects li.sel .pn { color: var(--txt2) }
 #projects .pv { font: 8px var(--mono); color: var(--dim2); white-space: nowrap }
 #projects li.live .pv { color: var(--fl-green); text-shadow: 0 0 6px rgba(64,200,64,0.3) }
+.stall-badge {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 3px;
+  font: 700 7px var(--mono);
+  color: var(--fl-orange);
+  background: rgba(233,99,26,0.15);
+  border-radius: 3px;
+  animation: stall-pulse 1.5s ease-in-out infinite;
+}
+@keyframes stall-pulse {
+  0%, 100% { opacity: 1 }
+  50% { opacity: 0.4 }
+}
 
 /* ══════════════════════════════════════════
    MAIN STAGE

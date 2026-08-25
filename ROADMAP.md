@@ -23,7 +23,7 @@
 - [ ] **F-17** Mixer weight history chart — render SVG line chart of per-category weight drift over last 50 iterations from `mixer-history.json`, showing Smart Mix v3 adjustments and category starvation.
 - [ ] **F-18** Cross-project session dashboard — compact "all projects" summary row at top of project list showing active/idle counts, aggregate token burn, and worst compliance score.
 - [ ] **F-19** Token burn rate sparkline — mini SVG sparkline of estimated token usage per iteration in metrics strip, showing burn rate acceleration or plateau.
-- [ ] **F-20** Stall anomaly badge — detect >20min with zero commits, surface pulsing warning badge on project card with last-commit age.
+- [x] **F-20** Stall anomaly badge — detect >20min with zero commits, surface pulsing warning badge on project card with last-commit age.
 - [x] **F-21** Context compression ratio panel — display cumulative token savings, compression percentage, and files-changed-per-cycle from `metricsContext` aggregated data.
 
 ## Improvements
