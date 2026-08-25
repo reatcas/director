@@ -1928,6 +1928,9 @@ function updateMetricsDisplay(data) {
     if (instEl) { instEl.textContent = '—'; instEl.className = 'mm-val' }
   }
 
+  // Token burn rate (F-19)
+  updateBurnRate(data.claudeUsage || null)
+
   // Claude API Usage
   if (data.claudeUsage) {
     const id = $('#aiSelect')?.value
@@ -2050,6 +2053,43 @@ function updateAllocInspector(allocation) {
     const hot = c.hotPath ? ' <span class="ac-hot">HOT</span>' : ''
     return `<span class="alloc-cat"><span class="ac-name">${esc(k)}</span><span class="ac-val">${esc(String(c.weight))}% · ${esc(String(pct))}% share · ${esc(String(ret))}% ret</span>${hot}</span>`
   }).join('')
+}
+
+// ─── Token Burn Rate (F-19) ───────────────────────────────────────────────────
+const _burnHistory = []
+let _prevBurnTokens = 0
+
+function updateBurnRate(usage) {
+  const valEl = $('#mmBurnVal')
+  const sparkEl = $('#burnSpark')
+  if (!valEl) return
+
+  if (!usage || !usage.tokensEstimated) {
+    valEl.textContent = '—'
+    valEl.className = 'mm-val'
+    if (sparkEl) sparkEl.style.display = 'none'
+    return
+  }
+
+  const tokens = usage.tokensEstimated
+  const delta = _prevBurnTokens > 0 ? tokens - _prevBurnTokens : 0
+  _prevBurnTokens = tokens
+
+  if (delta > 0) _burnHistory.push(delta)
+  if (_burnHistory.length > 30) _burnHistory.shift()
+
+  if (_burnHistory.length > 0) {
+    const avg = Math.round(_burnHistory.reduce((s, v) => s + v, 0) / _burnHistory.length)
+    const avgK = avg > 999 ? Math.floor(avg / 1000) + 'K' : String(avg)
+    valEl.textContent = avgK + '/iter'
+    const trend = _burnHistory.length >= 3 && _burnHistory[_burnHistory.length - 1] > avg * 1.3 ? ' warn' : ' active'
+    valEl.className = 'mm-val' + trend
+  } else {
+    valEl.textContent = '—'
+    valEl.className = 'mm-val'
+  }
+
+  renderSparkline(sparkEl, _burnHistory.length >= 2 ? _burnHistory : null)
 }
 
 // ─── Context Compression Panel (F-21) ─────────────────────────────────────────
