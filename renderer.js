@@ -2573,6 +2573,8 @@ if (document.getElementById('knBtnReport')) document.getElementById('knBtnReport
 if (document.getElementById('knBtnDb')) document.getElementById('knBtnDb').onclick = () => loadKnowledge('.claude/DB_SCHEMA.md', 'knBtnDb')
 if (document.getElementById('knBtnPlan')) document.getElementById('knBtnPlan').onclick = () => loadKnowledge('PLAN.md', 'knBtnPlan')
 if (document.getElementById('knBtnDecisions')) document.getElementById('knBtnDecisions').onclick = () => loadKnowledge('DECISIONS.md', 'knBtnDecisions')
+if (document.getElementById('knBtnPending')) document.getElementById('knBtnPending').onclick = () => loadKnowledge('PENDING.md', 'knBtnPending')
+if (document.getElementById('knBtnLearnings')) document.getElementById('knBtnLearnings').onclick = () => loadKnowledge('CYCLE_LEARNINGS.md', 'knBtnLearnings')
 if (document.getElementById('knBtnBlueprint')) document.getElementById('knBtnBlueprint').onclick = () => loadKnowledge('.claude/BLUEPRINT.md', 'knBtnBlueprint')
 
 // ─── Theme & Settings ───────────────────────────────────────────────────────
