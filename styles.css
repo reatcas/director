@@ -1433,6 +1433,30 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
   background: var(--bg);
 }
 
+/* ── Lifecycle timeline (F-14) ────────────────────────────────────────────── */
+.lifecycle-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lc-event {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: 9px var(--mono);
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+.lc-event:hover { background: rgba(255,255,255,0.03) }
+.lc-ts { color: var(--dim); white-space: nowrap; flex-shrink: 0 }
+.lc-icon { width: 14px; text-align: center; flex-shrink: 0 }
+.lc-label { color: var(--ai-cyan); font-weight: 700; flex-shrink: 0; min-width: 50px }
+.lc-msg { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.lc-event[data-type="commit"] .lc-label { color: var(--fl-green) }
+.lc-event[data-type="exit"] .lc-label { color: var(--fl-orange) }
+.lc-event[data-type="error"] .lc-label { color: #e03030 }
+.lc-event[data-type="usage_limit"] .lc-label { color: #e03030 }
+
 /* ══════════════════════════════════════════
    MIXER PANEL — HORIZONTAL STRIPS (v0.0.6)
 ══════════════════════════════════════════ */
@@ -2573,6 +2597,11 @@ html.light .bp-modules-header { background: var(--panel3) }
 html.light .bp-mod-desc, html.light .bp-mod-features, html.light .bp-mod-deps {
   border-color: var(--line); background: var(--panel2); color: var(--txt);
 }
+
+/* ── Lifecycle timeline ───────────────────────────────────── */
+html.light .lc-event:hover { background: rgba(0,0,0,0.03) }
+html.light .lc-ts { color: var(--dim) }
+html.light .lc-msg { color: #555 }
 
 /* ── Knowledge tab ────────────────────────────────────────── */
 html.light .kn-btn { border-color: var(--line) }

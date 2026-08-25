@@ -474,6 +474,7 @@ async function open(dir) {
   await loadMetrics()
   await loadCompliance()
   loadRoadmapFreshness()
+  loadLifecycleTimeline()
   checkVersionUpgrade()
 
   const out = $('#analysisOut')
@@ -2490,6 +2491,37 @@ async function loadBpReadiness() {
   el.innerHTML = `<span style="color:${color}">● ${pct}%</span> <span style="color:var(--dim)">${parts.join(' · ')}</span>`
   if (!r.ready && r.missing.length) el.title = 'Faltan: ' + r.missing.join(', ')
   el.style.display = ''
+}
+
+const LC_ICONS = {
+  play: '▶', started: '⚡', fine: '◼', kill: '✕', exit: '■',
+  usage_limit: '⏸', resume: '↻', commit: '✔', feature: '▶',
+  cycle_close: '◼', hot_reload: '↻', auto_resume: '⟳',
+  directive: '→', error: '⚠'
+}
+
+async function loadLifecycleTimeline() {
+  if (!current) return
+  const el = $('#lifecycleTimeline')
+  const countEl = $('#lifecycleCount')
+  if (!el) return
+
+  const events = await window.director.lifecycleList(current)
+  if (!events || events.length === 0) {
+    el.innerHTML = '<div style="padding:8px;color:var(--dim);font:9px var(--mono)">Sin eventos</div>'
+    if (countEl) countEl.textContent = '0'
+    return
+  }
+
+  const recent = events.slice(-50)
+  if (countEl) countEl.textContent = String(events.length)
+
+  el.innerHTML = recent.map(ev => {
+    const d = new Date(ev.ts)
+    const ts = d.toLocaleTimeString('es', { hour12: false }) + ' ' + d.toLocaleDateString('es', { day: '2-digit', month: 'short' })
+    const icon = LC_ICONS[ev.type] || '·'
+    return `<div class="lc-event" data-type="${esc(ev.type)}"><span class="lc-ts">${esc(ts)}</span><span class="lc-icon">${icon}</span><span class="lc-label">${esc(ev.label)}</span><span class="lc-msg" title="${esc(ev.message)}">${esc(ev.message)}</span></div>`
+  }).join('')
 }
 
 function bpStartSession() {
