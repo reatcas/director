@@ -994,6 +994,14 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
   return JSON.stringify(mix, null, 2)
 })
 
+// ─── Mixer history (F-17) ───────────────────────────────────────────────────
+ipcMain.handle('mixer:history', (_e, dir, limit) => {
+  if (!dir) return []
+  const hist = readJSON(path.join(dir, '.claude/mixer-history.json'), [])
+  const n = typeof limit === 'number' && limit > 0 ? limit : 50
+  return hist.slice(-n)
+})
+
 // ─── Read iteration log summary ──────────────────────────────────────────────
 ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   if (!dir || typeof logPath !== 'string' || !logPath.trim()) return ''

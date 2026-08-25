@@ -309,6 +309,14 @@
               </div>
             </div>
 
+            <div id="mixerHistoryPanel" class="alloc-inspector" style="display:none">
+              <button id="mixerHistoryToggle" class="alloc-toggle" aria-label="Alternar historial de pesos">▸ HISTORIAL DE PESOS</button>
+              <div id="mixerHistoryBody" class="alloc-body" style="display:none">
+                <svg id="mixerHistorySvg" class="mh-svg" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
+                <div id="mixerHistoryLegend" class="mh-legend"></div>
+              </div>
+            </div>
+
             <!-- Current feature indicator -->
             <div id="featureStrip" class="feature-strip">
               <span class="fs-label">DEVELOPING</span>
@@ -468,5 +476,6 @@
   </div>
 </div>
 <script src="renderer.js"></script>
+<script src="mixer-chart.js"></script>
 </body>
 </html>

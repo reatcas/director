@@ -28,6 +28,8 @@ contextBridge.exposeInMainWorld('director', {
   mixerSavedSave:   (p, n, f)   => ipcRenderer.invoke('mixer:saved:save', p, n, f),
   mixerSavedDelete: (p, id)     => ipcRenderer.invoke('mixer:saved:delete', p, id),
   mixerSavedExport: (p, id)     => ipcRenderer.invoke('mixer:saved:export', p, id),
+  // Mixer history (F-17)
+  mixerHistory:  (p, n) => ipcRenderer.invoke('mixer:history', p, n),
   // Lifecycle events
   lifecycleList:       p           => ipcRenderer.invoke('lifecycle:list', p),
   lifecycleAdd:        (p, t, l, m) => ipcRenderer.invoke('lifecycle:add', p, t, l, m),

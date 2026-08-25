@@ -1003,6 +1003,25 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   letter-spacing: 0.5px;
 }
 
+.mh-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 4px 8px 2px;
+}
+.mh-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 2px 12px 6px;
+  font: 7px var(--mono);
+  letter-spacing: 0.5px;
+}
+.mh-leg {
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
 /* ── Feature log entry ────────────────────────────────────────────────────── */
 .le-feature {
   background: rgba(233,99,26,0.03) !important;
