@@ -670,13 +670,48 @@ if ($('#killBtn')) $('#killBtn').onclick = async () => {
 // (orchestra:play, orchestra:fine, orchestra:kill, exit callback, usage_limit)
 
 // ─── Analysis ─────────────────────────────────────────────────────────────────
+const COMMIT_TYPE_COLORS = {
+  feat: '#40c840', fix: '#e8631a', test: '#00aaff', refactor: '#8844ff',
+  chore: '#686a76', security: '#e03030', sec: '#e03030', perf: '#ddba00',
+  docs: '#00d4d4', style: '#c090ff', i18n: '#4488ff', other: '#484a56'
+}
+
+function renderCommitBreakdown(report) {
+  const el = $('#commitBreakdown')
+  if (!el) return
+  const m = report.match(/By type: (\{[^}]+\})/)
+  if (!m) { el.style.display = 'none'; return }
+  try {
+    const cat = JSON.parse(m[1])
+    const total = Object.values(cat).reduce((a, b) => a + b, 0)
+    if (total === 0) { el.style.display = 'none'; return }
+    const sorted = Object.entries(cat).sort((a, b) => b[1] - a[1])
+    let html = '<div style="display:flex;height:16px;border-radius:3px;overflow:hidden;margin-bottom:6px">'
+    for (const [type, count] of sorted) {
+      const pct = (count / total * 100).toFixed(1)
+      const color = COMMIT_TYPE_COLORS[type] || '#484a56'
+      html += `<div style="width:${pct}%;background:${color};min-width:2px" title="${esc(type)}: ${count} (${pct}%)"></div>`
+    }
+    html += '</div><div style="display:flex;gap:10px;flex-wrap:wrap;font:9px var(--mono);color:var(--dim)">'
+    for (const [type, count] of sorted) {
+      const color = COMMIT_TYPE_COLORS[type] || '#484a56'
+      html += `<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:3px"></span>${esc(type)} ${count}</span>`
+    }
+    html += '</div>'
+    el.innerHTML = html
+    el.style.display = ''
+  } catch { el.style.display = 'none' }
+}
+
 async function runAnalysis() {
-  if ($('#analysisOut')) $('#analysisOut').value = 'Composing the critique…'
+  if ($('#analysisOut')) $('#analysisOut').value = 'Componiendo la crítica…'
   if ($('#analysisFile')) $('#analysisFile').textContent = ''
+  if ($('#commitBreakdown')) $('#commitBreakdown').style.display = 'none'
   const res = await window.director.analyze(current)
   if (res) {
     if ($('#analysisOut')) $('#analysisOut').value = res.report
     if ($('#analysisFile')) $('#analysisFile').textContent = res.file
+    renderCommitBreakdown(res.report)
   }
 }
 if ($('#refreshAnalysis')) $('#refreshAnalysis').onclick = runAnalysis
