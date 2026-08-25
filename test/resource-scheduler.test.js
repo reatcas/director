@@ -169,6 +169,101 @@ describe('ResourceScheduler', () => {
     })
   })
 
+  describe('_updateEfficiency edge cases', () => {
+    it('computes memBudgetAdherence below 1 when peak exceeds budget', () => {
+      scheduler.computeAllocation('/over', { product: 50 })
+      const alloc = scheduler.allocations.get('/over')
+      scheduler.samples.set('/over', [
+        { rssMB: alloc.memBudgetMB + 100, cpuPct: 20 },
+        { rssMB: alloc.memBudgetMB + 200, cpuPct: 30 }
+      ])
+      scheduler._updateEfficiency('/over')
+      const eff = scheduler.efficiency.get('/over')
+      expect(eff.memBudgetAdherence).toBeLessThan(100)
+    })
+
+    it('returns zero intensityCostRatio when avgIntensity is 0', () => {
+      scheduler.allocations.set('/zero-int', scheduler.computeAllocation('/zero-int', {}))
+      scheduler.samples.set('/zero-int', [
+        { rssMB: 10, cpuPct: 5 },
+        { rssMB: 12, cpuPct: 8 }
+      ])
+      scheduler._updateEfficiency('/zero-int')
+      const eff = scheduler.efficiency.get('/zero-int')
+      expect(eff.intensityCostRatio).toBe(0)
+    })
+
+    it('skips when allocation is missing', () => {
+      scheduler.samples.set('/no-alloc', [
+        { rssMB: 10, cpuPct: 5 },
+        { rssMB: 12, cpuPct: 8 }
+      ])
+      scheduler._updateEfficiency('/no-alloc')
+      expect(scheduler.efficiency.get('/no-alloc')).toBeUndefined()
+    })
+  })
+
+  describe('getMetrics', () => {
+    it('returns null fields for unknown directory', () => {
+      const m = scheduler.getMetrics('/unknown')
+      expect(m.allocation).toBeNull()
+      expect(m.baseline).toBeNull()
+      expect(m.lastSample).toBeNull()
+      expect(m.efficiency).toBeNull()
+      expect(m.sampleCount).toBe(0)
+    })
+
+    it('returns allocation after computeAllocation', () => {
+      scheduler.computeAllocation('/gm', { product: 40 })
+      const m = scheduler.getMetrics('/gm')
+      expect(m.allocation).toBeDefined()
+      expect(m.allocation.avgIntensity).toBe(40)
+    })
+  })
+
+  describe('getAllAllocations', () => {
+    it('returns summary of all tracked directories', () => {
+      scheduler.computeAllocation('/a', { product: 30 })
+      scheduler.computeAllocation('/b', { product: 70 })
+      const all = scheduler.getAllAllocations()
+      expect(Object.keys(all)).toHaveLength(2)
+      expect(all['/a'].avgIntensity).toBe(30)
+      expect(all['/b'].avgIntensity).toBe(70)
+    })
+
+    it('returns empty object when no allocations', () => {
+      expect(scheduler.getAllAllocations()).toEqual({})
+    })
+  })
+
+  describe('persistTelemetry', () => {
+    it('uses atomic write (tmp + rename)', async () => {
+      const fs = await import('fs')
+      const os = await import('os')
+      const path = await import('path')
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rs-tel-'))
+
+      scheduler.computeAllocation(tmpDir, { product: 50 })
+      scheduler.samples.set(tmpDir, [
+        { rssMB: 100, cpuPct: 30 },
+        { rssMB: 120, cpuPct: 40 }
+      ])
+      scheduler._updateEfficiency(tmpDir)
+      scheduler.persistTelemetry(tmpDir)
+
+      const file = path.join(tmpDir, '.claude', 'telemetry', 'resource-metrics.json')
+      expect(fs.existsSync(file)).toBe(true)
+      const data = JSON.parse(fs.readFileSync(file, 'utf8'))
+      expect(data).toHaveLength(1)
+      expect(data[0].avgMemMB).toBeDefined()
+      expect(fs.existsSync(file + '.tmp')).toBe(false)
+    })
+
+    it('skips when no efficiency data exists', () => {
+      scheduler.persistTelemetry('/no-eff')
+    })
+  })
+
   describe('cleanup', () => {
     it('clears all maps for a directory', () => {
       const alloc = scheduler.computeAllocation('/cleanup-test', { product: 50 })
