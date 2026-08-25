@@ -27,3 +27,4 @@
 - [x] **I-12** Resource-scheduler efficiency + edge case tests — 6 new tests (90 total).
 - [x] **I-13** Mtime-based caching in computeDelta — skip file reads when state files unchanged between polls.
 - [x] **I-14** Complete XSS hardening — escape all remaining innerHTML injections across all log entry types.
+- [x] **I-15** XSS + atomic write invariant tests — 7 XSS verification + 2 atomic write protocol tests (97 total).
