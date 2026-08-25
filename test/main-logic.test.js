@@ -147,3 +147,39 @@ describe('IPC handler invariants', () => {
     expect(mainJs).toContain('SIGKILL')
   })
 })
+
+describe('lifecycle and protocol invariants', () => {
+  it('defines persistLifecycleEvent function', () => {
+    expect(mainJs).toContain('function persistLifecycleEvent')
+  })
+
+  it('lifecycle events have max cap (500)', () => {
+    expect(mainJs).toContain('500')
+    expect(mainJs).toMatch(/events\.length\s*>\s*500/)
+  })
+
+  it('initializes all three protocol modules', () => {
+    expect(mainJs).toContain('ResourceScheduler')
+    expect(mainJs).toContain('ContextProtocol')
+    expect(mainJs).toContain('CoordinationProtocol')
+  })
+
+  it('defines syncProtocol for harness file copying', () => {
+    expect(mainJs).toContain('function syncProtocol')
+  })
+
+  it('hot-reload watcher uses fs.watch', () => {
+    expect(mainJs).toContain('startHotReloadWatcher')
+    expect(mainJs).toContain('fs.watch')
+  })
+
+  it('metrics sampling interval is defined', () => {
+    expect(mainJs).toContain('startMetricsSampling')
+    expect(mainJs).toContain('setInterval')
+  })
+
+  it('defines readJSON helper with try/catch fallback', () => {
+    expect(mainJs).toContain('const readJSON')
+    expect(mainJs).toMatch(/readJSON\s*=.*try.*catch/s)
+  })
+})
