@@ -204,5 +204,88 @@ describe('CoordinationProtocol', () => {
       })
       expect(p).toBeGreaterThanOrEqual(1)
     })
+
+    it('gives bonus for hot-path categories', () => {
+      const noHot = coord._computePriority({
+        avgIntensity: 50, maxIntensity: 50, totalWeight: 50,
+        tokenBudget: 500000, categoryBudgets: {}
+      })
+      const withHot = coord._computePriority({
+        avgIntensity: 50, maxIntensity: 50, totalWeight: 50,
+        tokenBudget: 500000, categoryBudgets: { a: { hotPath: true }, b: { hotPath: true } }
+      })
+      expect(withHot).toBeLessThan(noHot)
+    })
+  })
+
+  describe('getStatus', () => {
+    it('returns complete status with no instances', () => {
+      const status = coord.getStatus()
+      expect(status.activeInstances).toBe(0)
+      expect(status.instances).toEqual({})
+      expect(status.activeLocks).toEqual({})
+      expect(status.conflicts).toEqual([])
+    })
+
+    it('includes conflict history', () => {
+      coord.register('/a', 100, {
+        nice: 10, avgIntensity: 20, maxIntensity: 20,
+        memBudgetMB: 2048, tokenBudget: 200000,
+        totalWeight: 20, categoryBudgets: {}
+      })
+      coord.register('/b', 200, {
+        nice: 0, avgIntensity: 90, maxIntensity: 90,
+        memBudgetMB: 4096, tokenBudget: 900000,
+        totalWeight: 90, categoryBudgets: {}
+      })
+      coord.acquireLock('/a', 'gpu:0')
+      coord.acquireLock('/b', 'gpu:0')
+      const status = coord.getStatus()
+      expect(status.conflictHistory.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('_rebalance', () => {
+    it('assigns rank and resourceShare to multiple instances', () => {
+      coord.register('/a', 100, {
+        nice: 10, avgIntensity: 30, maxIntensity: 30,
+        memBudgetMB: 2048, tokenBudget: 300000,
+        totalWeight: 30, categoryBudgets: {}
+      })
+      coord.register('/b', 200, {
+        nice: 5, avgIntensity: 60, maxIntensity: 60,
+        memBudgetMB: 4096, tokenBudget: 600000,
+        totalWeight: 60, categoryBudgets: {}
+      })
+      const infoA = coord.instances.get('/a')
+      const infoB = coord.instances.get('/b')
+      expect(infoA.rank).toBeDefined()
+      expect(infoB.rank).toBeDefined()
+      expect(infoA.resourceShare).toBe(0.5)
+      expect(infoB.resourceShare).toBe(0.5)
+    })
+  })
+
+  describe('getInstanceCount', () => {
+    it('returns correct count', () => {
+      expect(coord.getInstanceCount()).toBe(0)
+      coord.register('/x', 999, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      expect(coord.getInstanceCount()).toBe(1)
+      coord.unregister('/x')
+      expect(coord.getInstanceCount()).toBe(0)
+    })
+  })
+
+  describe('event log', () => {
+    it('caps events at 200', () => {
+      for (let i = 0; i < 210; i++) {
+        coord._logEvent('test', '/dir', { i })
+      }
+      expect(coord.events.length).toBe(200)
+    })
   })
 })
