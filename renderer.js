@@ -1083,8 +1083,8 @@ function addActionEntry(type, label, message) {
   el.innerHTML = `
     <span class="le-icon">${a.icon}</span>
     <span class="le-time">${time}</span>
-    <span class="le-badge">${label}</span>
-    <span class="le-msg">${message}</span>
+    <span class="le-badge">${esc(label)}</span>
+    <span class="le-msg">${esc(message)}</span>
   `
   logEl.appendChild(el)
   currentGroup = null
@@ -1184,7 +1184,7 @@ function addFeatureEntry(text) {
     <span class="le-icon" style="background:${catColor}22;color:${catColor};text-shadow:0 0 4px ${catColor}">▶</span>
     <span class="le-time">${time}</span>
     <span class="le-badge" style="background:${catColor}1a;color:${catColor};border:1px solid ${catColor}40">${catLabel}</span>
-    <span class="le-msg" style="color:${catColor}cc"><strong>${unit}</strong>${goal ? ' — ' + goal : ''}</span>
+    <span class="le-msg" style="color:${catColor}cc"><strong>${esc(unit)}</strong>${goal ? ' — ' + esc(goal) : ''}</span>
   `
   logEl.appendChild(el)
 
@@ -1432,7 +1432,7 @@ function addIterationStartEntry(num, dateStr) {
     <span class="le-icon" style="background:rgba(0,170,255,0.15);color:#00aaff;text-shadow:0 0 4px #00aaff">⟳</span>
     <span class="le-time">${time}</span>
     <span class="le-badge" style="background:rgba(0,170,255,.12);color:#00aaff;border:1px solid rgba(0,170,255,.25)">CYCLE ${num}</span>
-    <span class="le-msg" style="color:#7ab8e0">${dateStr}</span>
+    <span class="le-msg" style="color:#7ab8e0">${esc(dateStr)}</span>
   `
   logEl.appendChild(el)
   currentGroup = null
@@ -1457,7 +1457,7 @@ function addIterationEndEntry(num, exitCode) {
     <span class="le-icon" style="background:rgba(${bg},0.15);color:${color};text-shadow:0 0 4px ${color}">${ok ? '✓' : '↺'}</span>
     <span class="le-time">${time}</span>
     <span class="le-badge" style="background:rgba(${bg},.12);color:${color};border:1px solid rgba(${bg},.25)">CYCLE ${num}</span>
-    <span class="le-msg" style="color:${ok ? '#a5d6a5' : '#ddba77'}">${ok ? 'Completed successfully' : `Finished with restart (code ${exitCode})`}</span>
+    <span class="le-msg" style="color:${ok ? '#a5d6a5' : '#ddba77'}">${ok ? 'Completed successfully' : `Finished with restart (code ${esc(exitCode)})`}</span>
   `
   logEl.appendChild(el)
   currentGroup = null
@@ -1782,9 +1782,9 @@ async function loadLifecycleHistory() {
     el.style.opacity = '0.7'
     el.innerHTML = `
       <span class="le-icon">${s.icon}</span>
-      <span class="le-time" title="${ev.ts}">${date} ${time}</span>
-      <span class="le-badge">${ev.label}</span>
-      <span class="le-msg">${ev.message}</span>
+      <span class="le-time" title="${esc(ev.ts)}">${date} ${time}</span>
+      <span class="le-badge">${esc(ev.label)}</span>
+      <span class="le-msg">${esc(ev.message)}</span>
     `
     logEl.appendChild(el)
   }
@@ -2145,7 +2145,7 @@ async function loadProcs() {
       <span class="proc-type" style="color:${s.color};border-color:${s.color}40;background:${s.color}12">${s.label}</span>
       <span class="proc-pid mono">${p.pid}</span>
       <span class="proc-stats mono">${p.cpu}% CPU · ${p.mem}% MEM · ${p.time}</span>
-      <span class="proc-cmd mono">${p.cmd.replace(/</g,'&lt;')}</span>
+      <span class="proc-cmd mono">${esc(p.cmd)}</span>
       <div class="proc-actions">
         <button class="proc-kill-btn" data-pid="${p.pid}" data-sig="SIGTERM" title="Terminate (SIGTERM)">◼ TERM</button>
         <button class="proc-kill-btn danger" data-pid="${p.pid}" data-sig="SIGKILL" title="Kill (SIGKILL)">✕ KILL</button>
