@@ -232,6 +232,38 @@ describe('ResourceScheduler', () => {
     })
   })
 
+  describe('getSampleHistory', () => {
+    it('returns empty array for unknown directory', () => {
+      expect(scheduler.getSampleHistory('/unknown')).toEqual([])
+    })
+
+    it('returns all samples without limit', () => {
+      scheduler.samples.set('/sh', [{ a: 1 }, { a: 2 }, { a: 3 }])
+      expect(scheduler.getSampleHistory('/sh')).toHaveLength(3)
+    })
+
+    it('returns limited samples when limit specified', () => {
+      scheduler.samples.set('/sh2', [{ a: 1 }, { a: 2 }, { a: 3 }])
+      expect(scheduler.getSampleHistory('/sh2', 2)).toHaveLength(2)
+      expect(scheduler.getSampleHistory('/sh2', 2)[0].a).toBe(2)
+    })
+  })
+
+  describe('getActiveDirectories', () => {
+    it('returns empty when no allocations', () => {
+      expect(scheduler.getActiveDirectories()).toEqual([])
+    })
+
+    it('returns all tracked directories', () => {
+      scheduler.computeAllocation('/x', { product: 50 })
+      scheduler.computeAllocation('/y', { product: 30 })
+      const dirs = scheduler.getActiveDirectories()
+      expect(dirs).toHaveLength(2)
+      expect(dirs).toContain('/x')
+      expect(dirs).toContain('/y')
+    })
+  })
+
   describe('getAllAllocations', () => {
     it('returns summary of all tracked directories', () => {
       scheduler.computeAllocation('/a', { product: 30 })

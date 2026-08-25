@@ -327,6 +327,15 @@ class ResourceScheduler {
     return result
   }
 
+  getSampleHistory(dir, limit) {
+    const history = this.samples.get(dir) || []
+    return limit ? history.slice(-limit) : history
+  }
+
+  getActiveDirectories() {
+    return Array.from(this.allocations.keys())
+  }
+
   cleanup(dir) {
     this.persistTelemetry(dir)
     this.allocations.delete(dir)
