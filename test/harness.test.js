@@ -104,3 +104,56 @@ describe('writeJSON atomicity', () => {
     expect(mainJs).toContain('fs.renameSync(tmp, p)')
   })
 })
+
+describe('XSS hardening in renderer.js', () => {
+  const rendererJs = fs.readFileSync(path.join(ROOT, 'renderer.js'), 'utf8')
+
+  it('defines esc() function for HTML escaping', () => {
+    expect(rendererJs).toContain('function esc(str)')
+    expect(rendererJs).toContain('&amp;')
+    expect(rendererJs).toContain('&lt;')
+    expect(rendererJs).toContain('&gt;')
+  })
+
+  it('escapes all log entry message fields', () => {
+    const logFunctions = [
+      'addCycleEntry', 'addErrorEntry', 'addClaudeMessageEntry',
+      'addConclusionEntry', 'addActionEntry'
+    ]
+    for (const fn of logFunctions) {
+      const block = rendererJs.split(`function ${fn}`)[1]?.split('function ')[0] || ''
+      const msgMatch = block.match(/le-msg[^>]*>(\$\{[^}]+\})/g) || []
+      for (const m of msgMatch) {
+        expect(m).toContain('esc(')
+      }
+    }
+  })
+
+  it('escapes group body text', () => {
+    expect(rendererJs).toContain('le-group-body">${esc(text)}')
+  })
+
+  it('escapes history entry labels and messages', () => {
+    const histBlock = rendererJs.split('le-history')[1]?.split('function ')[0] || ''
+    expect(histBlock).toContain('esc(ev.label)')
+    expect(histBlock).toContain('esc(ev.message)')
+  })
+
+  it('escapes process command in system monitor', () => {
+    expect(rendererJs).toContain('${esc(p.cmd)}')
+  })
+})
+
+describe('protocol module atomic writes', () => {
+  it('context-protocol uses tmp+rename for telemetry', () => {
+    const cp = fs.readFileSync(path.join(ROOT, 'context-protocol.js'), 'utf8')
+    expect(cp).toContain("file + '.tmp'")
+    expect(cp).toContain('fs.renameSync(tmp, file)')
+  })
+
+  it('resource-scheduler uses tmp+rename for telemetry', () => {
+    const rs = fs.readFileSync(path.join(ROOT, 'resource-scheduler.js'), 'utf8')
+    expect(rs).toContain("'.tmp'")
+    expect(rs).toContain('renameSync')
+  })
+})
