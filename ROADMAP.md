@@ -20,6 +20,12 @@
 - [x] **F-15** System process gauge — display live Claude subprocess CPU% and RSS from `systemProcs()` IPC in a compact panel below metrics strip.
 - [x] **F-16** ROADMAP staleness indicator — use `roadmapFreshness()` to show visual alert when ROADMAP.md is stale relative to latest commit. (Already implemented in loadRoadmapFreshness.)
 
+- [ ] **F-17** Mixer weight history chart — render SVG line chart of per-category weight drift over last 50 iterations from `mixer-history.json`, showing Smart Mix v3 adjustments and category starvation.
+- [ ] **F-18** Cross-project session dashboard — compact "all projects" summary row at top of project list showing active/idle counts, aggregate token burn, and worst compliance score.
+- [ ] **F-19** Token burn rate sparkline — mini SVG sparkline of estimated token usage per iteration in metrics strip, showing burn rate acceleration or plateau.
+- [ ] **F-20** Stall anomaly badge — detect >20min with zero commits, surface pulsing warning badge on project card with last-commit age.
+- [x] **F-21** Context compression ratio panel — display cumulative token savings, compression percentage, and files-changed-per-cycle from `metricsContext` aggregated data.
+
 ## Improvements
 
 - [x] **I-01** Increase test coverage to 60+ tests — add tests for renderer logic (mock DOM), main.js IPC handlers (mock Electron), and edge cases in Smart Mix normalization.

@@ -1,12 +1,7 @@
-# Cycle 29 Plan — IMPROVEMENT MODE
+# Cycle 35 Plan — PRODUCT MODE
 
 ## Budget (from mixer)
 product=30% backend=20% quality=20% frontend=15% security=10% perf=5%
 
 ## Units
-1. [test] I-37 Resource-scheduler efficiency + telemetry tests (136 total) ✔ 332f0e9
-2. [chore] I-38 Coordination-protocol telemetry persistence + cleanup (139 total) ✔ ca1ffbe
-3. [perf] I-39 Cache detectConflicts in coordination-protocol (141 total) ✔ fc62106
-4. [security] I-40 Validate resource parameter in acquireLock/releaseLock (143 total) ✔ fbbc277
-5. [test] I-41 Context-protocol API + telemetry tests (149 total) ✔ 18817ae
-6. [fix] I-42 Track removed sections in context-protocol delta (150 total)
+1. [product] F-21 Context compression ratio panel — cumulative token savings from metricsContext

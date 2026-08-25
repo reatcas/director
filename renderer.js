@@ -1893,6 +1893,7 @@ function updateMetricsDisplay(data) {
     if (tokensEl) { tokensEl.textContent = '—'; tokensEl.className = 'mm-val' }
     if (comprEl) { comprEl.textContent = '—'; comprEl.className = 'mm-val' }
   }
+  updateCompressionPanel(data.context || null)
 
   // Coordination
   if (data.coordination) {
@@ -2028,6 +2029,61 @@ function updateAllocInspector(allocation) {
     const hot = c.hotPath ? ' <span class="ac-hot">HOT</span>' : ''
     return `<span class="alloc-cat"><span class="ac-name">${esc(k)}</span><span class="ac-val">${esc(String(c.weight))}% · ${esc(String(pct))}% share · ${esc(String(ret))}% ret</span>${hot}</span>`
   }).join('')
+}
+
+// ─── Context Compression Panel (F-21) ─────────────────────────────────────────
+;(function initCompressionPanel() {
+  const btn = $('#compressionToggle')
+  if (!btn) return
+  btn.addEventListener('click', () => {
+    const body = $('#compressionBody')
+    if (!body) return
+    const open = body.style.display !== 'none'
+    body.style.display = open ? 'none' : ''
+    btn.textContent = (open ? '▸' : '▾') + ' COMPRESIÓN DE CONTEXTO'
+    btn.classList.toggle('open', !open)
+  })
+})()
+
+function updateCompressionPanel(contextData) {
+  const panel = $('#compressionPanel')
+  if (!panel) return
+  if (!contextData) { panel.style.display = 'none'; return }
+
+  const agg = contextData.aggregated
+  const last = contextData.lastDelta ? contextData.lastDelta.metrics : null
+  if (!agg && !last) { panel.style.display = 'none'; return }
+
+  panel.style.display = ''
+  const statsEl = $('#compressionStats')
+  const histEl = $('#compressionHistory')
+  if (!statsEl) return
+
+  const items = []
+  if (agg) {
+    const savedK = agg.totalTokensSaved > 999 ? Math.floor(agg.totalTokensSaved / 1000) + 'K' : String(agg.totalTokensSaved)
+    const processedK = agg.totalTokensProcessed > 999 ? Math.floor(agg.totalTokensProcessed / 1000) + 'K' : String(agg.totalTokensProcessed)
+    items.push(
+      `<span class="as-item">ciclos <span class="as-val">${esc(String(agg.cycles))}</span></span>`,
+      `<span class="as-item">tokens ahorrados <span class="as-val">${esc(savedK)}</span></span>`,
+      `<span class="as-item">tokens procesados <span class="as-val">${esc(processedK)}</span></span>`,
+      `<span class="as-item">compresión <span class="as-val">${esc(String(agg.cumulativeCompression))}%</span></span>`,
+      `<span class="as-item">ahorro/ciclo <span class="as-val">${esc(String(agg.avgSavedPerCycle))}</span></span>`
+    )
+  }
+  if (last) {
+    items.push(
+      `<span class="as-item">archivos <span class="as-val">${esc(String(last.filesAnalyzed))}</span></span>`,
+      `<span class="as-item">cambios <span class="as-val">${esc(String(last.filesChanged))}</span></span>`,
+      `<span class="as-item">sin cambios <span class="as-val">${esc(String(last.filesUnchanged))}</span></span>`,
+      `<span class="as-item">secciones <span class="as-val">${esc(String(last.sectionsTotal))} (${esc(String(last.sectionsUnchanged))} =)</span></span>`
+    )
+  }
+  statsEl.innerHTML = items.join('')
+
+  if (histEl && contextData.historySize !== undefined) {
+    histEl.textContent = esc(String(contextData.historySize)) + ' snapshots'
+  }
 }
 
 // ─── Compliance Display ───────────────────────────────────────────────────────
