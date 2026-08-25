@@ -48,6 +48,7 @@ class ContextProtocol {
     this.snapshots      = new Map()   // dir → { file → { hash, sections[], tokens } }
     this.deltaHistory   = new Map()   // dir → delta entries (max 100)
     this.aggregated     = new Map()   // dir → running aggregated metrics
+    this._mtimes        = new Map()   // dir → { file → mtimeMs }
   }
 
   // ─── Content hashing ────────────────────────────────────────────────────
@@ -151,9 +152,28 @@ class ContextProtocol {
     let sectionsTotal         = 0
     let sectionsUnchanged     = 0
 
+    const prevMtimes = this._mtimes.get(dir) || {}
+    const currMtimes = {}
+
     // ── Scan current state ────────────────────────────────────────────────
     for (const file of STATE_FILES) {
       const fp = path.join(dir, file)
+
+      let mtime = 0
+      try { mtime = fs.statSync(fp).mtimeMs } catch { continue }
+      currMtimes[file] = mtime
+
+      if (previous[file] && prevMtimes[file] === mtime) {
+        current[file] = previous[file]
+        totalTokens += previous[file].tokens
+        fileLevelDelta.unchanged.push(file)
+        unchangedTokens += previous[file].tokens
+        sectionsTotal += previous[file].sections.length
+        sectionsUnchanged += previous[file].sections.length
+        sectionUnchangedTokens += previous[file].tokens
+        continue
+      }
+
       let content = ''
       try { content = fs.readFileSync(fp, 'utf8') } catch { continue }
 
@@ -237,6 +257,7 @@ class ContextProtocol {
 
     // ── Store snapshot and history ────────────────────────────────────────
     this.snapshots.set(dir, current)
+    this._mtimes.set(dir, currMtimes)
 
     const hist = this.deltaHistory.get(dir) || []
     hist.push({ delta: fileLevelDelta, metrics, retentionPlan: retentionPlan.summary })
