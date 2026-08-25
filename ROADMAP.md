@@ -21,3 +21,5 @@
 - [x] **I-06** Increase test coverage to 73 — security hardening tests, main.js invariant assertions.
 - [x] **I-07** Validate IPC file path arguments as strings — prevent type errors from non-string arguments in readFile and readIterLog handlers.
 - [x] **I-08** Log filter match count + i18n placeholder — show result count and localize filter placeholder to Spanish.
+- [x] **I-09** Context protocol delta + retention tests — 11 new tests for computeDelta and _computeRetention (84 total).
+- [x] **I-10** Widen commit type regex in analyze handler — add style, security, i18n to detection regex.
