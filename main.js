@@ -1181,10 +1181,11 @@ ipcMain.handle('metrics:claude-usage', (_e, dir) => {
 
 // ─── Compliance Metrics ───────────────────────────────────────────────────────
 function parseComplianceLine(line) {
-  const m = line.match(/COMPLIANCE\s+(.+?)(?:\s+DRIFT:(.*))?$/)
+  const m = line.match(/COMPLIANCE\s+(.+?)(?:\s+DRIFT:(.*?))?(?:\s+TESTS:(\w+))?$/)
   if (!m) return null
   const pairs = m[1].trim().split(/\s+/)
   const drift = m[2] ? m[2].trim() : 'none'
+  const tests = m[3] || 'unknown'
   let totalPlanned = 0, totalActual = 0
   const categories = {}
   for (const p of pairs) {
@@ -1196,7 +1197,7 @@ function parseComplianceLine(line) {
     totalActual += Math.min(actual, planned)
   }
   const score = totalPlanned > 0 ? Math.round(totalActual / totalPlanned * 100) : null
-  return { categories, drift, score, totalPlanned, totalActual }
+  return { categories, drift, tests, score, totalPlanned, totalActual }
 }
 
 ipcMain.handle('metrics:compliance', (_e, dir) => {
