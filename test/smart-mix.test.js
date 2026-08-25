@@ -202,4 +202,31 @@ describe('Smart Mix v3', () => {
     expect(result.data_db || 0).toBeLessThanOrEqual(1)
     expect(result.i18n || 0).toBeLessThanOrEqual(1)
   })
+
+  it('handles empty commit list without crashing', () => {
+    const result = runSmartMix(baseFocus, [])
+    const sum = Object.values(result).reduce((a, b) => a + b, 0)
+    expect(sum).toBe(100)
+    for (const [k, v] of Object.entries(baseFocus)) {
+      if (v === 0) continue
+      expect(Math.abs((result[k] || 0) - v)).toBeLessThanOrEqual(4)
+    }
+  })
+
+  it('all-same-category commits reduce that category weight', () => {
+    const allSecurity = Array(50).fill('security')
+    const result = runSmartMix(baseFocus, allSecurity)
+    expect(result.security).toBeLessThan(baseFocus.security + 5)
+  })
+
+  it('neglected category gets boosted', () => {
+    const noProduct = [
+      ...Array(20).fill('backend'),
+      ...Array(15).fill('quality_tests'),
+      ...Array(10).fill('security'),
+      ...Array(5).fill('frontend'),
+    ]
+    const result = runSmartMix(baseFocus, noProduct)
+    expect(result.product).toBeGreaterThanOrEqual(baseFocus.product)
+  })
 })
