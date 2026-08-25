@@ -16,7 +16,7 @@
 // OS resource control with quantifiable impact on execution cost and time.
 
 const os = require('os')
-const { execSync } = require('child_process')
+const { execFileSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
 
@@ -142,12 +142,11 @@ class ResourceScheduler {
     // Set process priority via renice (Unix only)
     if (process.platform !== 'win32') {
       try {
-        execSync(`renice ${allocation.nice} -p ${child.pid}`, { stdio: 'ignore' })
+        execFileSync('renice', [String(allocation.nice), '-p', String(child.pid)], { stdio: 'ignore' })
       } catch {
-        // renice may fail if not root and trying to go below 0
         try {
           const safeNice = Math.max(0, allocation.nice)
-          execSync(`renice ${safeNice} -p ${child.pid}`, { stdio: 'ignore' })
+          execFileSync('renice', [String(safeNice), '-p', String(child.pid)], { stdio: 'ignore' })
         } catch {}
       }
     }
@@ -178,10 +177,9 @@ class ResourceScheduler {
 
     let rssKB = 0, cpuPct = 0, threads = 0
     try {
+      const pid = String(baseline.pid)
       if (process.platform === 'darwin') {
-        // ps on macOS: RSS in KB, %CPU, thread count
-        const raw = execSync(
-          `ps -o rss=,pcpu=,wq= -p ${baseline.pid} 2>/dev/null`,
+        const raw = execFileSync('ps', ['-o', 'rss=,pcpu=,wq=', '-p', pid],
           { encoding: 'utf8', timeout: 3000 }
         ).trim()
         const parts = raw.split(/\s+/)
@@ -189,8 +187,7 @@ class ResourceScheduler {
         cpuPct  = parseFloat(parts[1]) || 0
         threads = parseInt(parts[2], 10) || 0
       } else if (process.platform === 'linux') {
-        const raw = execSync(
-          `ps -o rss=,pcpu=,nlwp= -p ${baseline.pid} 2>/dev/null`,
+        const raw = execFileSync('ps', ['-o', 'rss=,pcpu=,nlwp=', '-p', pid],
           { encoding: 'utf8', timeout: 3000 }
         ).trim()
         const parts = raw.split(/\s+/)

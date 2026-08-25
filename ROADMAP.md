@@ -48,3 +48,4 @@
 - [x] **I-27** Eliminate double token estimation in computeDelta — derive file tokens from section sums instead of re-scanning entire content.
 - [x] **I-28** Priority-weighted resource shares in _rebalance — higher-priority orchestras get proportionally larger share instead of equal 1/n split.
 - [x] **I-29** Preload.js security invariant tests — verify contextBridge, no send/sendSync, no require/process/fs exposure, event wrapper isolation (118 total).
+- [x] **I-30** Replace execSync with execFileSync in resource-scheduler — eliminate shell interpretation for renice and ps commands.
