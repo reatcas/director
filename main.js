@@ -317,28 +317,34 @@ function getClaudeUsage(dir) {
   const usageLimited = fs.existsSync(path.join(dir, USAGE_LIMIT_SIGNAL))
   if (usageLimited) return { percent: 100, status: 'exhausted', iterations: 0, detail: 'Límite alcanzado' }
 
-  // Count iter logs since last RUN_STARTED
   const logDir = path.join(dir, '.claude/logs')
   let runStarted = 0
   try { runStarted = new Date(fs.readFileSync(path.join(dir, '.claude/RUN_STARTED'), 'utf8').trim()).getTime() } catch {}
 
-  let iterCount = 0
-  let totalBytes = 0
-  try {
-    const files = fs.readdirSync(logDir).filter(f => f.startsWith('iter-') && f.endsWith('.log'))
-    for (const f of files) {
-      const st = fs.statSync(path.join(logDir, f))
-      if (runStarted && st.mtimeMs >= runStarted) {
-        iterCount++
-        totalBytes += st.size
+  const cached = usageTracker.get(dir)
+  const now = Date.now()
+  let iterCount, totalBytes
+
+  if (cached && cached.runStarted === runStarted && (now - cached.lastScan) < 25_000) {
+    iterCount = cached.iterCount
+    totalBytes = cached.totalBytes
+  } else {
+    iterCount = 0
+    totalBytes = 0
+    try {
+      const files = fs.readdirSync(logDir).filter(f => f.startsWith('iter-') && f.endsWith('.log'))
+      for (const f of files) {
+        const st = fs.statSync(path.join(logDir, f))
+        if (runStarted && st.mtimeMs >= runStarted) {
+          iterCount++
+          totalBytes += st.size
+        }
       }
-    }
-  } catch {}
+    } catch {}
+    usageTracker.set(dir, { runStarted, iterCount, totalBytes, lastScan: now })
+  }
 
-  // Estimate tokens from bytes (rough: ~4 chars per token, avg log line includes tool output)
   const tokensEstimated = Math.round(totalBytes / 4)
-
-  // Read daily budget from orchestra.json (default 1M tokens for Max plan)
   const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
   const dailyBudget = cfg.claudeUsageBudget || 1_000_000
 
