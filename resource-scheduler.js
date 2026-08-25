@@ -215,7 +215,8 @@ class ResourceScheduler {
       rssMB:     Math.round(rssMB * 10) / 10,
       cpuPct:    Math.round(cpuPct * 10) / 10,
       threads,
-      memBudgetMB:   allocation.memBudgetMB,
+      memBudgetMB:      allocation.memBudgetMB,
+      memoryBudgetMB:   allocation.memBudgetMB,
       memUtilization: Math.round(memUtil * 1000) / 10, // percentage with 1 decimal
       cpuNormalized:  Math.round(cpuNorm * 1000) / 10,
       nice:           allocation.nice,

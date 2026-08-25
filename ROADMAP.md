@@ -77,3 +77,4 @@
 - [x] **I-47** Smart Mix edge case tests — single commit, unknown categories, weight ordering, freeze multiplier (169 total).
 - [x] **I-48** Resource-scheduler API expansion — add getSampleHistory and getActiveDirectories public methods (174 total).
 - [x] **I-49** CSS design system invariant tests — verify core color variables, font families, light theme, focus-visible, stall animation (179 total).
+- [x] **I-50** Fix sample memoryBudgetMB alias — add memoryBudgetMB field to sample object matching renderer expectation (180 total).

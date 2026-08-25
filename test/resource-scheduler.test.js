@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
+import fs from 'fs'
+import path from 'path'
 import { ResourceScheduler } from '../resource-scheduler.js'
 
 describe('ResourceScheduler', () => {
@@ -157,6 +159,14 @@ describe('ResourceScheduler', () => {
       const alloc = scheduler.computeAllocation('/spread', focus)
       const total = Object.values(alloc.categoryBudgets).reduce((s, b) => s + b.normalizedShare, 0)
       expect(total).toBeCloseTo(1.0, 5)
+    })
+  })
+
+  describe('sample object shape', () => {
+    it('source code includes memoryBudgetMB alias in sample', () => {
+      const src = fs.readFileSync(path.join(import.meta.dirname, '..', 'resource-scheduler.js'), 'utf8')
+      expect(src).toContain('memoryBudgetMB:')
+      expect(src).toContain('memBudgetMB:')
     })
   })
 
