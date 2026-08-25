@@ -26,3 +26,4 @@
 - [x] **I-11** Atomic writes for telemetry JSON in protocol modules — fix ADR-002 violation in context-protocol and resource-scheduler.
 - [x] **I-12** Resource-scheduler efficiency + edge case tests — 6 new tests (90 total).
 - [x] **I-13** Mtime-based caching in computeDelta — skip file reads when state files unchanged between polls.
+- [x] **I-14** Complete XSS hardening — escape all remaining innerHTML injections across all log entry types.
