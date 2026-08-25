@@ -933,6 +933,56 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   text-shadow: 0 0 6px rgba(232,99,26,0.2);
 }
 
+/* ── Resource allocation inspector (F-13) ────────────────────────────────── */
+.alloc-inspector {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.alloc-toggle {
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  border: none;
+  color: var(--dim);
+  font: 700 7px var(--sans);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.alloc-toggle:hover { color: var(--ai-cyan) }
+.alloc-toggle.open { color: var(--ai-cyan) }
+.alloc-body {
+  background: rgba(0,0,0,0.15);
+  padding: 6px 12px 8px;
+}
+.alloc-summary {
+  font: 9px var(--mono);
+  color: var(--dim);
+  margin-bottom: 6px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.alloc-summary .as-item { white-space: nowrap }
+.alloc-summary .as-val { color: var(--ai-cyan) }
+.alloc-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.alloc-cat {
+  font: 8px var(--mono);
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  white-space: nowrap;
+}
+.alloc-cat .ac-name { color: var(--dim); text-transform: uppercase; margin-right: 4px }
+.alloc-cat .ac-val { color: var(--fl-green) }
+.alloc-cat .ac-hot { color: var(--fl-orange); font-weight: 700 }
+
 /* ── Feature log entry ────────────────────────────────────────────────────── */
 .le-feature {
   background: rgba(233,99,26,0.03) !important;
@@ -1977,7 +2027,8 @@ html.light .smart-mix-bar.active .smart-toggle { border-color: rgba(0,122,110,.3
 }
 .unified-section.collapsed .section-body,
 .unified-section.collapsed .metrics-strip,
-.unified-section.collapsed .feature-strip {
+.unified-section.collapsed .feature-strip,
+.unified-section.collapsed .alloc-inspector {
   display: none;
 }
 .unified-section.collapsed .section-toggle { transform: rotate(-90deg) }
@@ -2424,6 +2475,10 @@ html.light #log { color: var(--txt) }
 html.light .monitor-status { background: var(--panel); border-bottom-color: var(--line) }
 html.light .metrics-strip { background: var(--panel2); border-bottom-color: var(--line) }
 html.light .feature-strip { background: var(--panel); border-bottom-color: var(--line) }
+html.light .alloc-inspector { border-bottom-color: var(--line) }
+html.light .alloc-toggle { background: var(--panel2); color: var(--dim) }
+html.light .alloc-body { background: var(--panel) }
+html.light .alloc-cat { background: rgba(0,0,0,0.03); border-color: var(--line) }
 html.light .procs-panel { background: var(--panel); border-top-color: var(--line) }
 html.light #rawLogOverlay pre { background: var(--panel2); color: var(--txt) }
 

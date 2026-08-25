@@ -1847,6 +1847,7 @@ function updateMetricsDisplay(data) {
   // Resource allocation
   if (data.resource && data.resource.allocation) {
     const a = data.resource.allocation
+    updateAllocInspector(a)
     if (allocEl) {
       allocEl.textContent = `nice ${a.nice} · ${a.tokenBudget > 999 ? Math.floor(a.tokenBudget/1000) + 'K' : a.tokenBudget} tok`
       allocEl.className = 'mm-val active'
@@ -1860,6 +1861,7 @@ function updateMetricsDisplay(data) {
       memEl.className = 'mm-val active'
     }
   } else {
+    updateAllocInspector(null)
     if (allocEl) { allocEl.textContent = '—'; allocEl.className = 'mm-val' }
     if (memEl) { memEl.textContent = '—'; memEl.className = 'mm-val' }
   }
@@ -1979,6 +1981,52 @@ async function loadMetrics() {
     window.director.claudeUsage(current)
   ])
   updateMetricsDisplay({ resource, context, coordination, claudeUsage })
+}
+
+// ─── Resource Allocation Inspector (F-13) ─────────────────────────────────────
+;(function initAllocInspector() {
+  const btn = $('#allocToggle')
+  if (!btn) return
+  btn.addEventListener('click', () => {
+    const body = $('#allocBody')
+    if (!body) return
+    const open = body.style.display !== 'none'
+    body.style.display = open ? 'none' : ''
+    btn.textContent = (open ? '▸' : '▾') + ' ASIGNACIÓN DE RECURSOS'
+    btn.classList.toggle('open', !open)
+  })
+})()
+
+function updateAllocInspector(allocation) {
+  const panel = $('#allocInspector')
+  if (!panel) return
+  if (!allocation) { panel.style.display = 'none'; return }
+
+  panel.style.display = ''
+  const sumEl = $('#allocSummary')
+  const catEl = $('#allocCategories')
+  if (!sumEl || !catEl) return
+
+  const tokK = allocation.tokenBudget > 999 ? Math.floor(allocation.tokenBudget / 1000) + 'K' : allocation.tokenBudget
+  sumEl.innerHTML = [
+    `<span class="as-item">nice <span class="as-val">${esc(String(allocation.nice))}</span></span>`,
+    `<span class="as-item">memoria <span class="as-val">${esc(String(allocation.memBudgetMB))}MB</span></span>`,
+    `<span class="as-item">tokens <span class="as-val">${esc(String(tokK))}</span></span>`,
+    `<span class="as-item">intensidad <span class="as-val">${esc(String(Math.round(allocation.avgIntensity)))}</span></span>`,
+    `<span class="as-item">peso total <span class="as-val">${esc(String(allocation.totalWeight))}</span></span>`
+  ].join('')
+
+  const cats = allocation.categoryBudgets || {}
+  const keys = Object.keys(cats).sort((a, b) => (cats[b].weight || 0) - (cats[a].weight || 0))
+  if (keys.length === 0) { catEl.innerHTML = ''; return }
+
+  catEl.innerHTML = keys.map(k => {
+    const c = cats[k]
+    const pct = Math.round((c.normalizedShare || 0) * 100)
+    const ret = Math.round((c.contextRetentionFactor || 0) * 100)
+    const hot = c.hotPath ? ' <span class="ac-hot">HOT</span>' : ''
+    return `<span class="alloc-cat"><span class="ac-name">${esc(k)}</span><span class="ac-val">${esc(String(c.weight))}% · ${esc(String(pct))}% share · ${esc(String(ret))}% ret</span>${hot}</span>`
+  }).join('')
 }
 
 // ─── Compliance Display ───────────────────────────────────────────────────────

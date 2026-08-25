@@ -14,6 +14,8 @@
 - [x] **F-09** Knowledge tab: PENDING.md + CYCLE_LEARNINGS.md — expose blocked items and learned lessons in the Knowledge tab for operator situational awareness. No new IPC needed.
 - [x] **F-10** Commit category breakdown — parse existing By type JSON from analysis report and render a stacked bar chart with color-coded segments + legend.
 - [x] **F-11** Compliance score sparkline — render SVG sparkline of score history from existing `complianceMetrics` data. Color-coded trend line.
+- [x] **F-12** Blueprint readiness indicator — visual progress gauge showing discovery completeness from `blueprintReadiness()` IPC. Renders in Blueprint tab header.
+- [x] **F-13** Resource allocation inspector — display memory budgets, token budgets, and process priority from `metricsAllocation()` IPC. New collapsible panel in metrics area.
 
 ## Improvements
 
