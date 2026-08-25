@@ -37,6 +37,8 @@ BACKOFF_STEPS=(30 60 120 300 600 900)
 BACKOFF_IDX=0
 HALLUCINATION_STREAK=0
 MAX_HALLUCINATION_STREAK=5
+IMPROVEMENT_STREAK=0
+MAX_IMPROVEMENT_STREAK=10
 ITER=0
 while :; do
 
@@ -243,9 +245,12 @@ for raw in sys.stdin:
     # Mixer compliance check
     if [ -f "$CFG" ] && [ "$REAL_COMMITS" -gt 0 ]; then
       PRODUCT_W=$(json_val "focus.product" "0" 2>/dev/null || echo 0)
-      PRODUCT_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'feat|feature|product' || echo 0)
+      # Honest product counting: exclude feat(i18n), feat(api):validate UUID, feat(ui):bind, etc.
+      PRODUCT_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -iE '^[a-f0-9]+ feat' | grep -cviE 'i18n|uuid|validate|bind.*label|translat|hex.*color|color.*token|primeflex' || echo 0)
       QUALITY_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'test|fix|refactor|quality' || echo 0)
-      AUDIT_LINE="[audit] iter=$ITER commits=$REAL_COMMITS claimed=$CLAIMED product_commits=$PRODUCT_COMMITS quality_commits=$QUALITY_COMMITS product_weight=$PRODUCT_W"
+      I18N_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'i18n|translat|bind.*label' || echo 0)
+      SECURITY_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'security|uuid.*valid|validate.*uuid|auth|rbac|tenant' || echo 0)
+      AUDIT_LINE="[audit] iter=$ITER commits=$REAL_COMMITS claimed=$CLAIMED product=$PRODUCT_COMMITS quality=$QUALITY_COMMITS i18n=$I18N_COMMITS security=$SECURITY_COMMITS product_weight=$PRODUCT_W"
       echo "[orchestra v$VERSION] $AUDIT_LINE" | tee -a "$MASTER_LOG"
       # Write to learnings file
       echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $AUDIT_LINE agent=$AI_AGENT model=$MODEL" >> .claude/CYCLE_LEARNINGS.md
@@ -263,10 +268,51 @@ for raw in sys.stdin:
     fi
   fi
 
-  # ── Smart Mix: continuous per-stand self-regulation ──────────────────────
-  # Every 3 iterations, analyze recent commits and nudge each stand ±3%.
-  # Stands that are over-represented shrink, under-represented grow.
-  # Enforces minimums (security≥5%, quality≥5%) and anti-slop diversity.
+  # ── Anti-slop: detect category repetition + mislabeled commits ──────────
+  if [ "$START_COMMIT" != "$END_COMMIT" ] && [ "$END_COMMIT" != "none" ]; then
+    # Detect mislabeled feat() commits (i18n/UUID/style work labeled as feat)
+    MISLABELED=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'feat\(.*i18n|feat\(.*uuid|feat\(.*bind|feat\(.*translat|feat\(.*hex|feat\(.*color.token|feat\(.*primeflex' || echo 0)
+    if [ "$MISLABELED" -gt 0 ]; then
+      stamp "ANTI-SLOP: $MISLABELED mislabeled feat() commits detected (i18n/security/style work labeled as feat)"
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) MISLABELED_FEAT=$MISLABELED agent=$AI_AGENT — i18n/uuid/style work falsely labeled as feat()" >> .claude/CYCLE_LEARNINGS.md
+    fi
+    # Detect mechanical busywork (many tiny same-pattern commits)
+    MECHANICAL=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'bind [0-9]+ .*label|bind [0-9]+ .*header|translate [0-9]+ .*label|validate uuid|validate UUID' || echo 0)
+    if [ "$MECHANICAL" -gt 3 ]; then
+      stamp "ANTI-SLOP: $MECHANICAL mechanical commits detected — should be batched into 1-2 commits"
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) MECHANICAL_BUSYWORK=$MECHANICAL agent=$AI_AGENT — unbatched repetitive commits" >> .claude/CYCLE_LEARNINGS.md
+    fi
+    # Detect module concentration (same file/module hit too many times)
+    TOP_MODULE=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -oE '\([a-zA-Z_-]+\)' | sort | uniq -c | sort -rn | head -1 | awk '{print $1, $2}')
+    TOP_COUNT=$(echo "$TOP_MODULE" | awk '{print $1}')
+    TOP_NAME=$(echo "$TOP_MODULE" | awk '{print $2}')
+    if [ "${TOP_COUNT:-0}" -gt 5 ]; then
+      stamp "ANTI-SLOP: module $TOP_NAME hit $TOP_COUNT times in this iteration — concentration violation"
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) MODULE_CONCENTRATION=$TOP_NAME×$TOP_COUNT agent=$AI_AGENT" >> .claude/CYCLE_LEARNINGS.md
+    fi
+
+    # ── Improvement mode streak detection ──────────────────────────────────
+    # If ZERO product commits in this iteration but product weight > 0, count as improvement-only cycle
+    PRODUCT_W_CHECK=$(json_val "focus.product" "0" 2>/dev/null || echo 0)
+    if [ "${PRODUCT_COMMITS:-0}" -eq 0 ] && [ "$PRODUCT_W_CHECK" -gt 0 ]; then
+      IMPROVEMENT_STREAK=$((IMPROVEMENT_STREAK + 1))
+      if [ "$IMPROVEMENT_STREAK" -ge "$MAX_IMPROVEMENT_STREAK" ]; then
+        stamp "IMPROVEMENT-LIMIT: $IMPROVEMENT_STREAK consecutive cycles with ZERO product work (budget=$PRODUCT_W_CHECK%). Injecting PRODUCT_REQUIRED directive."
+        echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) IMPROVEMENT_LIMIT_HIT=$IMPROVEMENT_STREAK agent=$AI_AGENT — product budget=$PRODUCT_W_CHECK% but 0% actual for $IMPROVEMENT_STREAK cycles" >> .claude/CYCLE_LEARNINGS.md
+        # Inject a product directive that the agent MUST read at next boot
+        echo "⚠️ HARNESS OVERRIDE: You have done $IMPROVEMENT_STREAK consecutive cycles with ZERO product work. Product budget is $PRODUCT_W_CHECK%. Your NEXT cycle MUST be 100% product from ROADMAP.md. Check ALL unchecked features (P0, P1, P2) — if ANY exist, work on them. Do NOT enter IMPROVEMENT MODE." > .claude/PRODUCT_DIRECTIVE.md
+      else
+        stamp "PRODUCT-STARVATION: $IMPROVEMENT_STREAK/$MAX_IMPROVEMENT_STREAK cycles without product work (budget=$PRODUCT_W_CHECK%)"
+      fi
+    else
+      IMPROVEMENT_STREAK=0
+    fi
+  fi
+
+  # ── Smart Mix v2: aggressive self-regulation with category freeze ────────
+  # Every 3 iterations, analyze last 50 commits and correct deviations.
+  # Key fixes over v1: larger window, stronger corrections, budget-based floors,
+  # category freeze when >2× budget, honest commit classification.
   SMART_MIX=$(json_val smartMix false)
   if [ "$SMART_MIX" = "true" ] && [ $((ITER % 3)) -eq 0 ] && [ "$ITER" -gt 0 ]; then
     python3 -u - "$CFG" <<'SMARTMIX_PY'
@@ -275,73 +321,112 @@ import json, subprocess, sys, re
 cfg_path = sys.argv[1]
 cfg = json.load(open(cfg_path))
 focus = cfg.get("focus", {})
+original_focus = dict(focus)
 
-# Classify last 20 commits into categories
+# Analyze last 50 commits (v1 only did 20 — too small a window)
 try:
-    log = subprocess.check_output(["git", "log", "--oneline", "-20"], text=True, timeout=5)
-except:
+    log = subprocess.check_output(["git", "log", "--oneline", "-50"], text=True, timeout=5)
+except Exception:
     sys.exit(0)
 
 lines = [l.strip() for l in log.strip().split("\n") if l.strip()]
-if len(lines) < 3:
+if len(lines) < 5:
     sys.exit(0)
 
-# Category detection from commit messages
-cat_map = {
-    "product":       r"feat\((?!test|ui|api|report)",
-    "frontend":      r"feat\(ui|feat\(webapp|feat\(mobile|fix\(ui|fix\(i18n|i18n",
-    "backend":       r"feat\(api|feat\(backend|fix\(api|fix\(backend",
-    "security":      r"security|auth|xss|csrf|inject|sanitiz|rate.limit",
-    "quality_tests": r"test\(|test:|add.*test|validation test|handler test",
-    "performance":   r"perf|optim|index|cache|lazy|bundle",
-    "ux_accessibility": r"a11y|accessib|aria|keyboard|responsive|empty.state|loading.state",
-    "data_db":       r"migrat|schema|database|query|sql",
-}
+# Honest category detection — prevents mislabeling exploits
+# Order matters: specific patterns first, broad ones last
+cat_rules = [
+    # i18n FIRST — catches feat(i18n), fix(i18n), i18n:, chore(i18n), bind.*label, translate
+    ("i18n",            r"i18n|bind.*label|translate|hardcoded.*string|hardcoded.*label"),
+    # security — UUID validation, auth, injection, sanitization
+    ("security",        r"security|auth[^o]|xss|csrf|inject|sanitiz|rate.limit|uuid.*valid|validate.*uuid|rbac|tenant.*guard"),
+    # tests
+    ("quality_tests",   r"^[a-f0-9]+ test[\(:]|add.*test|handler test|validation test"),
+    # performance
+    ("performance",     r"perf[\(:]|optim|n\+1|cache|lazy|bundle|count.*over"),
+    # style/chore — color tokens, CSS cleanup, PrimeFlex, hex replacement
+    ("refactoring",     r"style[\(:]|chore[\(:]|refactor|hex.*color|color.*token|primeflex|purge|cleanup|clean.up"),
+    # ux/a11y
+    ("ux_accessibility",r"a11y|accessib|aria|keyboard|responsive|empty.state|loading.state|ux[\(:]"),
+    # data/db
+    ("data_db",         r"migrat|schema|database|constraint|check.*constraint"),
+    # frontend — UI features (NOT i18n, NOT style)
+    ("frontend",        r"feat\(ui|feat\(webapp|feat\(mobile|fix\(ui|feat\(component"),
+    # backend — API features (NOT UUID validation)
+    ("backend",         r"feat\(api|feat\(backend|fix\(api|fix\(backend"),
+    # product — true new features only (must have feat( and NOT match above)
+    ("product",         r"feat\((?!i18n|test|style|chore)"),
+    # docs
+    ("documentation",   r"docs[\(:]|readme|documentation"),
+]
 
-counts = {k: 0 for k in cat_map}
+counts = {k: 0 for k in focus}
 for line in lines:
     matched = False
-    for cat, pat in cat_map.items():
-        if re.search(pat, line, re.I):
+    msg = line.split(" ", 1)[1] if " " in line else line  # strip hash
+    for cat, pat in cat_rules:
+        if cat in counts and re.search(pat, msg, re.I):
             counts[cat] += 1
             matched = True
             break
     if not matched:
-        # Default unmatched to product
-        counts["product"] += 1
+        # Unmatched goes to "other" bucket — NOT product (v1 bug: inflated product)
+        counts["refactoring"] = counts.get("refactoring", 0) + 1
 
 total = max(sum(counts.values()), 1)
 
-# Calculate actual % vs target %
+# Calculate deviations and corrections
+STEP = 8          # max adjustment per check (v1 was 3 — too weak)
+DEAD_ZONE = 3     # tolerance in percentage points (v1 was 8 — too wide)
+FREEZE_MULT = 2.0 # freeze category if actual > target × this multiplier
+
 adjustments = {}
-STEP = 3  # max adjustment per cycle
-MIN_FLOORS = {"security": 5, "quality_tests": 5, "product": 5}
+frozen = []
+starved = []
 
 for cat in focus:
     target = focus[cat]
-    actual = int(counts.get(cat, 0) * 100 / total)
+    actual = round(counts.get(cat, 0) * 100 / total)
 
     if target == 0:
-        continue  # user explicitly zeroed this
+        if actual > 5:
+            # Category should be zero but has work — shrink it hard
+            adjustments[cat] = -STEP
+        continue
 
-    delta = target - actual
-    if abs(delta) < 8:
-        # Close enough — no adjustment
+    deviation = actual - target  # positive = over-represented
+
+    # FREEZE: if category is >2× its budget, block it entirely
+    if target > 0 and actual > target * FREEZE_MULT and actual > 10:
+        frozen.append(f"{cat}({actual}%>{target}%)")
+        adjustments[cat] = -STEP  # aggressive shrink
+        continue
+
+    # STARVED: if category has 0% actual but >0% target
+    if actual == 0 and target >= 5:
+        starved.append(f"{cat}(0%<{target}%)")
+        adjustments[cat] = STEP  # aggressive boost
+        continue
+
+    if abs(deviation) <= DEAD_ZONE:
         adjustments[cat] = 0
-    elif delta > 0:
-        # Under-represented → boost
-        adjustments[cat] = min(STEP, delta // 2)
+    elif deviation > 0:
+        # Over-represented — shrink proportionally
+        adjustments[cat] = max(-STEP, -deviation // 2)
     else:
-        # Over-represented → shrink
-        adjustments[cat] = max(-STEP, delta // 2)
+        # Under-represented — boost proportionally
+        adjustments[cat] = min(STEP, (-deviation) // 2)
 
-# Apply adjustments
+# Apply adjustments with floor enforcement
+# Floors = configured budget (not a hardcoded 5% like v1)
 new_focus = {}
 for cat in focus:
-    new_val = focus[cat] + adjustments.get(cat, 0)
-    # Enforce floors
-    floor = MIN_FLOORS.get(cat, 0)
-    new_val = max(floor, min(60, new_val))  # cap at 60% to prevent slop
+    base = original_focus[cat]
+    adj = adjustments.get(cat, 0)
+    new_val = focus[cat] + adj
+    # Floor = half of original budget (never let a category go below half its intended weight)
+    floor = max(base // 2, 1) if base > 0 else 0
+    new_val = max(floor, min(50, new_val))  # cap at 50%
     new_focus[cat] = new_val
 
 # Normalize to 100%
@@ -349,31 +434,35 @@ total_new = sum(new_focus.values())
 if total_new > 0 and total_new != 100:
     factor = 100.0 / total_new
     remainder = 0
-    for cat in new_focus:
+    for cat in sorted(new_focus.keys()):
         exact = new_focus[cat] * factor + remainder
         rounded = int(exact)
         remainder = exact - rounded
         new_focus[cat] = rounded
-    # Fix rounding
     diff = 100 - sum(new_focus.values())
     if diff != 0:
-        # Add remainder to largest category
         largest = max(new_focus, key=lambda k: new_focus[k])
         new_focus[largest] += diff
 
-# Check if anything changed
+# Build status message
 changed = {k: new_focus[k] - focus.get(k, 0) for k in new_focus if new_focus[k] != focus.get(k, 0)}
+parts = []
+if frozen:
+    parts.append(f"FROZEN:[{','.join(frozen)}]")
+if starved:
+    parts.append(f"STARVED:[{','.join(starved)}]")
+
 if changed:
     cfg["focus"] = new_focus
     json.dump(cfg, open(cfg_path, "w"), indent=2)
-    parts = [f"{k}:{'+' if v > 0 else ''}{v}" for k, v in changed.items() if v != 0]
-    print(f"SMART-MIX adjusted: {', '.join(parts)}")
+    adj_parts = [f"{k}:{'+' if v > 0 else ''}{v}" for k, v in changed.items() if v != 0]
+    parts.append(f"adj:[{','.join(adj_parts)}]")
+    print(f"SMART-MIX v2: {' '.join(parts)}")
 else:
-    print("SMART-MIX: balanced — no adjustment needed")
+    print("SMART-MIX v2: balanced — no adjustment needed")
 SMARTMIX_PY
     SMART_RESULT=$?
     if [ "$SMART_RESULT" -eq 0 ]; then
-      # Log the adjustment
       SMART_OUT=$(tail -1 "$MASTER_LOG" 2>/dev/null | grep "SMART-MIX" || echo "")
       [ -n "$SMART_OUT" ] && echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $SMART_OUT" >> .claude/CYCLE_LEARNINGS.md
     fi

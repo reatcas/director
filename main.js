@@ -714,7 +714,7 @@ ipcMain.handle('orchestra:install', (_e, dir) => {
 })
 
 const AI_DEFAULTS = {
-  claude: { label: 'Claude (Anthropic)', credits: 100, resetAt: null, vendor: 'anthropic', models: [{id: 'claude-opus-4-6', label: 'Claude Opus 4.6'}, {id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6'}, {id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5'}], defaultModel: 'claude-sonnet-4-6' },
+  claude: { label: 'Claude (Anthropic)', credits: 100, resetAt: null, vendor: 'anthropic', models: [{id: 'claude-fable-5', label: 'Claude Fable 5'}, {id: 'claude-opus-5', label: 'Claude Opus 5'}, {id: 'claude-sonnet-5', label: 'Claude Sonnet 5'}, {id: 'claude-opus-4-6', label: 'Claude Opus 4.6'}, {id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6'}, {id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5'}], defaultModel: 'claude-sonnet-4-6' },
   agy: { label: 'Antigravity', credits: 100, resetAt: null, vendor: 'antigravity', models: [{id: 'Gemini 3.1 Pro (High)', label: 'Gemini 3.1 Pro'}, {id: 'Gemini 3.7 Flash (High)', label: 'Gemini 3.7 Flash'}, {id: 'Claude Sonnet 4.6 (Thinking)', label: 'Claude 4.6 via AGY'}], defaultModel: 'Gemini 3.7 Flash (High)' },
   codex: { label: 'Codex (OpenAI)', credits: 100, resetAt: null, vendor: 'openai', models: [{id: 'default', label: 'Codex'}], defaultModel: 'default' },
   aider: { label: 'Aider (Multi)', credits: 100, resetAt: null, vendor: 'aider', models: [{id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6'}, {id: 'gpt-4o', label: 'GPT-4o'}, {id: 'gemini/gemini-2.5-pro', label: 'Gemini 2.5 Pro'}, {id: 'deepseek/deepseek-coder', label: 'DeepSeek Coder'}], defaultModel: 'claude-sonnet-4-6' }
