@@ -633,8 +633,13 @@ function playOrchestra(dir, agent = 'claude') {
               if (AI_DEFAULTS[nextAgent]?.defaultModel) cfg.model = AI_DEFAULTS[nextAgent].defaultModel
               writeJSON(cfgPath, cfg)
             } catch {}
-            playOrchestra(dir, nextAgent)
-            if (win && !win.isDestroyed()) win.webContents.send('orchestra:resumed', { dir, agent: nextAgent })
+            try {
+              playOrchestra(dir, nextAgent)
+              if (win && !win.isDestroyed()) win.webContents.send('orchestra:resumed', { dir, agent: nextAgent })
+            } catch (err) {
+              persistLifecycleEvent(dir, 'error', 'CRASH', `Auto-restart falló al cambiar agente: ${err.message}`)
+              if (win && !win.isDestroyed()) win.webContents.send('orchestra:exit', { dir, code: 1 })
+            }
           }
         }, 500)
       } else {
@@ -666,8 +671,13 @@ function playOrchestra(dir, agent = 'claude') {
         persistLifecycleEvent(dir, 'auto_resume', 'LOOP', 'Reiniciando orquesta automáticamente (infinite loop)')
         setTimeout(() => {
           if (!isRunning(dir)) {
-            playOrchestra(dir, agent)
-            if (win && !win.isDestroyed()) win.webContents.send('orchestra:resumed', { dir, agent })
+            try {
+              playOrchestra(dir, agent)
+              if (win && !win.isDestroyed()) win.webContents.send('orchestra:resumed', { dir, agent })
+            } catch (err) {
+              persistLifecycleEvent(dir, 'error', 'CRASH', `Auto-restart falló: ${err.message}`)
+              if (win && !win.isDestroyed()) win.webContents.send('orchestra:exit', { dir, code: 1 })
+            }
           }
         }, 3000)
       }
@@ -1492,7 +1502,7 @@ app.whenReady().then(() => {
   // Start hot-reload watcher for protocol files
   startHotReloadWatcher()
 
-  // Re-attach tailers for any already-running projects
+  // Re-attach tailers for any already-running projects + cleanup stale signals
   const projects = readJSON(store(), [])
   for (const p of projects) {
     if (!p.path) continue
@@ -1500,10 +1510,22 @@ app.whenReady().then(() => {
       const logFile = path.join(p.path, '.claude/logs/orchestra.log')
       if (fs.existsSync(logFile)) startTailing(p.path, logFile)
     }
-    // Restart resume watch if usage limit was active
     const usageSig = path.join(p.path, USAGE_LIMIT_SIGNAL)
     if (fs.existsSync(usageSig) && !isRunning(p.path)) {
-      watchForResume(p.path)
+      const pidFile = path.join(p.path, '.claude/ORCHESTRA_PID')
+      let pidStillAlive = false
+      if (fs.existsSync(pidFile)) {
+        try {
+          const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim())
+          pidStillAlive = pid > 0 && pidAlive(pid)
+        } catch {}
+      }
+      if (pidStillAlive) {
+        watchForResume(p.path)
+      } else {
+        try { fs.unlinkSync(usageSig) } catch {}
+        try { fs.unlinkSync(pidFile) } catch {}
+      }
     }
   }
 })
