@@ -123,6 +123,16 @@ describe('ContextProtocol', () => {
       expect(details.changed[0].title).toBe('B')
     })
 
+    it('detects removed sections', () => {
+      fs.writeFileSync(path.join(tmpDir, 'PLAN.md'), '# A\nfoo\n## B\nbar\n## C\nbaz')
+      proto.computeDelta(tmpDir, { product: 50 })
+      fs.writeFileSync(path.join(tmpDir, 'PLAN.md'), '# A\nfoo')
+      const result = proto.computeDelta(tmpDir, { product: 50 })
+      const details = result.delta.sectionDetails['PLAN.md']
+      expect(details.removed).toContain('B')
+      expect(details.removed).toContain('C')
+    })
+
     it('returns retention plan with token savings', () => {
       fs.writeFileSync(path.join(tmpDir, 'PLAN.md'), '# Plan\n' + 'word '.repeat(200))
       const result = proto.computeDelta(tmpDir, { product: 5, security: 90 })

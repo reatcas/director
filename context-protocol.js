@@ -193,8 +193,9 @@ class ContextProtocol {
         // Section-level analysis — the granular delta
         const prevSections = previous[file].sections || []
         const prevMap = new Map(prevSections.map(s => [s.title, s]))
-        const sectionDelta = { changed: [], unchanged: [], added: [] }
+        const sectionDelta = { changed: [], unchanged: [], added: [], removed: [] }
 
+        const currTitles = new Set(sections.map(s => s.title))
         for (const sec of sections) {
           sectionsTotal++
           const prev = prevMap.get(sec.title)
@@ -212,6 +213,9 @@ class ContextProtocol {
             sectionUnchangedTokens += sec.tokens
             sectionsUnchanged++
           }
+        }
+        for (const prev of prevSections) {
+          if (!currTitles.has(prev.title)) sectionDelta.removed.push(prev.title)
         }
         fileLevelDelta.sectionDetails[file] = sectionDelta
       } else {
