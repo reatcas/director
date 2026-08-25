@@ -19,3 +19,5 @@
 - [x] **I-04** Cache iter-log scan in getClaudeUsage — skip readdirSync+statSync rescan within 25s to reduce main-thread I/O during metrics sampling.
 - [x] **I-05** Escape all log entry innerHTML + restrict kill-proc signals — prevent XSS from rogue subprocess output and arbitrary signal injection.
 - [x] **I-06** Increase test coverage to 73 — security hardening tests, main.js invariant assertions.
+- [x] **I-07** Validate IPC file path arguments as strings — prevent type errors from non-string arguments in readFile and readIterLog handlers.
+- [x] **I-08** Log filter match count + i18n placeholder — show result count and localize filter placeholder to Spanish.
