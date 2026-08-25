@@ -1374,18 +1374,26 @@ if ($('#logFilterInput')) {
   filterInput.addEventListener('input', (e) => {
     const q = e.target.value.toLowerCase()
     const logEl = $('#log')
+    const countEl = $('#logFilterCount')
     if (!logEl) return
     if (!q) {
       logEl.classList.remove('filtering')
+      if (countEl) countEl.style.display = 'none'
     } else {
       logEl.classList.add('filtering')
+      let matchCount = 0
       const entries = logEl.querySelectorAll('.le, .le-group')
       for (const el of entries) {
         if (el.textContent.toLowerCase().includes(q)) {
           el.classList.add('match')
+          matchCount++
         } else {
           el.classList.remove('match')
         }
+      }
+      if (countEl) {
+        countEl.textContent = matchCount + ' resultado' + (matchCount !== 1 ? 's' : '')
+        countEl.style.display = ''
       }
     }
   })
