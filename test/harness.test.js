@@ -185,3 +185,43 @@ describe('preload.js security invariants', () => {
     expect(wrappers.length).toBe(listeners.length)
   })
 })
+
+describe('coordination-protocol security invariants', () => {
+  const cp = fs.readFileSync(path.join(ROOT, 'coordination-protocol.js'), 'utf8')
+
+  it('uses atomic writes for telemetry persistence', () => {
+    expect(cp).toContain("'.tmp'")
+    expect(cp).toContain('renameSync')
+  })
+
+  it('validates resource parameter in acquireLock', () => {
+    expect(cp).toContain("typeof resource !== 'string'")
+  })
+
+  it('validates dir and allocation in register', () => {
+    expect(cp).toContain('if (!dir || !allocation) return null')
+  })
+
+  it('caps conflict log and events arrays', () => {
+    expect(cp).toContain('conflictLog.length > 100')
+    expect(cp).toContain('events.length > 200')
+  })
+})
+
+describe('index.html security invariants', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
+
+  it('does not contain inline script tags', () => {
+    const inlineScripts = html.match(/<script(?!.*src=)[^>]*>/g) || []
+    const filtered = inlineScripts.filter(s => !s.includes('src='))
+    expect(filtered.length).toBe(0)
+  })
+
+  it('sets lang attribute on html tag', () => {
+    expect(html).toMatch(/<html[^>]+lang="es"/)
+  })
+
+  it('loads renderer.js from a script tag', () => {
+    expect(html).toContain('<script src="renderer.js"></script>')
+  })
+})
