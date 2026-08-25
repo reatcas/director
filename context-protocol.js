@@ -248,6 +248,8 @@ class ContextProtocol {
       filesAnalyzed:        Object.keys(current).length,
       filesChanged:         fileLevelDelta.changed.length,
       filesUnchanged:       fileLevelDelta.unchanged.length,
+      filesAdded:           fileLevelDelta.added.length,
+      filesRemoved:         fileLevelDelta.removed.length,
       sectionsTotal,
       sectionsUnchanged,
       sectionCompressionRatio: sectionsTotal > 0

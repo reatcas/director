@@ -130,6 +130,19 @@ describe('ContextProtocol', () => {
       expect(result.retentionPlan.summary['PLAN.md']).toBeDefined()
     })
 
+    it('tracks filesAdded and filesRemoved in metrics', () => {
+      fs.writeFileSync(path.join(tmpDir, 'PLAN.md'), '# Plan\nv1')
+      const first = proto.computeDelta(tmpDir, { product: 50 })
+      expect(first.metrics.filesAdded).toBe(1)
+      expect(first.metrics.filesRemoved).toBe(0)
+
+      fs.unlinkSync(path.join(tmpDir, 'PLAN.md'))
+      fs.writeFileSync(path.join(tmpDir, 'ROADMAP.md'), '# Roadmap\nv1')
+      const second = proto.computeDelta(tmpDir, { product: 50 })
+      expect(second.metrics.filesAdded).toBe(1)
+      expect(second.metrics.filesRemoved).toBe(1)
+    })
+
     it('compression ratio is between 0 and 100', () => {
       fs.writeFileSync(path.join(tmpDir, 'PLAN.md'), '# Plan\ncontent here')
       proto.computeDelta(tmpDir, { product: 50 })
