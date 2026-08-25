@@ -731,7 +731,7 @@ ipcMain.handle('repertoire:open', (_e, dir) => {
 })
 
 ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
-  if (!dir || !subpath) return null
+  if (!dir || typeof subpath !== 'string' || !subpath.trim()) return null
   const p = path.join(dir, subpath)
   if (!p.startsWith(dir)) return null
   try {
@@ -996,7 +996,7 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
 
 // ─── Read iteration log summary ──────────────────────────────────────────────
 ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
-  if (!dir || !logPath) return ''
+  if (!dir || typeof logPath !== 'string' || !logPath.trim()) return ''
   const fullPath = path.isAbsolute(logPath) ? logPath : path.join(dir, logPath)
   if (!fullPath.startsWith(dir)) return ''
   try {
