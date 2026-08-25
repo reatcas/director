@@ -59,5 +59,150 @@ describe('CoordinationProtocol', () => {
       coord.unregister('/a')
       expect(coord.instances.size).toBe(0)
     })
+
+    it('releases locks held by unregistered instance', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      coord.acquireLock('/a', 'gpu:0')
+      expect(coord.locks.size).toBe(1)
+      coord.unregister('/a')
+      expect(coord.locks.size).toBe(0)
+    })
+  })
+
+  describe('acquireLock', () => {
+    it('grants lock when no contention', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      const result = coord.acquireLock('/a', 'gpu:0')
+      expect(result.acquired).toBe(true)
+    })
+
+    it('allows reentrant lock from same holder', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      coord.acquireLock('/a', 'gpu:0')
+      const result = coord.acquireLock('/a', 'gpu:0')
+      expect(result.acquired).toBe(true)
+      expect(result.reentrant).toBe(true)
+    })
+
+    it('preempts lower-priority holder', () => {
+      coord.register('/low', 100, {
+        nice: 10, avgIntensity: 20, maxIntensity: 20,
+        memBudgetMB: 2048, tokenBudget: 200000,
+        totalWeight: 20,
+        categoryBudgets: {}
+      })
+      coord.register('/high', 200, {
+        nice: 0, avgIntensity: 90, maxIntensity: 90,
+        memBudgetMB: 4096, tokenBudget: 900000,
+        totalWeight: 90,
+        categoryBudgets: {}
+      })
+      coord.acquireLock('/low', 'gpu:0')
+      const result = coord.acquireLock('/high', 'gpu:0')
+      expect(result.acquired).toBe(true)
+      expect(result.preempted).toBe('/low')
+    })
+
+    it('denies lower-priority requester', () => {
+      coord.register('/high', 200, {
+        nice: 0, avgIntensity: 90, maxIntensity: 90,
+        memBudgetMB: 4096, tokenBudget: 900000,
+        totalWeight: 90,
+        categoryBudgets: {}
+      })
+      coord.register('/low', 100, {
+        nice: 10, avgIntensity: 20, maxIntensity: 20,
+        memBudgetMB: 2048, tokenBudget: 200000,
+        totalWeight: 20,
+        categoryBudgets: {}
+      })
+      coord.acquireLock('/high', 'gpu:0')
+      const result = coord.acquireLock('/low', 'gpu:0')
+      expect(result.acquired).toBe(false)
+      expect(result.reason).toBe('lower_priority')
+    })
+
+    it('rejects unregistered instance', () => {
+      const result = coord.acquireLock('/unknown', 'gpu:0')
+      expect(result.acquired).toBe(false)
+      expect(result.reason).toBe('not_registered')
+    })
+  })
+
+  describe('releaseLock', () => {
+    it('releases lock held by instance', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: {}
+      })
+      coord.acquireLock('/a', 'gpu:0')
+      expect(coord.releaseLock('/a', 'gpu:0')).toBe(true)
+      expect(coord.locks.size).toBe(0)
+    })
+
+    it('returns false for non-holder', () => {
+      expect(coord.releaseLock('/nobody', 'gpu:0')).toBe(false)
+    })
+  })
+
+  describe('detectConflicts', () => {
+    it('returns empty when no overlapping high weights', () => {
+      coord.register('/a', 100, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: { product: { weight: 80 } }
+      })
+      coord.register('/b', 200, {
+        nice: 5, avgIntensity: 50, maxIntensity: 50,
+        memBudgetMB: 2048, tokenBudget: 400000,
+        categoryBudgets: { security: { weight: 80 } }
+      })
+      const conflicts = coord.detectConflicts()
+      expect(conflicts.length).toBe(0)
+    })
+
+    it('detects overlapping high-weight categories', () => {
+      coord.register('/a', 100, {
+        nice: 0, avgIntensity: 80, maxIntensity: 80,
+        memBudgetMB: 4096, tokenBudget: 800000,
+        categoryBudgets: { product: { weight: 60 } }
+      })
+      coord.register('/b', 200, {
+        nice: 0, avgIntensity: 80, maxIntensity: 80,
+        memBudgetMB: 4096, tokenBudget: 800000,
+        categoryBudgets: { product: { weight: 60 } }
+      })
+      const conflicts = coord.detectConflicts()
+      expect(conflicts.length).toBe(1)
+      expect(conflicts[0].overlappingCategories[0].category).toBe('product')
+    })
+  })
+
+  describe('_computePriority', () => {
+    it('returns 100 for null allocation', () => {
+      expect(coord._computePriority(null)).toBe(100)
+    })
+
+    it('clamps to minimum of 1', () => {
+      const p = coord._computePriority({
+        avgIntensity: 100, maxIntensity: 100,
+        totalWeight: 12000, tokenBudget: 1000000,
+        categoryBudgets: { a: { hotPath: true }, b: { hotPath: true }, c: { hotPath: true }, d: { hotPath: true } }
+      })
+      expect(p).toBeGreaterThanOrEqual(1)
+    })
   })
 })

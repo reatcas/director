@@ -48,3 +48,44 @@ describe('F-02: final git check on process exit', () => {
     expect(mainJs).toContain('gitLastHash.set(dir,')
   })
 })
+
+describe('I-02: auto-restart try/catch', () => {
+  it('wraps agent-switch playOrchestra in try/catch', () => {
+    const switchBlock = mainJs.split('SWITCH')[1]?.split('} else {')[0] || ''
+    expect(switchBlock).toContain('try {')
+    expect(switchBlock).toContain('playOrchestra(dir, nextAgent)')
+    expect(switchBlock).toContain('catch (err)')
+  })
+
+  it('wraps infinite-loop playOrchestra in try/catch', () => {
+    const loopBlock = mainJs.split('Reiniciando orquesta automáticamente')[1]?.split('orchestra:exit')[0] || ''
+    expect(loopBlock).toContain('try {')
+    expect(loopBlock).toContain('playOrchestra(dir, agent)')
+    expect(loopBlock).toContain('catch (err)')
+  })
+
+  it('logs crash events via persistLifecycleEvent', () => {
+    const crashLogs = mainJs.match(/Auto-restart falló/g) || []
+    expect(crashLogs.length).toBeGreaterThanOrEqual(2)
+  })
+})
+
+describe('I-03: stale USAGE_LIMIT cleanup on startup', () => {
+  it('checks pidAlive before watching for resume on startup', () => {
+    const startupBlock = mainJs.split('Re-attach tailers')[1]?.split('app.on')[0] || ''
+    expect(startupBlock).toContain('pidAlive(pid)')
+  })
+
+  it('removes stale USAGE_LIMIT signal when PID is dead', () => {
+    const startupBlock = mainJs.split('Re-attach tailers')[1]?.split('app.on')[0] || ''
+    expect(startupBlock).toContain('fs.unlinkSync(usageSig)')
+  })
+
+  it('only watches for resume if PID is still alive', () => {
+    const startupBlock = mainJs.split('Re-attach tailers')[1]?.split('app.on')[0] || ''
+    const watchIdx = startupBlock.indexOf('watchForResume')
+    const pidCheckIdx = startupBlock.indexOf('pidStillAlive')
+    expect(pidCheckIdx).toBeGreaterThan(-1)
+    expect(watchIdx).toBeGreaterThan(pidCheckIdx)
+  })
+})
