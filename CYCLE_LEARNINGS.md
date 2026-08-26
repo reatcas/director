@@ -30,3 +30,16 @@
 - Arrow function helpers (`const readJSON = ...`) need different split patterns than `function readJSON`. Use `split('const readJSON')` not `split('function readJSON')`.
 - IPC handler blocks: split on `'ipcMain.handle'` as delimiter (next handler) is more reliable than `'})' ` which can match nested closures inside Promises or callbacks.
 - `playOrchestra` is called FROM the `orchestra:play` handler — test the function directly, not the handler wrapper.
+
+## Session: Cycles 66–73
+
+### Split Pattern Mastery
+- Button handler splits: `$('#playBtn')` appears twice on the same line (`if ($('#playBtn')) $('#playBtn').onclick = ...`). Split on `"playBtn').onclick"` to get the handler body, not the guard.
+- Comment vs code splits: `parserBody.split('ALTO detected')` matches a comment first. Split on `"cl.includes('ALTO detected')"` to get the actual code branch.
+- Function boundary splits: `split('\n}')[0]` catches first inner closing brace, not function end. Use a unique following marker like `'\nwindow.director.onLine'`.
+- CSS class name verification: always grep the actual CSS for class names before writing tests. CSS uses `.split-divider` not `.drag-divider`, `.alloc-inspector` not `#allocInspector`.
+
+### Test Scale Achievements
+- 1618 tests across 32 files with zero flakiness, ~725ms total runtime.
+- CSS design system tests (92 tests) verify every visual component class, keyframe animation, and state variant exists.
+- Renderer coverage spans: core UI (372), deep functions (121), advanced interactions (125), log system (121), line parser (77).

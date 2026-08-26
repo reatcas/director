@@ -1,7 +1,7 @@
-# Cycle 72 Plan — IMPROVEMENT MODE (post-limit, no-idle override)
+# Cycle 74 Plan — CHORE (category ban break after 7 test: commits)
 
 ## Budget (from mixer)
 product=30%(blocked) backend=20% quality=20% frontend=15% security=10% perf=5%
 
 ## Units
-1. [quality] I-82 — Renderer.js line parser + event handler tests (1526 total) ✔
+1. [chore] State file updates — CYCLE_LEARNINGS.md with session patterns, PENDING.md review
