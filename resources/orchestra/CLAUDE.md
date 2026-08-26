@@ -55,6 +55,14 @@ Missing→Phase 0 `team-orchestra`.
 ## TOKENS
 Compact@`compactAt`%. Quiet flags(`-q --reporter=dot --quiet --oneline`). Batch parallel calls. `tail -5`>dump. Memory-first. `▸` lines+code only. Caveman(`"caveman":true`): 200-token cap, skip reviewer<30 lines.
 
+## TOKEN ECONOMY
+35. **Read only what you need.** Never `cat` entire files — use `head`/`tail`/`grep` to extract relevant sections. Read with `offset`+`limit` for large files.
+36. **Batch tool calls.** Independent reads/greps go in a single message. Never serialize calls that could be parallel.
+37. **Short responses.** Status lines, code blocks, commit messages. No preamble, no recap, no "Let me explain what I did."
+38. **Skip redundant reads.** If you read a file this cycle, don't re-read it unless it was modified.
+39. **Test output: dot reporter only.** `--reporter=dot` or `--quiet`. Never dump full test output into context.
+40. **State files: tail only.** `tail -50 PLAN.md` and `tail -20 CYCLE_LEARNINGS.md` at boot, not full files.
+
 ## SHARED MEMORY
 `~/.director-suite/shared-memory/` via `--add-dir`. Boot→read INDEX.md. Cross-project discoveries→shared memory. Project-specific→DECISIONS.md.
 

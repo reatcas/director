@@ -44,10 +44,23 @@ ITER=0
 while :; do
 
   MODEL=$(json_val model sonnet)
+  MODEL_COMPLEX=$(json_val modelComplex "$MODEL")
   AI_AGENT=$(json_val agent "${DIRECTOR_AI_AGENT:-claude}")
+  COOLDOWN=$(json_val cooldownSeconds 0)
 
   SHARED_MEMORY="$HOME/.director-suite/shared-memory"
   mkdir -p "$SHARED_MEMORY"
+
+  # ── Smart model routing: opus for deep-work, sonnet for regular cycles ──
+  ACTIVE_MODEL="$MODEL"
+  if [ -f ROADMAP.md ]; then
+    DEEP_WORK_PENDING=$(grep -c '\[deep-work\]' ROADMAP.md 2>/dev/null || echo 0)
+    if [ "$DEEP_WORK_PENDING" -gt 0 ] && [ "$MODEL_COMPLEX" != "$MODEL" ]; then
+      ACTIVE_MODEL="$MODEL_COMPLEX"
+      stamp "MODEL-ROUTE: deep-work pending → using $ACTIVE_MODEL (complex)"
+    fi
+  fi
+
   PROMPT_CONTENT=$(cat "$PROMPT_FILE")
   if [ "$CAVEMAN" = "true" ]; then
     PROMPT_CONTENT="$PROMPT_CONTENT
@@ -76,21 +89,21 @@ You are running inside Director Orchestra. Your output is verified by an externa
 
   if [ "$AI_AGENT" = "claude" ]; then
     # Use stream-json for real-time output (text mode buffers until session end)
-    CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format stream-json --verbose --model "$MODEL" --add-dir "$SHARED_MEMORY")
+    CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format stream-json --verbose --model "$ACTIVE_MODEL" --add-dir "$SHARED_MEMORY")
     if command -v rtk &>/dev/null; then
       CLAUDE_CMD=(rtk -- claude)
     else
       CLAUDE_CMD=(claude)
     fi
   else
-    CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format text --model "$MODEL" --add-dir "$SHARED_MEMORY")
+    CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format text --model "$ACTIVE_MODEL" --add-dir "$SHARED_MEMORY")
     CLAUDE_CMD=(claude)
   fi
   PROJECT_DIR="$(pwd)"
   case "$AI_AGENT" in
-    agy) CLAUDE_CMD=(agy); CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format text --model "$MODEL" --add-dir "$SHARED_MEMORY" --add-dir "$PROJECT_DIR") ;;
+    agy) CLAUDE_CMD=(agy); CLAUDE_ARGS=(-p "$PROMPT_CONTENT" --dangerously-skip-permissions --output-format text --model "$ACTIVE_MODEL" --add-dir "$SHARED_MEMORY" --add-dir "$PROJECT_DIR") ;;
     codex) CLAUDE_CMD=(codex exec --dangerously-bypass-approvals-and-sandbox --add-dir "$SHARED_MEMORY" --add-dir "$PROJECT_DIR"); CLAUDE_ARGS=("$PROMPT_CONTENT") ;;
-    aider) CLAUDE_CMD=(aider --yes-always --no-auto-commits --model "$MODEL" --message); CLAUDE_ARGS=("$PROMPT_CONTENT") ;;
+    aider) CLAUDE_CMD=(aider --yes-always --no-auto-commits --model "$ACTIVE_MODEL" --message); CLAUDE_ARGS=("$PROMPT_CONTENT") ;;
   esac
 
   [ -f .claude/ALTO ] && { stamp "FINE — ALTO detected after $ITER iterations."; break; }
@@ -237,6 +250,14 @@ for raw in sys.stdin:
   if [ -f "$ITER_LOG" ]; then
     SUMMARY=$(tail -20 "$ITER_LOG" | grep -E '^▸|^✔|^✕|commit|feat|fix|error' | tail -3)
     [ -n "$SUMMARY" ] && echo "[orchestra v$VERSION] summary: $SUMMARY" | tee -a "$MASTER_LOG"
+  fi
+
+  # ── Cycle close validation: verify COMPLIANCE line was emitted ────────
+  if [ -f "$ITER_LOG" ] && [ "$REAL_COMMITS" -gt 0 ] 2>/dev/null; then
+    if ! grep -q 'COMPLIANCE' "$ITER_LOG" 2>/dev/null; then
+      stamp "COMPLIANCE_MISSING: agent did not emit ▸ ◼ COMPLIANCE line this iteration"
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) COMPLIANCE_MISSING iter=$ITER agent=$AI_AGENT" >> .claude/CYCLE_LEARNINGS.md
+    fi
   fi
 
   # ── Post-iteration self-audit (lightweight, no AI call) ────────────────
@@ -542,4 +563,10 @@ SMARTMIX_PY
 
   # ── Log rotation: keep last 50 ──────────────────────────────────────────
   ls -1t "$LOG_DIR"/iter-*.log 2>/dev/null | tail -n +51 | xargs rm -f 2>/dev/null || true
+
+  # ── Cooldown: configurable pause between iterations to spread API usage ──
+  if [ "$COOLDOWN" -gt 0 ] 2>/dev/null; then
+    stamp "COOLDOWN: ${COOLDOWN}s pause between iterations"
+    sleep "$COOLDOWN"
+  fi
 done

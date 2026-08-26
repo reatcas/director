@@ -1618,6 +1618,11 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
 
 // ─── App lifecycle ────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
+  if (process.platform === 'darwin' && app.dock) {
+    const { nativeImage } = require('electron')
+    const dockIcon = nativeImage.createFromPath(path.join(__dirname, 'icon.png'))
+    if (!dockIcon.isEmpty()) app.dock.setIcon(dockIcon)
+  }
   protocol.handle('local-img', req => {
     try {
       const raw = req.url.replace('local-img://', '')
@@ -1641,7 +1646,7 @@ app.whenReady().then(() => {
     backgroundColor: '#0d0d12',
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 14, y: 17 },
-    icon: path.join(__dirname, 'logo.svg'),
+    icon: path.join(__dirname, process.platform === 'darwin' ? 'icon.icns' : 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js') }
   })
   win.loadFile('index.html')
