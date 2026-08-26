@@ -857,6 +857,7 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   border-bottom: 1px solid rgba(255,255,255,0.03);
   flex-shrink: 0;
   overflow: hidden;
+  contain: strict;
 }
 .mm-cell {
   flex: 1;
@@ -1057,6 +1058,8 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   gap: 1px;
   user-select: text;
   -webkit-user-select: text;
+  contain: content;
+  will-change: scroll-position;
 }
 
 /* Raw log overlay */
@@ -1067,6 +1070,7 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   background: var(--bg);
   z-index: 5;
   flex-direction: column;
+  contain: content;
 }
 #rawLogOverlay.on { display: flex }
 #rawLogOverlay pre {
