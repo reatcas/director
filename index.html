@@ -373,6 +373,18 @@
               <span class="fs-val" id="currentFeature">—</span>
             </div>
 
+            <!-- Mixer node graph -->
+            <div id="mixerGraphPanel" class="mg-panel">
+              <button id="mixerGraphToggle" class="mg-toggle" aria-label="Toggle node graph">
+                <span class="mg-toggle-icon">⟡</span>
+                <span class="mg-toggle-label">NODE GRAPH</span>
+                <span class="mg-toggle-caret">▾</span>
+              </button>
+              <div id="mixerGraphBody" class="mg-body">
+                <div id="mixerGraphCanvas" class="mg-canvas"></div>
+              </div>
+            </div>
+
             <!-- Log area -->
             <div class="console-log-wrap">
               <div id="log"></div>
@@ -533,6 +545,14 @@
     </main>
   </div>
 </div>
+<!-- Three.js + Timer shim + 3d-force-graph (same load order as pulsand NGO
+     ecosystem graph — three FIRST so 3d-force-graph reuses window.THREE,
+     then the Timer shim because the classic three build omits THREE.Timer,
+     then 3d-force-graph itself). -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="three-timer-shim.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/3d-force-graph/dist/3d-force-graph.min.js"></script>
+<script src="mixer-graph.js"></script>
 <script src="renderer.js"></script>
 <script src="mixer-chart.js"></script>
 </body>

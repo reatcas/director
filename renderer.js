@@ -447,6 +447,7 @@ async function open(dir) {
     clearTimeout(_mixerSaveTimer)
     await saveMixerState()
   }
+  if (window.mixerGraph && mixerGraphInited) { window.mixerGraph.destroy(); mixerGraphInited = false }
   current = dir
   await refresh()
 
@@ -601,6 +602,7 @@ if ($('#removeBtn')) $('#removeBtn').onclick = async () => {
   if ($('#log')) $('#log').innerHTML = ''
   if ($('#mixerStrips')) $('#mixerStrips').innerHTML = ''
   if ($('#mixesList')) $('#mixesList').innerHTML = ''
+  if (window.mixerGraph) { window.mixerGraph.destroy(); mixerGraphInited = false }
   if ($('#pname')) $('#pname').textContent = '—'
   if ($('#pstatus')) {
     $('#pstatus').textContent = 'no project'
@@ -835,11 +837,23 @@ async function loadMixer() {
   }
   // Update aurora colors from the freshly built strips
   setTimeout(updateSmartAuroraColors, 50)
+
+  // Mixer node graph — init on first load, update weights on reload
+  const graphContainer = $('#mixerGraphCanvas')
+  if (graphContainer && window.mixerGraph) {
+    if (!mixerGraphInited) {
+      window.mixerGraph.init(graphContainer, allSections)
+      mixerGraphInited = true
+    } else {
+      window.mixerGraph.update(normalizedFocus)
+    }
+  }
 }
 
 // ─── Mixer Stand Glow: activate when AI works on a category ─────────────────
 let activeStand = null
 let standSparkInterval = null
+let mixerGraphInited = false
 
 function activateMixerStand(category) {
   // Clear previous
@@ -849,6 +863,7 @@ function activateMixerStand(category) {
   })
   if (standSparkInterval) { clearInterval(standSparkInterval); standSparkInterval = null }
   activeStand = null
+  if (window.mixerGraph) window.mixerGraph.activate(category || null)
   if (!category) return
 
   const strip = document.querySelector(`#mixerStrips .strip-h[data-key="${category}"]`)
@@ -2143,6 +2158,43 @@ async function loadMetrics() {
   ])
   updateMetricsDisplay({ resource, context, coordination, claudeUsage })
 }
+
+// ─── Mixer Node Graph panel toggle ────────────────────────────────────────────
+;(function initMixerGraphPanel() {
+  const btn = $('#mixerGraphToggle')
+  const body = $('#mixerGraphBody')
+  if (!btn || !body) return
+  // Start collapsed
+  body.style.display = 'none'
+  btn.classList.remove('open')
+  btn.querySelector('.mg-toggle-caret').textContent = '▸'
+
+  btn.addEventListener('click', () => {
+    const isOpen = body.style.display !== 'none'
+    body.style.display = isOpen ? 'none' : ''
+    const caret = btn.querySelector('.mg-toggle-caret')
+    if (caret) caret.textContent = isOpen ? '▸' : '▾'
+    btn.classList.toggle('open', !isOpen)
+
+    // Init graph on first open
+    if (!isOpen && !mixerGraphInited && window.mixerGraph) {
+      const container = $('#mixerGraphCanvas')
+      if (container) {
+        window.mixerGraph.init(container, getAllSections())
+        mixerGraphInited = true
+        // Feed current focus if available
+        const strips = document.querySelectorAll('#mixerStrips .strip-h')
+        const focus = {}
+        strips.forEach(s => {
+          const k = s.dataset.key
+          const v = s.querySelector('.strip-h-val')
+          if (k && v) focus[k] = parseInt(v.textContent, 10) || 0
+        })
+        window.mixerGraph.update(focus)
+      }
+    }
+  })
+})()
 
 // ─── Resource Allocation Inspector (F-13) ─────────────────────────────────────
 ;(function initAllocInspector() {
