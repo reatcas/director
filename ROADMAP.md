@@ -123,3 +123,4 @@
 - [x] **I-93** Add aria-label="Cerrar" to closeAtrilModal button — screen readers now announce the button correctly, matching other modal close buttons.
 - [x] **I-94** Skip aiState disk write when unchanged + cache default-mixes.json — eliminate redundant I/O on every ai:credits poll and preset reads.
 - [x] **I-95** Invalidate coordination conflict cache on mixer weight change — detectConflicts now reflects current weights instead of returning stale data after slider adjustments.
+- [x] **I-96** Skip loadProcs polling when tab hidden + debounce log filter at 150ms — eliminate background syscalls and per-keystroke DOM thrash.
