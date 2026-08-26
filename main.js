@@ -2,7 +2,7 @@
 // Licensed under the AGPL-3.0 License. See LICENSE in repository root.
 
 const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell, Notification } = require('electron')
-const { spawn, execFile, execFileSync } = require('child_process')
+const { spawn, execFile, execFileSync, spawnSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
 
@@ -844,27 +844,30 @@ ipcMain.handle('ai:select', (_e, id) => {
 })
 
 // ─── AI Auth: status check & login ──────────────────────────────────────────
-const { execSync, exec } = require('child_process')
+const { exec } = require('child_process')
+
+function runCmd(cmd, args, timeout = 5000) {
+  const r = spawnSync(cmd, args, { encoding: 'utf8', timeout })
+  return (r.stdout || '') + (r.stderr || '')
+}
 
 ipcMain.handle('ai:auth-status', (_e, id) => {
   try {
     if (id === 'claude') {
-      const out = execSync('claude auth status 2>&1', { encoding: 'utf8', timeout: 5000 })
+      const out = runCmd('claude', ['auth', 'status'])
       const logged = out.includes('"loggedIn": true') || out.includes('"loggedIn":true')
       const email = (out.match(/"email":\s*"([^"]+)"/) || [])[1] || null
       return { loggedIn: logged, email }
     }
     if (id === 'codex') {
-      const out = execSync('codex login status 2>&1', { encoding: 'utf8', timeout: 5000 })
+      const out = runCmd('codex', ['login', 'status'])
       const logged = out.includes('Logged in')
       return { loggedIn: logged }
     }
     if (id === 'agy') {
-      // agy uses browser-based auth, check if it can run
-      try { execSync('agy --help', { encoding: 'utf8', timeout: 3000 }); return { loggedIn: true } } catch { return { loggedIn: false } }
+      try { runCmd('agy', ['--help'], 3000); return { loggedIn: true } } catch { return { loggedIn: false } }
     }
     if (id === 'aider') {
-      // aider uses API keys from env
       const hasKey = !!(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY)
       return { loggedIn: hasKey, note: hasKey ? 'API key found' : 'Set OPENAI_API_KEY or ANTHROPIC_API_KEY' }
     }

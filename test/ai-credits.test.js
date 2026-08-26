@@ -36,11 +36,12 @@ describe('ai:auth-status handler', () => {
   const block = mainJs.split("'ai:auth-status'")[1]?.split('\nipcMain')[0] || ''
 
   it('checks claude auth status', () => {
-    expect(block).toContain('claude auth status')
+    expect(block).toContain("'claude'")
+    expect(block).toContain("'auth', 'status'")
   })
 
-  it('uses timeout on auth check', () => {
-    expect(block).toContain('timeout:')
+  it('uses runCmd helper for auth check', () => {
+    expect(block).toContain('runCmd')
   })
 })
 
