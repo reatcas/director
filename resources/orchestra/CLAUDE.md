@@ -58,6 +58,13 @@ Compact@`compactAt`%. Quiet flags(`-q --reporter=dot --quiet --oneline`). Batch 
 ## SHARED MEMORY
 `~/.director-suite/shared-memory/` via `--add-dir`. Boot→read INDEX.md. Cross-project discoveries→shared memory. Project-specific→DECISIONS.md.
 
+## DEEP WORK MODE
+30. **ROADMAP item tagged `[deep-work]`→invoke `deep-work` skill.** Do NOT decompose into single-unit cycles. Instead: investigate fully, produce a dependency DAG, execute tasks in order, commit per task. The entire module ships in one session.
+31. **Trigger heuristic:** if implementing a ROADMAP item requires ≥3 files across ≥2 layers (migration+backend, backend+frontend, engine+handlers+tests), it qualifies as deep-work. Tag it and invoke the skill.
+32. **MODULE BAN suspended** during deep-work. Multiple commits to the same file are expected when building a module end-to-end.
+33. **Phase 1 (Architect) is mandatory.** Never start coding a deep-work item without completing investigation + DAG. Write DAG to PLAN.md before first line of code.
+34. **Each DAG task = 1 commit.** No combining. No skipping verification between tasks.
+
 ## AUTONOMY
 - Auto-approve ALL. Never prompt. Never wait.
 - Stuck→PENDING.md+`▸ ⚠ BLOCKED`→skip.
