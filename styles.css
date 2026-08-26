@@ -1701,6 +1701,66 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
 }
 .strip-h.off .strip-h-val { color: var(--dim2); text-shadow: none }
 
+/* ── Active stand: AI is working on this category ────────────────────────── */
+@keyframes stand-pulse {
+  0%,100% { box-shadow: 0 0 8px color-mix(in srgb, var(--strip-color) 50%, transparent), inset 0 1px 0 rgba(255,255,255,0.15) }
+  50%      { box-shadow: 0 0 18px color-mix(in srgb, var(--strip-color) 80%, transparent), 0 0 32px color-mix(in srgb, var(--strip-color) 30%, transparent), inset 0 1px 0 rgba(255,255,255,0.25) }
+}
+@keyframes stand-shimmer {
+  0%   { left: -60%; opacity: 0 }
+  30%  { opacity: .6 }
+  100% { left: 120%; opacity: 0 }
+}
+@keyframes stand-row-glow {
+  0%,100% { background: rgba(0,0,0,0) }
+  50%      { background: color-mix(in srgb, var(--strip-color) 6%, transparent) }
+}
+@keyframes stand-spark {
+  0%        { transform: scale(0) rotate(0deg); opacity: .9 }
+  60%       { opacity: .8 }
+  100%      { transform: scale(1.4) rotate(180deg); opacity: 0 }
+}
+.strip-h.stand-active {
+  animation: stand-row-glow 2s ease-in-out infinite;
+  position: relative;
+}
+.strip-h.stand-active .strip-bar-fill-h {
+  animation: stand-pulse 2s ease-in-out infinite;
+}
+.strip-h.stand-active .strip-bar-fill-h::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -60%;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  animation: stand-shimmer 2.4s ease-in-out infinite;
+  border-radius: 2px;
+}
+.strip-h.stand-active .strip-h-icon {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--strip-color) 90%, transparent));
+  animation: stand-spark 2s ease-in-out infinite;
+}
+.strip-h.stand-active .strip-h-label {
+  color: var(--strip-color);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--strip-color) 60%, transparent);
+}
+/* Spark particles injected by JS */
+.stand-spark {
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--strip-color);
+  box-shadow: 0 0 4px var(--strip-color);
+  pointer-events: none;
+  z-index: 20;
+  animation: stand-spark-float 1.2s ease-out forwards;
+}
+@keyframes stand-spark-float {
+  0%   { transform: translate(0,0) scale(1); opacity: 1 }
+  100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0 }
+}
+
 /* ══════════════════════════════════════════
    MIXER FOOTER
 ══════════════════════════════════════════ */

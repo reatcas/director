@@ -418,7 +418,7 @@ describe('addIterationStartEntry — cycle begin marker', () => {
   })
 
   it('escapes date string', () => {
-    expect(body).toContain('esc(dateStr)')
+    expect(body).toMatch(/esc\((?:dateStr|cleanDate)\)/)
   })
 })
 

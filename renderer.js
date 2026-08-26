@@ -234,6 +234,7 @@ let orchestraState = 'idle' // idle | started | interpreting | usage_limit | fin
 
 function setOrchestraState(state) {
   orchestraState = state
+  if (state === 'idle' || state === 'finished') activateMixerStand(null)
   updateMonitorStatus()
   updateTransportButtons()
 }
@@ -836,6 +837,50 @@ async function loadMixer() {
   setTimeout(updateSmartAuroraColors, 50)
 }
 
+// ─── Mixer Stand Glow: activate when AI works on a category ─────────────────
+let activeStand = null
+let standSparkInterval = null
+
+function activateMixerStand(category) {
+  // Clear previous
+  document.querySelectorAll('#mixerStrips .strip-h.stand-active').forEach(el => {
+    el.classList.remove('stand-active')
+    el.querySelectorAll('.stand-spark').forEach(s => s.remove())
+  })
+  if (standSparkInterval) { clearInterval(standSparkInterval); standSparkInterval = null }
+  activeStand = null
+  if (!category) return
+
+  const strip = document.querySelector(`#mixerStrips .strip-h[data-key="${category}"]`)
+  if (!strip || strip.classList.contains('off')) return
+
+  strip.classList.add('stand-active')
+  activeStand = category
+
+  // Emit spark particles periodically
+  standSparkInterval = setInterval(() => {
+    if (!strip.isConnected) { clearInterval(standSparkInterval); standSparkInterval = null; return }
+    const bar = strip.querySelector('.strip-bar-h')
+    if (!bar) return
+    const rect = bar.getBoundingClientRect()
+    const stripRect = strip.getBoundingClientRect()
+    for (let i = 0; i < 2; i++) {
+      const spark = document.createElement('span')
+      spark.className = 'stand-spark'
+      const x = Math.random() * rect.width
+      const sx = (Math.random() - .5) * 20 + 'px'
+      const sy = -(Math.random() * 14 + 4) + 'px'
+      spark.style.setProperty('--strip-color', getComputedStyle(strip).getPropertyValue('--strip-color').trim())
+      spark.style.setProperty('--sx', sx)
+      spark.style.setProperty('--sy', sy)
+      spark.style.left = (rect.left - stripRect.left + x) + 'px'
+      spark.style.top = (rect.top - stripRect.top) + 'px'
+      strip.appendChild(spark)
+      setTimeout(() => spark.remove(), 1200)
+    }
+  }, 600)
+}
+
 // ─── Mixer Equalizer: all stands always sum to 100% ────────────────────────
 function normalizeMixerValues(focus, sections) {
   const keys = sections.map(s => s[0])
@@ -1303,6 +1348,9 @@ function addFeatureEntry(text) {
   `
   logEl.appendChild(el)
 
+  // Activate mixer stand glow for this category
+  if (category) activateMixerStand(category)
+
   // Update the current-feature indicator in monitor status
   const featureEl = $('#currentFeature')
   if (featureEl) featureEl.textContent = unit + (goal ? ' — ' + goal : '')
@@ -1545,13 +1593,31 @@ function addIterationStartEntry(num, dateStr) {
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] [CYCLE ${num}] Start — ${dateStr}`)
 
+  // Extract model tag like [sonnet:executor] or [opus:architect]
+  const modelMatch = dateStr.match(/\[([^\]]+)\]/)
+  const modelTag = modelMatch ? modelMatch[1] : null
+  const cleanDate = dateStr.replace(/\[[^\]]+\]\s*—?\s*/, '').trim()
+
+  // Color model tag by role
+  let modelColor = '#00aaff'
+  let modelBg = 'rgba(0,170,255,.12)'
+  if (modelTag) {
+    if (modelTag.includes('architect')) { modelColor = '#aa77ff'; modelBg = 'rgba(170,119,255,.12)' }
+    else if (modelTag.includes('haiku') || modelTag.includes('fast')) { modelColor = '#00c8a0'; modelBg = 'rgba(0,200,160,.12)' }
+    else if (modelTag.includes('opus')) { modelColor = '#ff88aa'; modelBg = 'rgba(255,136,170,.12)' }
+  }
+  const modelBadge = modelTag
+    ? `<span class="le-badge" style="background:${modelBg};color:${modelColor};border:1px solid ${modelColor}40">${esc(modelTag)}</span>`
+    : ''
+
   const el = document.createElement('div')
   el.className = 'le le-iteration le-iter-start'
   el.innerHTML = `
     <span class="le-icon" style="background:rgba(0,170,255,0.15);color:#00aaff;text-shadow:0 0 4px #00aaff">⟳</span>
     <span class="le-time">${time}</span>
     <span class="le-badge" style="background:rgba(0,170,255,.12);color:#00aaff;border:1px solid rgba(0,170,255,.25)">CYCLE ${num}</span>
-    <span class="le-msg" style="color:#7ab8e0">${esc(dateStr)}</span>
+    ${modelBadge}
+    <span class="le-msg" style="color:#7ab8e0">${esc(cleanDate)}</span>
   `
   logEl.appendChild(el)
   currentGroup = null
@@ -1562,6 +1628,7 @@ function addIterationStartEntry(num, dateStr) {
 
 // Iteration end entry
 function addIterationEndEntry(num, exitCode) {
+  activateMixerStand(null)
   const logEl = $('#log')
   if (!logEl) return null
   const time = timeStamp()
@@ -1806,6 +1873,12 @@ function parseLogLine(dir, line) {
       // Persist feature starts so they survive app restarts
       if (current) window.director.lifecycleAdd(current, 'feature', 'FEATURE', cl.replace(/^▸\s*▶?\s*/, ''))
     } else if (cl.includes('✔')) {
+      // Extract category from commit line ▸ ✔ [category] — light up briefly then deactivate
+      const commitCatMatch = cl.match(/✔\s*\[(\w+)\]/)
+      if (commitCatMatch) {
+        activateMixerStand(commitCatMatch[1])
+        setTimeout(() => activateMixerStand(null), 3000)
+      }
       addCycleEntry(cl)
       if (current) trackCommit(current)
       if (current) window.director.lifecycleAdd(current, 'commit', 'COMMIT', cl.replace(/^▸\s*✔?\s*/, ''))
