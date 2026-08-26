@@ -1336,6 +1336,9 @@ ipcMain.handle('atriles:list', () => {
 })
 
 ipcMain.handle('atriles:save', (_e, atriles) => {
+  if (!Array.isArray(atriles) || atriles.length > 200) return false
+  const valid = atriles.every(a => a && typeof a === 'object' && typeof a.name === 'string' && typeof a.path === 'string')
+  if (!valid) return false
   writeJSON(customAtrilesFile(), atriles)
   return true
 })
@@ -1522,7 +1525,12 @@ app.whenReady().then(() => {
     try {
       const raw = req.url.replace('local-img://', '')
       const fp = decodeURIComponent(raw)
-      const filePath = fp.startsWith('/') ? fp : '/' + fp
+      const filePath = path.resolve(fp.startsWith('/') ? fp : '/' + fp)
+      const allowedDirs = readJSON(store(), []).map(p => p.path).filter(Boolean)
+      allowedDirs.push(path.join(app.getPath('userData')))
+      if (!allowedDirs.some(d => filePath.startsWith(d + path.sep) || filePath.startsWith(d + '/'))) {
+        return new Response('', { status: 403 })
+      }
       const data = fs.readFileSync(filePath)
       const ext = path.extname(filePath).toLowerCase()
       const mimeMap = { '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.svg':'image/svg+xml', '.webp':'image/webp', '.ico':'image/x-icon', '.gif':'image/gif' }
