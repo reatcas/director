@@ -26,6 +26,11 @@
 - [x] **F-20** Stall anomaly badge — detect >20min with zero commits, surface pulsing warning badge on project card with last-commit age.
 - [x] **F-21** Context compression ratio panel — display cumulative token savings, compression percentage, and files-changed-per-cycle from `metricsContext` aggregated data.
 
+- [x] **F-22** Desktop notification alerts — OS-level notifications for stalls (>20min no commits), ALTO, and usage limits so operators don't need to watch the UI.
+- [x] **F-23** Session export — download project telemetry (lifecycle, compliance, token burn, mixer history) as JSON snapshot via EXPORT button.
+- [ ] **F-24** Keyboard shortcuts + command palette — Space=play/stop, K=kill, 1-9=select project, ?=shortcut overlay, Cmd+Shift+P=command palette.
+- [x] **F-25** Operator notes scratch pad — per-project notes tab with autosave to .claude/OPERATOR_NOTES.md, appears in lifecycle timeline.
+
 ## Improvements
 
 - [x] **I-01** Increase test coverage to 60+ tests — add tests for renderer logic (mock DOM), main.js IPC handlers (mock Electron), and edge cases in Smart Mix normalization.
