@@ -213,30 +213,33 @@ window.mixerGraph = (() => {
     _gData = buildData()
     _mounted = true
 
+    const w = containerEl.clientWidth || 400
+    const h = containerEl.clientHeight || 300
+
     graph = ForceGraph3D({
       antialias: true,
       alpha: true,
-      rendererConfig: { alpha: true, antialias: true },
     })(containerEl)
-      .backgroundColor('rgba(0,0,0,0)')
+      .width(w)
+      .height(h)
+      .backgroundColor('#04040a')
       .numDimensions(2)
-      .warmupTicks(80)
+      .warmupTicks(100)
       .cooldownTicks(0)
       .nodeId('id')
       .nodeLabel('label')
       .nodeThreeObject(nodeThreeObject)
       .nodeThreeObjectExtend(false)
-      .linkColor(link => link._active ? toHex6(
-        (() => {
-          const tgt = typeof link.target === 'object' ? link.target.id : link.target
-          const s = _sections.find(s => s[0] === tgt)
-          return s ? s[2] : '#ffffff'
-        })()
-      ) : 'rgba(255,255,255,0.06)')
-      .linkWidth(link => link._active ? 1.5 : 0.4)
+      .linkColor(link => {
+        if (!link._active) return 'rgba(255,255,255,0.05)'
+        const tgt = typeof link.target === 'object' ? link.target.id : link.target
+        const s = _sections.find(s => s[0] === tgt)
+        return s ? s[2] : '#ffffff'
+      })
+      .linkWidth(link => link._active ? 1.5 : 0.3)
       .linkDirectionalParticles(link => link._particles || 0)
       .linkDirectionalParticleSpeed(0.006)
-      .linkDirectionalParticleWidth(link => link._active ? 1.8 : 0)
+      .linkDirectionalParticleWidth(link => link._active ? 2 : 0)
       .linkDirectionalParticleColor(link => {
         const tgt = typeof link.target === 'object' ? link.target.id : link.target
         const s = _sections.find(s => s[0] === tgt)
@@ -244,24 +247,32 @@ window.mixerGraph = (() => {
       })
       .graphData(_gData)
 
-    // Adjust forces for hub-spoke
-    graph.d3Force('charge', null)
+    // Tune forces: moderate repulsion, hub-spoke link distance
     try {
-      const { forceSimulation } = graph.d3Force
       graph.d3Force('link').distance(d => {
         const src = typeof d.source === 'object' ? d.source.id : d.source
-        return src === HUB_ID ? 60 : 30
-      }).strength(0.8)
+        return src === HUB_ID ? 70 : 35
+      }).strength(0.9)
+      graph.d3Force('charge').strength(-120)
     } catch {}
 
-    // Camera: look at center from above (2D plane)
+    // Set camera to look straight down the z-axis for clean 2D view
     setTimeout(() => {
-      if (graph && graph.cameraPosition) {
-        graph.cameraPosition({ x: 0, y: 0, z: 200 }, { x: 0, y: 0, z: 0 }, 0)
-      }
-    }, 100)
+      if (!graph) return
+      const dist = Math.max(w, h) * 0.55
+      graph.cameraPosition({ x: 0, y: 0, z: dist }, { x: 0, y: 0, z: 0 }, 0)
+    }, 150)
 
     _animId = requestAnimationFrame(animLoop)
+
+    // Auto-resize when container size changes
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(() => {
+        if (graph && _container) graph.width(_container.clientWidth).height(_container.clientHeight)
+      })
+      ro.observe(containerEl)
+      _container._ro = ro
+    }
   }
 
   function update(focus) {
@@ -307,6 +318,7 @@ window.mixerGraph = (() => {
 
   function destroy() {
     if (_animId) { cancelAnimationFrame(_animId); _animId = null }
+    if (_container && _container._ro) { _container._ro.disconnect(); _container._ro = null }
     if (graph) {
       try { graph._destructor && graph._destructor() } catch {}
       if (_container) _container.innerHTML = ''
@@ -321,5 +333,10 @@ window.mixerGraph = (() => {
     _recentPair = []
   }
 
-  return { init, update, activate, destroy }
+  function resize() {
+    if (!graph || !_container) return
+    graph.width(_container.clientWidth).height(_container.clientHeight)
+  }
+
+  return { init, update, activate, destroy, resize }
 })()

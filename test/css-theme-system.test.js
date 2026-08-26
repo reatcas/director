@@ -99,8 +99,8 @@ describe('light theme — component overrides', () => {
   })
 
   it('overrides split divider', () => {
-    expect(css).toContain('html.light .split-divider')
-    expect(css).toContain('html.light .split-divider::after')
+    expect(css).toContain('html.light .split-divider-v')
+    expect(css).toContain('html.light .split-divider-v::after')
   })
 })
 

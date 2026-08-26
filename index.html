@@ -264,6 +264,7 @@
       <button id="removeBtn" class="tp-action dim">REMOVE</button>
     </div>
     <div id="transportUtils">
+      <button id="mixerDrawerToggle" class="tp-btn" title="Open mixer console" aria-label="Abrir mixer">≡</button>
       <button id="themeToggle" class="tp-btn" title="Toggle theme" aria-label="Cambiar tema">◐</button>
       <button id="settingsBtn" class="tp-btn" title="Settings" aria-label="Configuración">⚙</button>
       <button id="aboutBtn" class="tp-btn" title="About" aria-label="Acerca de">?</button>
@@ -303,245 +304,241 @@
         <span id="usageBannerText">Usage limit active — waiting for automatic resume…</span>
       </div>
 
-      <!-- ═══ SPLIT LAYOUT ═══ -->
+      <!-- ═══ SPLIT LAYOUT (vertical: node graph top, console bottom) ═══ -->
       <div id="splitLayout" class="split-layout">
 
-        <!-- ─── TOP AREA (70%) ─── -->
-        <div class="split-top">
+        <!-- NODE GRAPH HALF -->
+        <div id="nodeGraphSection" class="ng-section">
+          <div id="mixerGraphCanvas" class="mg-canvas"></div>
+          <div class="ng-label">⟡ NODE GRAPH</div>
+        </div>
 
-          <!-- LEFT PANEL: CONSOLE (~65%) -->
-          <div class="split-console">
+        <!-- VERTICAL RESIZE HANDLE -->
+        <div class="split-divider-v" id="splitDividerV"></div>
 
-            <!-- Monitor status bar -->
-            <div id="monitorStatus" class="monitor-status idle">
-              <div class="ms-indicator">
-                <div class="ms-icon-wrap"><span class="ms-icon">◇</span></div>
-                <span class="ms-label">SILENT</span>
-              </div>
-              <input id="logFilterInput" type="text" placeholder="Filtrar logs..." aria-label="Filtrar logs" class="mix-import-field mono" style="margin-left:auto; margin-right:10px; width:150px; background:transparent">
-              <span id="logFilterCount" class="mono" style="font-size:9px;color:var(--dim);margin-right:6px;display:none"></span>
-              <div class="console-actions">
-                <button id="clearLogBtn" class="ms-copy" title="Clear terminal log" style="color:var(--txt)">CLEAR</button>
-                <button id="autoScrollBtn" class="ms-copy on" title="Toggle Auto-scroll" style="color:var(--hi)">↓ SCROLL</button>
-                <button id="toggleRawBtn" class="ms-copy" title="View raw log">RAW</button>
-                <button id="copyLogBtn" class="ms-copy" title="Copy full history">⎘ COPY ALL</button>
-              </div>
+        <!-- CONSOLE HALF -->
+        <div id="consoleSection" class="console-section">
+
+          <!-- Monitor status bar -->
+          <div id="monitorStatus" class="monitor-status idle">
+            <div class="ms-indicator">
+              <div class="ms-icon-wrap"><span class="ms-icon">◇</span></div>
+              <span class="ms-label">SILENT</span>
             </div>
-
-            <!-- Telemetry metrics strip -->
-            <div id="metricsStrip" class="metrics-strip">
-              <div class="mm-cell"><span class="mm-label">RESOURCES</span><span class="mm-val" id="mmAllocVal">—</span></div>
-              <div class="mm-cell"><span class="mm-label">MEMORY</span><span class="mm-val" id="mmMemVal">—</span></div>
-              <div class="mm-cell"><span class="mm-label">TOKENS</span><span class="mm-val" id="mmTokensVal">—</span></div>
-              <div class="mm-cell"><span class="mm-label">COMPRESSION</span><span class="mm-val" id="mmCompressionVal">—</span></div>
-              <div class="mm-cell"><span class="mm-label">INSTANCES</span><span class="mm-val" id="mmInstancesVal">—</span></div>
-              <div class="mm-cell"><span class="mm-label">COMPLIANCE</span><span class="mm-val" id="mmComplianceVal">—</span><svg id="complianceSpark" width="60" height="16" style="display:none;margin-top:2px"></svg></div>
-              <div class="mm-cell"><span class="mm-label">ROADMAP</span><span class="mm-val" id="mmRoadmapVal">—</span></div>
-              <div class="mm-cell"><span class="mm-label">BURN RATE</span><span class="mm-val" id="mmBurnVal">—</span><svg id="burnSpark" width="60" height="16" style="display:none;margin-top:2px"></svg></div>
-              <div class="mm-cell mm-cell-usage"><span class="mm-label">AI USAGE</span><span class="mm-val" id="mmAiUsageVal">—</span><div class="usage-bar"><div class="usage-bar-fill" id="usageBarFill"></div></div></div>
-            </div>
-
-            <!-- Resource allocation inspector (F-13) -->
-            <div id="allocInspector" class="alloc-inspector" style="display:none">
-              <button id="allocToggle" class="alloc-toggle">▸ ASIGNACIÓN DE RECURSOS</button>
-              <div id="allocBody" class="alloc-body" style="display:none">
-                <div id="allocSummary" class="alloc-summary"></div>
-                <div id="allocCategories" class="alloc-categories"></div>
-              </div>
-            </div>
-
-            <!-- Context Compression Panel (F-21) -->
-            <div id="compressionPanel" class="alloc-inspector" style="display:none">
-              <button id="compressionToggle" class="alloc-toggle" aria-label="Alternar panel de compresión">▸ COMPRESIÓN DE CONTEXTO</button>
-              <div id="compressionBody" class="alloc-body" style="display:none">
-                <div id="compressionStats" class="alloc-summary"></div>
-                <div id="compressionHistory" class="compression-history"></div>
-              </div>
-            </div>
-
-            <div id="mixerHistoryPanel" class="alloc-inspector" style="display:none">
-              <button id="mixerHistoryToggle" class="alloc-toggle" aria-label="Alternar historial de pesos">▸ HISTORIAL DE PESOS</button>
-              <div id="mixerHistoryBody" class="alloc-body" style="display:none">
-                <svg id="mixerHistorySvg" class="mh-svg" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
-                <div id="mixerHistoryLegend" class="mh-legend"></div>
-              </div>
-            </div>
-
-            <!-- Current feature indicator -->
-            <div id="featureStrip" class="feature-strip">
-              <span class="fs-label">DEVELOPING</span>
-              <span class="fs-val" id="currentFeature">—</span>
-            </div>
-
-            <!-- Mixer node graph -->
-            <div id="mixerGraphPanel" class="mg-panel">
-              <button id="mixerGraphToggle" class="mg-toggle" aria-label="Toggle node graph">
-                <span class="mg-toggle-icon">⟡</span>
-                <span class="mg-toggle-label">NODE GRAPH</span>
-                <span class="mg-toggle-caret">▾</span>
-              </button>
-              <div id="mixerGraphBody" class="mg-body">
-                <div id="mixerGraphCanvas" class="mg-canvas"></div>
-              </div>
-            </div>
-
-            <!-- Log area -->
-            <div class="console-log-wrap">
-              <div id="log"></div>
-              <!-- Raw log overlay -->
-              <div id="rawLogOverlay">
-                <div class="raw-bar">
-                  <span>FULL LOG — PLAIN TEXT</span>
-                  <button id="closeRawBtn" class="ms-copy">CLOSE</button>
-                  <button id="copyRawBtn" class="ms-copy">COPY ALL</button>
-                  <button id="selectAllRawBtn" class="ms-copy">SELECT ALL</button>
-                </div>
-                <pre id="rawLogContent"></pre>
-              </div>
-            </div>
-
-            <!-- PROCESSES (inside console) -->
-            <div id="procsPanel" class="procs-panel">
-              <div class="procs-bar">
-                <span class="section-icon">⚙</span>
-                <span class="rack-title" style="color:var(--txt)">PROCESSES</span>
-                <button id="procsRefresh" class="ms-copy">↺</button>
-                <span id="procsCount" class="section-badge mono"></span>
-              </div>
-              <div id="procsList"></div>
-            </div>
-
-            <!-- LIFECYCLE TIMELINE (F-14) -->
-            <details id="sectionLifecycle" class="console-collapsible">
-              <summary class="collapsible-header">
-                <span class="section-icon">◉</span>
-                <span class="section-title">LIFECYCLE</span>
-                <span id="lifecycleCount" class="section-badge mono"></span>
-              </summary>
-              <div class="collapsible-body">
-                <div id="lifecycleTimeline" class="lifecycle-timeline"></div>
-              </div>
-            </details>
-
-            <!-- CRITIQUE (inside console) -->
-            <details id="sectionAnalysis" class="console-collapsible" hidden>
-              <summary class="collapsible-header">
-                <span class="section-icon">✎</span>
-                <span class="section-title">CRITIQUE</span>
-                <div class="section-actions">
-                  <button id="refreshAnalysis" class="ms-copy">UPDATE</button>
-                  <button id="copyAnalysis" class="ms-copy">COPY</button>
-                </div>
-              </summary>
-              <div class="collapsible-body">
-                <div id="commitBreakdown" style="display:none; padding:8px 12px"></div>
-                <textarea id="analysisOut" class="mono" readonly placeholder="Loading critique…"></textarea>
-                <span id="analysisFile" class="mono tp-path" style="padding:4px 12px"></span>
-              </div>
-            </details>
-
-          </div>
-
-          <!-- RESIZABLE DIVIDER -->
-          <div class="split-divider" id="splitDivider"></div>
-
-          <!-- RIGHT PANEL: MIXER (~35%) -->
-          <div id="mixerPanel" class="mixer-panel">
-            <div class="mixer-tabs">
-              <button class="mixer-tab on" data-mtab="mixTab">MIX</button>
-              <button class="mixer-tab" data-mtab="bpTab">BLUEPRINT</button>
-              <button class="mixer-tab" data-mtab="knowledgeTab">KNOWLEDGE</button>
-              <button class="mixer-tab" data-mtab="notesTab">NOTES</button>
-            </div>
-
-            <!-- MIX tab content -->
-            <div id="mixTab" class="mixer-tab-pane on">
-              <div id="mixesHeader">
-                <span class="rack-title" style="color:var(--txt)">SAVED MIXES</span>
-                <div id="mixesImport">
-                  <input id="mixImportInput" type="text" placeholder="Paste JSON…" class="mix-import-field mono">
-                  <button id="mixImportBtn" class="tp-action">IMPORT</button>
-                </div>
-              </div>
-              <!-- Smart Mix Toggle -->
-              <div id="smartMixBar" class="smart-mix-bar">
-                <div id="smartMixToggle" class="smart-toggle" title="Smart Mix — self-regulating stands">
-                  <div class="smart-toggle-aurora" id="smartAurora"></div>
-                  <div class="smart-toggle-glass"></div>
-                  <div class="smart-toggle-knob" id="smartKnob"></div>
-                </div>
-                <span class="smart-label" id="smartLabel">SMART MIX</span>
-              </div>
-              <div id="mixesList"></div>
-              <div id="mixesEmpty" class="mixes-empty" hidden>
-                <span>No saved mixes yet.</span>
-              </div>
-              <div id="mixerStrips" class="mixer-strips-v"></div>
-              <div id="mixerFooter">
-                <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:100px">
-                <button id="saveMixer" class="tp-action">SAVE</button>
-                <button id="addAtrilBtn" class="tp-action" title="Add custom stand">+ STAND</button>
-                <button id="exportMixesBtn" class="tp-action dim" title="Export all mixes to JSON">↥</button>
-                <button id="importMixesBtn" class="tp-action dim" title="Import mixes library from JSON">↧</button>
-                <span id="mixerSaved" class="saved-msg" hidden>✓</span>
-              </div>
-            </div>
-
-            <!-- BLUEPRINT tab content -->
-            <div id="bpTab" class="mixer-tab-pane">
-              <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 0">
-                <div id="bpPhases" class="bp-phases" style="flex:1"></div>
-                <div id="bpReadiness" class="mono" style="display:none;font-size:9px;white-space:nowrap;padding:3px 8px;border-radius:3px;border:1px solid rgba(255,255,255,0.06)"></div>
-              </div>
-              <div id="bpChat" class="bp-chat">
-                <div id="bpMessages" class="bp-messages"></div>
-                <div class="bp-input-area">
-                  <input id="bpInput" type="text" class="bp-input mono" placeholder="Type your answer…" autocomplete="off">
-                  <button id="bpSend" class="bp-send">→</button>
-                  <button id="bpSkip" class="bp-skip" title="Skip question">SKIP</button>
-                </div>
-              </div>
-              <div id="bpModules" class="bp-modules">
-                <div class="bp-modules-header">
-                  <span class="rack-title" style="color:var(--txt)">MODULES</span>
-                  <button id="bpAddModule" class="ms-copy">+ MODULE</button>
-                </div>
-                <div id="bpModuleList" class="bp-module-list"></div>
-              </div>
-              <div style="padding:6px 10px;display:flex;gap:4px">
-                <button id="bpNewSession" class="tp-action">+ SESSION</button>
-                <button id="bpGenerate" class="tp-action upgrade" disabled>GENERATE BRIEF</button>
-                <span id="bpReadiness" class="section-badge mono" style="margin-left:auto"></span>
-              </div>
-            </div>
-
-            <!-- KNOWLEDGE tab content -->
-            <div id="knowledgeTab" class="mixer-tab-pane kn-pane">
-              <div class="bp-phases" style="display:flex; gap:10px; padding:10px; flex-wrap:wrap">
-                <button id="knBtnRoadmap" class="tp-action kn-btn on">ROADMAP.md</button>
-                <button id="knBtnReport" class="tp-action kn-btn">REPORT.md</button>
-                <button id="knBtnDb" class="tp-action kn-btn">DB_SCHEMA.md</button>
-                <button id="knBtnPlan" class="tp-action kn-btn">PLAN.md</button>
-                <button id="knBtnDecisions" class="tp-action kn-btn">DECISIONS.md</button>
-                <button id="knBtnPending" class="tp-action kn-btn">PENDING.md</button>
-                <button id="knBtnLearnings" class="tp-action kn-btn">LEARNINGS.md</button>
-                <button id="knBtnBlueprint" class="tp-action kn-btn">BLUEPRINT.md</button>
-              </div>
-              <div style="flex:1; overflow-y:auto; padding:10px;">
-                <pre id="knowledgeContent" class="mono" style="font-size:11px; white-space:pre-wrap; color:var(--txt)"></pre>
-              </div>
-            <!-- NOTES tab content (F-25) -->
-            <div id="notesTab" class="mixer-tab-pane" style="display:flex;flex-direction:column;height:100%">
-              <div style="padding:10px 10px 4px">
-                <span class="settings-label">NOTAS DEL OPERADOR</span>
-              </div>
-              <textarea id="notesArea" class="mono" placeholder="Escribe notas sobre esta sesión…" style="flex:1;margin:0 10px 10px;padding:8px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:4px;font-size:11px;resize:none"></textarea>
-            </div>
+            <input id="logFilterInput" type="text" placeholder="Filtrar logs..." aria-label="Filtrar logs" class="mix-import-field mono" style="margin-left:auto; margin-right:10px; width:150px; background:transparent">
+            <span id="logFilterCount" class="mono" style="font-size:9px;color:var(--dim);margin-right:6px;display:none"></span>
+            <div class="console-actions">
+              <button id="clearLogBtn" class="ms-copy" title="Clear terminal log" style="color:var(--txt)">CLEAR</button>
+              <button id="autoScrollBtn" class="ms-copy on" title="Toggle Auto-scroll" style="color:var(--hi)">↓ SCROLL</button>
+              <button id="toggleRawBtn" class="ms-copy" title="View raw log">RAW</button>
+              <button id="copyLogBtn" class="ms-copy" title="Copy full history">⎘ COPY ALL</button>
             </div>
           </div>
+
+          <!-- Telemetry metrics strip -->
+          <div id="metricsStrip" class="metrics-strip">
+            <div class="mm-cell"><span class="mm-label">RESOURCES</span><span class="mm-val" id="mmAllocVal">—</span></div>
+            <div class="mm-cell"><span class="mm-label">MEMORY</span><span class="mm-val" id="mmMemVal">—</span></div>
+            <div class="mm-cell"><span class="mm-label">TOKENS</span><span class="mm-val" id="mmTokensVal">—</span></div>
+            <div class="mm-cell"><span class="mm-label">COMPRESSION</span><span class="mm-val" id="mmCompressionVal">—</span></div>
+            <div class="mm-cell"><span class="mm-label">INSTANCES</span><span class="mm-val" id="mmInstancesVal">—</span></div>
+            <div class="mm-cell"><span class="mm-label">COMPLIANCE</span><span class="mm-val" id="mmComplianceVal">—</span><svg id="complianceSpark" width="60" height="16" style="display:none;margin-top:2px"></svg></div>
+            <div class="mm-cell"><span class="mm-label">ROADMAP</span><span class="mm-val" id="mmRoadmapVal">—</span></div>
+            <div class="mm-cell"><span class="mm-label">BURN RATE</span><span class="mm-val" id="mmBurnVal">—</span><svg id="burnSpark" width="60" height="16" style="display:none;margin-top:2px"></svg></div>
+            <div class="mm-cell mm-cell-usage"><span class="mm-label">AI USAGE</span><span class="mm-val" id="mmAiUsageVal">—</span><div class="usage-bar"><div class="usage-bar-fill" id="usageBarFill"></div></div></div>
+          </div>
+
+          <!-- Resource allocation inspector (F-13) -->
+          <div id="allocInspector" class="alloc-inspector" style="display:none">
+            <button id="allocToggle" class="alloc-toggle">▸ ASIGNACIÓN DE RECURSOS</button>
+            <div id="allocBody" class="alloc-body" style="display:none">
+              <div id="allocSummary" class="alloc-summary"></div>
+              <div id="allocCategories" class="alloc-categories"></div>
+            </div>
+          </div>
+
+          <!-- Context Compression Panel (F-21) -->
+          <div id="compressionPanel" class="alloc-inspector" style="display:none">
+            <button id="compressionToggle" class="alloc-toggle" aria-label="Alternar panel de compresión">▸ COMPRESIÓN DE CONTEXTO</button>
+            <div id="compressionBody" class="alloc-body" style="display:none">
+              <div id="compressionStats" class="alloc-summary"></div>
+              <div id="compressionHistory" class="compression-history"></div>
+            </div>
+          </div>
+
+          <div id="mixerHistoryPanel" class="alloc-inspector" style="display:none">
+            <button id="mixerHistoryToggle" class="alloc-toggle" aria-label="Alternar historial de pesos">▸ HISTORIAL DE PESOS</button>
+            <div id="mixerHistoryBody" class="alloc-body" style="display:none">
+              <svg id="mixerHistorySvg" class="mh-svg" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
+              <div id="mixerHistoryLegend" class="mh-legend"></div>
+            </div>
+          </div>
+
+          <!-- Current feature indicator -->
+          <div id="featureStrip" class="feature-strip">
+            <span class="fs-label">DEVELOPING</span>
+            <span class="fs-val" id="currentFeature">—</span>
+          </div>
+
+          <!-- Log area -->
+          <div class="console-log-wrap">
+            <div id="log"></div>
+            <!-- Raw log overlay -->
+            <div id="rawLogOverlay">
+              <div class="raw-bar">
+                <span>FULL LOG — PLAIN TEXT</span>
+                <button id="closeRawBtn" class="ms-copy">CLOSE</button>
+                <button id="copyRawBtn" class="ms-copy">COPY ALL</button>
+                <button id="selectAllRawBtn" class="ms-copy">SELECT ALL</button>
+              </div>
+              <pre id="rawLogContent"></pre>
+            </div>
+          </div>
+
+          <!-- PROCESSES -->
+          <div id="procsPanel" class="procs-panel">
+            <div class="procs-bar">
+              <span class="section-icon">⚙</span>
+              <span class="rack-title" style="color:var(--txt)">PROCESSES</span>
+              <button id="procsRefresh" class="ms-copy">↺</button>
+              <span id="procsCount" class="section-badge mono"></span>
+            </div>
+            <div id="procsList"></div>
+          </div>
+
+          <!-- LIFECYCLE TIMELINE (F-14) -->
+          <details id="sectionLifecycle" class="console-collapsible">
+            <summary class="collapsible-header">
+              <span class="section-icon">◉</span>
+              <span class="section-title">LIFECYCLE</span>
+              <span id="lifecycleCount" class="section-badge mono"></span>
+            </summary>
+            <div class="collapsible-body">
+              <div id="lifecycleTimeline" class="lifecycle-timeline"></div>
+            </div>
+          </details>
+
+          <!-- CRITIQUE -->
+          <details id="sectionAnalysis" class="console-collapsible" hidden>
+            <summary class="collapsible-header">
+              <span class="section-icon">✎</span>
+              <span class="section-title">CRITIQUE</span>
+              <div class="section-actions">
+                <button id="refreshAnalysis" class="ms-copy">UPDATE</button>
+                <button id="copyAnalysis" class="ms-copy">COPY</button>
+              </div>
+            </summary>
+            <div class="collapsible-body">
+              <div id="commitBreakdown" style="display:none; padding:8px 12px"></div>
+              <textarea id="analysisOut" class="mono" readonly placeholder="Loading critique…"></textarea>
+              <span id="analysisFile" class="mono tp-path" style="padding:4px 12px"></span>
+            </div>
+          </details>
 
         </div>
       </div>
+
+      <!-- MIXER DRAWER OVERLAY -->
+      <div id="mixerDrawerOverlay" class="drawer-overlay"></div>
+
+      <!-- MIXER DRAWER (slides in from right) -->
+      <div id="mixerDrawer" class="mixer-drawer">
+        <div class="mixer-drawer-header">
+          <span class="mixer-drawer-title">MIX CONSOLE</span>
+          <button id="mixerDrawerClose" class="tp-btn" aria-label="Cerrar mixer">✕</button>
+        </div>
+        <div class="mixer-tabs">
+          <button class="mixer-tab on" data-mtab="mixTab">MIX</button>
+          <button class="mixer-tab" data-mtab="bpTab">BLUEPRINT</button>
+          <button class="mixer-tab" data-mtab="knowledgeTab">KNOWLEDGE</button>
+          <button class="mixer-tab" data-mtab="notesTab">NOTES</button>
+        </div>
+
+        <!-- MIX tab content -->
+        <div id="mixTab" class="mixer-tab-pane on">
+          <div id="mixesHeader">
+            <span class="rack-title" style="color:var(--txt)">SAVED MIXES</span>
+            <div id="mixesImport">
+              <input id="mixImportInput" type="text" placeholder="Paste JSON…" class="mix-import-field mono">
+              <button id="mixImportBtn" class="tp-action">IMPORT</button>
+            </div>
+          </div>
+          <div id="smartMixBar" class="smart-mix-bar">
+            <div id="smartMixToggle" class="smart-toggle" title="Smart Mix — self-regulating stands">
+              <div class="smart-toggle-aurora" id="smartAurora"></div>
+              <div class="smart-toggle-glass"></div>
+              <div class="smart-toggle-knob" id="smartKnob"></div>
+            </div>
+            <span class="smart-label" id="smartLabel">SMART MIX</span>
+          </div>
+          <div id="mixesList"></div>
+          <div id="mixesEmpty" class="mixes-empty" hidden><span>No saved mixes yet.</span></div>
+          <div id="mixerStrips" class="mixer-strips-v"></div>
+          <div id="mixerFooter">
+            <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:100px">
+            <button id="saveMixer" class="tp-action">SAVE</button>
+            <button id="addAtrilBtn" class="tp-action" title="Add custom stand">+ STAND</button>
+            <button id="exportMixesBtn" class="tp-action dim" title="Export all mixes to JSON">↥</button>
+            <button id="importMixesBtn" class="tp-action dim" title="Import mixes library from JSON">↧</button>
+            <span id="mixerSaved" class="saved-msg" hidden>✓</span>
+          </div>
+        </div>
+
+        <!-- BLUEPRINT tab content -->
+        <div id="bpTab" class="mixer-tab-pane">
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 0">
+            <div id="bpPhases" class="bp-phases" style="flex:1"></div>
+            <div id="bpReadiness" class="mono" style="display:none;font-size:9px;white-space:nowrap;padding:3px 8px;border-radius:3px;border:1px solid rgba(255,255,255,0.06)"></div>
+          </div>
+          <div id="bpChat" class="bp-chat">
+            <div id="bpMessages" class="bp-messages"></div>
+            <div class="bp-input-area">
+              <input id="bpInput" type="text" class="bp-input mono" placeholder="Type your answer…" autocomplete="off">
+              <button id="bpSend" class="bp-send">→</button>
+              <button id="bpSkip" class="bp-skip" title="Skip question">SKIP</button>
+            </div>
+          </div>
+          <div id="bpModules" class="bp-modules">
+            <div class="bp-modules-header">
+              <span class="rack-title" style="color:var(--txt)">MODULES</span>
+              <button id="bpAddModule" class="ms-copy">+ MODULE</button>
+            </div>
+            <div id="bpModuleList" class="bp-module-list"></div>
+          </div>
+          <div style="padding:6px 10px;display:flex;gap:4px">
+            <button id="bpNewSession" class="tp-action">+ SESSION</button>
+            <button id="bpGenerate" class="tp-action upgrade" disabled>GENERATE BRIEF</button>
+            <span id="bpReadiness" class="section-badge mono" style="margin-left:auto"></span>
+          </div>
+        </div>
+
+        <!-- KNOWLEDGE tab content -->
+        <div id="knowledgeTab" class="mixer-tab-pane kn-pane">
+          <div class="bp-phases" style="display:flex; gap:10px; padding:10px; flex-wrap:wrap">
+            <button id="knBtnRoadmap" class="tp-action kn-btn on">ROADMAP.md</button>
+            <button id="knBtnReport" class="tp-action kn-btn">REPORT.md</button>
+            <button id="knBtnDb" class="tp-action kn-btn">DB_SCHEMA.md</button>
+            <button id="knBtnPlan" class="tp-action kn-btn">PLAN.md</button>
+            <button id="knBtnDecisions" class="tp-action kn-btn">DECISIONS.md</button>
+            <button id="knBtnPending" class="tp-action kn-btn">PENDING.md</button>
+            <button id="knBtnLearnings" class="tp-action kn-btn">LEARNINGS.md</button>
+            <button id="knBtnBlueprint" class="tp-action kn-btn">BLUEPRINT.md</button>
+          </div>
+          <div style="flex:1; overflow-y:auto; padding:10px;">
+            <pre id="knowledgeContent" class="mono" style="font-size:11px; white-space:pre-wrap; color:var(--txt)"></pre>
+          </div>
+        </div>
+
+        <!-- NOTES tab content (F-25) -->
+        <div id="notesTab" class="mixer-tab-pane" style="display:flex;flex-direction:column;height:100%">
+          <div style="padding:10px 10px 4px">
+            <span class="settings-label">NOTAS DEL OPERADOR</span>
+          </div>
+          <textarea id="notesArea" class="mono" placeholder="Escribe notas sobre esta sesión…" style="flex:1;margin:0 10px 10px;padding:8px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:4px;font-size:11px;resize:none"></textarea>
+        </div>
+
+      </div>
+
     </main>
   </div>
 </div>

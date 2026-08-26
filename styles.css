@@ -583,63 +583,140 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
-.split-top {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  min-height: 0;
+/* ── Node graph section (top half) ────────────────────────────────────────── */
+#nodeGraphSection {
+  flex: 0 0 50%;
+  min-height: 120px;
+  position: relative;
+  background: #04040a;
   overflow: hidden;
 }
-
-/* ── Console column (left) ──────────────────────────────────────────────── */
-.split-console {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-  border-right: none;
+.ng-label {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  font: 700 7px var(--sans);
+  letter-spacing: 0.8px;
+  color: rgba(0,255,238,0.2);
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 10;
+}
+.mg-canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.mg-canvas canvas {
+  display: block;
 }
 
-/* ── Drag divider ───────────────────────────────────────────────────────── */
-.split-divider {
-  width: 4px;
-  min-width: 4px;
+/* ── Vertical drag divider ─────────────────────────────────────────────────── */
+.split-divider-v {
+  height: 4px;
+  min-height: 4px;
   flex-shrink: 0;
   background: var(--line);
-  cursor: col-resize;
+  cursor: ns-resize;
   position: relative;
   transition: background .15s;
 }
-.split-divider::after {
+.split-divider-v::after {
   content: '';
   position: absolute;
-  top: 20%;
-  bottom: 20%;
-  left: 1px;
-  width: 1px;
+  left: 20%;
+  right: 20%;
+  top: 1px;
+  height: 1px;
   background: rgba(0,255,238,0.12);
   box-shadow: 0 0 4px rgba(0,255,238,0.08);
   border-radius: 1px;
   transition: background .15s, box-shadow .15s;
 }
-.split-divider:hover { background: var(--line2) }
-.split-divider:hover::after {
+.split-divider-v:hover { background: var(--line2) }
+.split-divider-v:hover::after {
   background: rgba(0,255,238,0.3);
   box-shadow: 0 0 8px rgba(0,255,238,0.2);
 }
 
-/* ── Mixer panel (right) ─────────────────────────────────────────────────── */
-.mixer-panel {
+/* ── Console section (bottom half) ─────────────────────────────────────────── */
+#consoleSection {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  min-height: 0;
   overflow: hidden;
+}
+
+/* ── Mixer drawer (slides in from right) ──────────────────────────────────── */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 299;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+}
+.drawer-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.mixer-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 340px;
+  z-index: 300;
   background: var(--panel);
   border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.mixer-drawer.open {
+  transform: translateX(0);
+}
+.mixer-drawer-header {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 8px 0 12px;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.mixer-drawer-title {
+  font: 700 9px var(--sans);
+  letter-spacing: 1px;
+  color: var(--dim);
+  text-transform: uppercase;
+  flex: 1;
+}
+/* Mixer content inside drawer */
+.mixer-drawer .mixer-tabs {
+  border-top: none;
+}
+.mixer-drawer .mixer-tab-pane {
+  flex: 1;
+  min-height: 0;
+}
+.mixer-drawer #mixTab {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Legacy .mixer-panel — keep for any remaining refs */
+.mixer-panel {
+  display: none;
 }
 
 /* ── Mixer tabs ───────────────────────────────────────────────────────── */
@@ -2668,9 +2745,9 @@ html.light .clock-seg.orange { color: var(--fl-orange); text-shadow: none }
 html.light .clock-label { color: var(--dim) }
 
 /* ── Split layout / divider ───────────────────────────────── */
-html.light .split-divider { background: var(--line) }
-html.light .split-divider::after { background: rgba(0,122,110,.15) }
-html.light .split-divider:hover::after { background: rgba(0,122,110,.4) }
+html.light .split-divider-v { background: var(--line) }
+html.light .split-divider-v::after { background: rgba(0,122,110,.15) }
+html.light .split-divider-v:hover::after { background: rgba(0,122,110,.4) }
 
 /* ── Console / logs ───────────────────────────────────────── */
 html.light .console-log-wrap { background: #fafbfc }

@@ -827,23 +827,29 @@ async function loadMixer() {
       rebalanceMixer(k, newVal)
       updateSmartAuroraColors()
       debouncedMixerSave()
+      updateMixerGraph()
     })
     inp.addEventListener('change', () => {
       const newVal = parseInt(inp.value, 10)
       rebalanceMixer(k, newVal)
       updateSmartAuroraColors()
       debouncedMixerSave()
+      updateMixerGraph()
     })
   }
   // Update aurora colors from the freshly built strips
   setTimeout(updateSmartAuroraColors, 50)
 
-  // Mixer node graph — init on first load, update weights on reload
+  // Mixer node graph — always visible, init once per project
   const graphContainer = $('#mixerGraphCanvas')
   if (graphContainer && window.mixerGraph) {
     if (!mixerGraphInited) {
-      window.mixerGraph.init(graphContainer, allSections)
-      mixerGraphInited = true
+      // Defer 1 frame so the container has final dimensions
+      setTimeout(() => {
+        window.mixerGraph.init(graphContainer, allSections)
+        mixerGraphInited = true
+        window.mixerGraph.update(normalizedFocus)
+      }, 80)
     } else {
       window.mixerGraph.update(normalizedFocus)
     }
@@ -894,6 +900,18 @@ function activateMixerStand(category) {
       setTimeout(() => spark.remove(), 1200)
     }
   }, 600)
+}
+
+// Update graph node sizes from current slider state
+function updateMixerGraph() {
+  if (!window.mixerGraph || !mixerGraphInited) return
+  const focus = {}
+  document.querySelectorAll('#mixerStrips .strip-h').forEach(s => {
+    const k = s.dataset.key
+    const v = s.querySelector('.strip-h-val')
+    if (k && v) focus[k] = parseInt(v.textContent, 10) || 0
+  })
+  window.mixerGraph.update(focus)
 }
 
 // ─── Mixer Equalizer: all stands always sum to 100% ────────────────────────
@@ -2159,41 +2177,28 @@ async function loadMetrics() {
   updateMetricsDisplay({ resource, context, coordination, claudeUsage })
 }
 
-// ─── Mixer Node Graph panel toggle ────────────────────────────────────────────
-;(function initMixerGraphPanel() {
-  const btn = $('#mixerGraphToggle')
-  const body = $('#mixerGraphBody')
-  if (!btn || !body) return
-  // Start collapsed
-  body.style.display = 'none'
-  btn.classList.remove('open')
-  btn.querySelector('.mg-toggle-caret').textContent = '▸'
+// ─── Mixer Drawer toggle ───────────────────────────────────────────────────────
+;(function initMixerDrawer() {
+  const toggleBtn = $('#mixerDrawerToggle')
+  const closeBtn = $('#mixerDrawerClose')
+  const drawer = $('#mixerDrawer')
+  const overlay = $('#mixerDrawerOverlay')
+  if (!drawer) return
 
-  btn.addEventListener('click', () => {
-    const isOpen = body.style.display !== 'none'
-    body.style.display = isOpen ? 'none' : ''
-    const caret = btn.querySelector('.mg-toggle-caret')
-    if (caret) caret.textContent = isOpen ? '▸' : '▾'
-    btn.classList.toggle('open', !isOpen)
+  function openDrawer() {
+    drawer.classList.add('open')
+    if (overlay) overlay.classList.add('visible')
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open')
+    if (overlay) overlay.classList.remove('visible')
+  }
 
-    // Init graph on first open
-    if (!isOpen && !mixerGraphInited && window.mixerGraph) {
-      const container = $('#mixerGraphCanvas')
-      if (container) {
-        window.mixerGraph.init(container, getAllSections())
-        mixerGraphInited = true
-        // Feed current focus if available
-        const strips = document.querySelectorAll('#mixerStrips .strip-h')
-        const focus = {}
-        strips.forEach(s => {
-          const k = s.dataset.key
-          const v = s.querySelector('.strip-h-val')
-          if (k && v) focus[k] = parseInt(v.textContent, 10) || 0
-        })
-        window.mixerGraph.update(focus)
-      }
-    }
+  if (toggleBtn) toggleBtn.addEventListener('click', () => {
+    drawer.classList.contains('open') ? closeDrawer() : openDrawer()
   })
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer)
+  if (overlay) overlay.addEventListener('click', closeDrawer)
 })()
 
 // ─── Resource Allocation Inspector (F-13) ─────────────────────────────────────
@@ -3271,29 +3276,35 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
-// Split divider drag (persists to localStorage)
+// Vertical split divider drag — resizes node graph vs console sections
 ;(function initSplitDivider() {
-  const divider = $('#splitDivider')
-  const left = document.querySelector('.split-console')
-  const right = document.querySelector('.mixer-panel')
-  if (!divider || !left || !right) return
-  const saved = parseFloat(localStorage.getItem('director:splitPct'))
-  if (saved > 30 && saved < 85) { left.style.flex = 'none'; left.style.width = saved + '%'; right.style.flex = '1' }
+  const divider = $('#splitDividerV')
+  const top = $('#nodeGraphSection')
+  const bottom = $('#consoleSection')
+  if (!divider || !top || !bottom) return
+  const saved = parseFloat(localStorage.getItem('director:splitVPct'))
+  if (saved > 15 && saved < 80) {
+    top.style.flex = 'none'
+    top.style.height = saved + '%'
+  }
   let dragging = false
   divider.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault() })
   document.addEventListener('mousemove', (e) => {
     if (!dragging) return
-    const parent = left.parentElement
+    const parent = divider.parentElement
     const rect = parent.getBoundingClientRect()
-    const pct = ((e.clientX - rect.left) / rect.width) * 100
-    if (pct > 30 && pct < 85) {
-      left.style.flex = 'none'
-      left.style.width = pct + '%'
-      right.style.flex = '1'
+    const pct = ((e.clientY - rect.top) / rect.height) * 100
+    if (pct > 15 && pct < 80) {
+      top.style.flex = 'none'
+      top.style.height = pct + '%'
+      if (window.mixerGraph && mixerGraphInited) window.mixerGraph.resize()
     }
   })
   document.addEventListener('mouseup', () => {
-    if (dragging) { const w = parseFloat(left.style.width); if (w) localStorage.setItem('director:splitPct', w.toFixed(1)) }
+    if (dragging) {
+      const h = parseFloat(top.style.height)
+      if (h) localStorage.setItem('director:splitVPct', h.toFixed(1))
+    }
     dragging = false
   })
 })()

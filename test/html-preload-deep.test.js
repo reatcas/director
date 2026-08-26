@@ -190,8 +190,8 @@ describe('index.html — workspace layout', () => {
     expect(html).toContain('id="splitLayout"')
   })
 
-  it('defines #splitDivider', () => {
-    expect(html).toContain('id="splitDivider"')
+  it('defines #splitDividerV', () => {
+    expect(html).toContain('id="splitDividerV"')
   })
 })
 
@@ -277,8 +277,8 @@ describe('index.html — console area', () => {
 
 // ─── Mixer panel DOM ───────────────────────────────────────────────────────
 describe('index.html — mixer panel', () => {
-  it('defines #mixerPanel', () => {
-    expect(html).toContain('id="mixerPanel"')
+  it('defines #mixerDrawer', () => {
+    expect(html).toContain('id="mixerDrawer"')
   })
 
   it('defines 3 mixer tabs (MIX, BLUEPRINT, KNOWLEDGE)', () => {
