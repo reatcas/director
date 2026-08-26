@@ -104,3 +104,5 @@
 - [x] **I-74** IPC handler pattern tests — getClaudeUsage caching, parseComplianceLine, syncProtocol, orchestra:analyze, metrics sampling, playOrchestra setup chain, log tailing (693 total).
 - [x] **I-75** Accessibility + design system tests — ARIA labels, focus-visible, color system, light theme, animations, semantic HTML, modal a11y, CSS security (772 total).
 - [x] **I-76** Error resilience tests — null dir guards, path traversal prevention, try-catch patterns, safe defaults, signal safety, SIGTERM→SIGKILL escalation, writeJSON atomicity (832 total).
+- [x] **I-77** Renderer→preload API contract tests — all window.director.* calls verified against preload, event listeners, mixer-chart bridge, UI patterns (920 total).
+- [x] **I-78** Main.js utility function invariant tests — findLogo 5-step search, projectInfo state aggregation, copyDir merge logic, AI provider round-robin, credit reset, snapshotMixer, watchForResume, getClaudeUsage caching, playOrchestra setup chain, hot-reload, syncProtocol (1082 total).
