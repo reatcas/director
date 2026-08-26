@@ -1091,6 +1091,34 @@ ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   }
 })
 
+// ─── Session export (F-23) ────────────────────────────────────────────────────
+ipcMain.handle('export:session', async (_e, dir) => {
+  if (!dir) return { ok: false }
+  const read = f => { try { return fs.readFileSync(path.join(dir, f), 'utf8') } catch { return '' } }
+  const snapshot = {
+    exportedAt: new Date().toISOString(),
+    project: path.basename(dir),
+    projectPath: dir,
+    orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim() || 'unknown',
+    runStarted: read('.claude/RUN_STARTED').trim() || null,
+    lifecycle: readJSON(path.join(dir, '.claude/logs/lifecycle-events.json'), []),
+    mixerConfig: readJSON(path.join(dir, '.claude/orchestra.json'), {}),
+    mixerHistory: readJSON(path.join(dir, '.claude/mixer-history.json'), []),
+    claudeUsage: getClaudeUsage(dir),
+    compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')),
+    roadmap: read('ROADMAP.md'),
+    plan: read('PLAN.md'),
+    pending: read('PENDING.md')
+  }
+  const result = await dialog.showSaveDialog(win, {
+    defaultPath: path.join(app.getPath('documents'), `director-session-${snapshot.project}-${Date.now()}.json`),
+    filters: [{ name: 'JSON', extensions: ['json'] }]
+  })
+  if (result.canceled) return { ok: false }
+  fs.writeFileSync(result.filePath, JSON.stringify(snapshot, null, 2))
+  return { ok: true, path: result.filePath }
+})
+
 // ─── Analysis ─────────────────────────────────────────────────────────────────
 ipcMain.handle('orchestra:analyze', (_e, dir) => {
   if (!dir) return Promise.resolve({ report: 'No project selected', file: null })

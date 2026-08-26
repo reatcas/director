@@ -336,6 +336,7 @@ function updateStageView() {
     } else {
       emptyState.classList.add('on')
       if ($('#openFolderBtn')) $('#openFolderBtn').hidden = true
+      if ($('#exportBtn')) $('#exportBtn').hidden = true
     }
   }
   if (unified) {
@@ -535,6 +536,7 @@ function paint() {
 
   if ($('#installBtn')) $('#installBtn').hidden = p.installed
   if ($('#openFolderBtn')) $('#openFolderBtn').hidden = false
+  if ($('#exportBtn')) $('#exportBtn').hidden = !p.installed
   if ($('#sectionAnalysis')) $('#sectionAnalysis').hidden = !p.hasLogs
 
   updateTransportButtons()
@@ -601,6 +603,14 @@ if ($('#removeBtn')) $('#removeBtn').onclick = async () => {
 }
 if ($('#installBtn')) $('#installBtn').onclick = async () => { await window.director.install(current); refresh() }
 if ($('#openFolderBtn')) $('#openFolderBtn').onclick = () => window.director.openDir(current)
+if ($('#exportBtn')) $('#exportBtn').onclick = async () => {
+  if (!current) return
+  const btn = $('#exportBtn')
+  if (btn) { btn.textContent = '…'; btn.disabled = true }
+  const r = await window.director.exportSession(current)
+  if (btn) { btn.textContent = 'EXPORT'; btn.disabled = false }
+  showToast(r.ok ? `Exportado: ${r.path}` : 'Exportación cancelada')
+}
 if ($('#upgradeBtn')) $('#upgradeBtn').onclick = async () => {
   const btn = $('#upgradeBtn')
   if (btn) { btn.textContent = '…'; btn.disabled = true }

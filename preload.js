@@ -65,6 +65,8 @@ contextBridge.exposeInMainWorld('director', {
   // Alert notifications (F-22)
   alertsConfig:       cfg      => ipcRenderer.invoke('alerts:config', cfg),
   alertsRead:         ()       => ipcRenderer.invoke('alerts:read'),
+  // Session export (F-23)
+  exportSession:      dir      => ipcRenderer.invoke('export:session', dir),
   // Events
   onLine:        cb => ipcRenderer.on('orchestra:line',        (_e, d) => cb(d)),
   onExit:        cb => ipcRenderer.on('orchestra:exit',        (_e, d) => cb(d)),
