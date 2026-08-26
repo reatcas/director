@@ -254,17 +254,7 @@ window.mixerGraph = (() => {
   function animLoop() {
     _t += 0.05
 
-    // Hub glow pulse
-    if (_hubGlow) {
-      const s = _hubGlow.userData.baseScale * (1 + 0.18 * Math.sin(_t * 0.55))
-      _hubGlow.scale.set(s, s, 1)
-    }
-    // Active node glow pulse
-    if (_activeGlow) {
-      const s = _activeGlow.userData.baseScale * (1 + 0.45 * Math.sin(_t * 2.2))
-      _activeGlow.scale.set(s, s, 1)
-      _activeGlow.material.opacity = 0.55 + 0.4 * Math.sin(_t * 2.2)
-    }
+    // Hub + active glow handled via _pulseLayer rings; sprites not used
 
     // Expand rings
     for (let i = _rings.length - 1; i >= 0; i--) {
@@ -338,7 +328,6 @@ window.mixerGraph = (() => {
       .nodeId('id').nodeLabel('label')
       .nodeVal(nodeVal).nodeColor(nodeColor).nodeOpacity(0.92)
       .nodeResolution(16)
-      .nodeThreeObject(nodeThreeObject).nodeThreeObjectExtend(true)
       .linkColor(linkColorFn)
       .linkWidth(linkWidthFn)
       .linkDirectionalParticles(linkParticlesFn)
