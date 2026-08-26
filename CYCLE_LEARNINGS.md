@@ -27,3 +27,6 @@
 - `split('functionName')` can match function *calls* before function *definitions*. Always use `split('function functionName')` for definition extraction.
 - Git log range `hash..HEAD` excludes the boundary commit itself. Use `hash^..HEAD` to include it in module ban counting.
 - Multi-line `execSync()` calls: when testing source patterns, check 200 chars of context around the match, not just the single line — commands may span lines.
+- Arrow function helpers (`const readJSON = ...`) need different split patterns than `function readJSON`. Use `split('const readJSON')` not `split('function readJSON')`.
+- IPC handler blocks: split on `'ipcMain.handle'` as delimiter (next handler) is more reliable than `'})' ` which can match nested closures inside Promises or callbacks.
+- `playOrchestra` is called FROM the `orchestra:play` handler — test the function directly, not the handler wrapper.

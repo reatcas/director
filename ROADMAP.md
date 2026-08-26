@@ -100,3 +100,5 @@
 - [x] **I-70** Architecture alignment, license headers, package config, test coverage inventory (437 total).
 - [x] **I-71** Deep harness invariant tests — signal traps, backoff, hallucination/blocked streakers, usage limit parsing, anti-slop detection, Smart Mix v3 classification, stream-json parser (513 total).
 - [x] **I-72** Security regression test suite — scans all source files for eval, shell injection, XSS, path traversal, Electron misconfig, PID/signal validation, atomic writes, IPC alignment (570 total).
+- [x] **I-73** Constitution validation tests — CLAUDE.md structure, rule enforcement alignment, state files, ALTO, PRODUCT GATE, ANTI-SLOP, harness-constitution bidirectional checks (640 total).
+- [x] **I-74** IPC handler pattern tests — getClaudeUsage caching, parseComplianceLine, syncProtocol, orchestra:analyze, metrics sampling, playOrchestra setup chain, log tailing (693 total).
