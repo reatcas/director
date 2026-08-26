@@ -1,7 +1,7 @@
-# Cycle 78 Plan — IMPROVEMENT MODE (post-limit, no-idle override)
+# Cycle 79 Plan — IMPROVEMENT MODE (post-limit, no-idle override)
 
 ## Budget (from mixer)
 product=30%(blocked) backend=20% quality=20% frontend=15% security=10% perf=5%
 
 ## Units
-1. [quality] I-86 — index.html structure + preload bridge deep tests: semantic HTML elements, script loading order, ARIA attributes, meta tags, modal DOM structure, mixer DOM, log container, transport DOM, preload method inventory completeness (~1900 total)
+1. [quality] I-87 — Cross-file consistency tests: preload↔main.js IPC channel alignment, preload↔renderer method usage, index.html ID↔renderer $ selectors, CSS class↔HTML class usage (~2080 total)
