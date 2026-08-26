@@ -62,6 +62,9 @@ contextBridge.exposeInMainWorld('director', {
   // Custom Atriles (app-wide)
   atrilesList:        ()       => ipcRenderer.invoke('atriles:list'),
   atrilesSave:        a        => ipcRenderer.invoke('atriles:save', a),
+  // Alert notifications (F-22)
+  alertsConfig:       cfg      => ipcRenderer.invoke('alerts:config', cfg),
+  alertsRead:         ()       => ipcRenderer.invoke('alerts:read'),
   // Events
   onLine:        cb => ipcRenderer.on('orchestra:line',        (_e, d) => cb(d)),
   onExit:        cb => ipcRenderer.on('orchestra:exit',        (_e, d) => cb(d)),

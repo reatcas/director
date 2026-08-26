@@ -1,7 +1,7 @@
 // Copyright (c) 2026 René Antonio Casaña Amaya. All rights reserved.
 // Licensed under the AGPL-3.0 License. See LICENSE in repository root.
 
-const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell, Notification } = require('electron')
 const { spawn, execFile, execFileSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
@@ -43,7 +43,11 @@ function startTailing(dir, logFile) {
         fs.readSync(fd, buf, 0, buf.length, pos)
         fs.closeSync(fd)
         pos += buf.length
-        if (win && !win.isDestroyed()) win.webContents.send('orchestra:line', { dir, line: buf.toString() })
+        const chunk = buf.toString()
+        if (chunk.includes('ALTO') || chunk.includes('▸ ◼')) {
+          if (chunk.includes('ALTO')) sendAlert('alto', 'ALTO', `${path.basename(dir)} — sesión detenida`)
+        }
+        if (win && !win.isDestroyed()) win.webContents.send('orchestra:line', { dir, line: chunk })
       } else {
         // Log not growing — check if process is actually alive
         if (!isRunning(dir)) {
@@ -86,6 +90,7 @@ function stopTailing(dir) {
 // ─── Git commit watcher (real-time progress when stdout is buffered) ─────────
 const gitWatchers = new Map()
 const gitLastHash = new Map()
+const gitLastCommitTime = new Map()
 
 function pollGitCommits(dir) {
   const lastHash = gitLastHash.get(dir) || ''
@@ -95,12 +100,20 @@ function pollGitCommits(dir) {
       const logArgs = lastHash ? ['log', '--oneline', lastHash + '..'] : ['log', '--oneline', '-1']
       const newCommits = execFileSync('git', logArgs, { cwd: dir, encoding: 'utf8', timeout: 5000 }).trim().split('\n').filter(Boolean)
       gitLastHash.set(dir, currentHash)
+      gitLastCommitTime.set(dir, Date.now())
       for (const c of newCommits) {
         const line = `▸ ✔ [commit] ${c}\n`
         if (win && !win.isDestroyed()) {
           win.webContents.send('orchestra:line', { dir, line })
         }
         persistLifecycleEvent(dir, 'commit', 'COMMIT', c)
+      }
+    } else {
+      const lastTime = gitLastCommitTime.get(dir) || Date.now()
+      if (!gitLastCommitTime.has(dir)) gitLastCommitTime.set(dir, lastTime)
+      if (Date.now() - lastTime > 20 * 60 * 1000) {
+        const mins = Math.floor((Date.now() - lastTime) / 60000)
+        sendAlert('stall', 'Estancamiento', `${path.basename(dir)} — ${mins}min sin commits`)
       }
     }
   } catch {}
@@ -123,6 +136,32 @@ function stopGitWatcher(dir) {
   if (iv) { clearInterval(iv); gitWatchers.delete(dir) }
   gitLastHash.delete(dir)
 }
+
+// ─── Desktop notification alerts ─────────────────────────────────────────────
+const _alertConfig = { stall: true, alto: true, usageLimit: true }
+const _alertCooldown = new Map()
+
+function sendAlert(type, title, body) {
+  if (!_alertConfig[type]) return
+  const key = `${type}:${title}`
+  const now = Date.now()
+  if (_alertCooldown.has(key) && now - _alertCooldown.get(key) < 300000) return
+  _alertCooldown.set(key, now)
+  if (Notification.isSupported()) {
+    new Notification({ title, body, silent: false }).show()
+  }
+}
+
+ipcMain.handle('alerts:config', (_e, cfg) => {
+  if (cfg && typeof cfg === 'object') {
+    if (typeof cfg.stall === 'boolean') _alertConfig.stall = cfg.stall
+    if (typeof cfg.alto === 'boolean') _alertConfig.alto = cfg.alto
+    if (typeof cfg.usageLimit === 'boolean') _alertConfig.usageLimit = cfg.usageLimit
+  }
+  return { ..._alertConfig }
+})
+
+ipcMain.handle('alerts:read', () => ({ ..._alertConfig }))
 
 // ─── JSON helpers ─────────────────────────────────────────────────────────────
 const readJSON  = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return fb } }
@@ -654,6 +693,7 @@ function playOrchestra(dir, agent = 'claude') {
         }, 500)
       } else {
         persistLifecycleEvent(dir, 'usage_limit', 'PAUSA', 'Sin créditos disponibles — esperando restablecimiento')
+        sendAlert('usageLimit', 'Límite de uso', `${path.basename(dir)} — sin créditos disponibles`)
         watchForResume(dir)
         if (win && !win.isDestroyed()) win.webContents.send('orchestra:usage_limit', { dir })
       }

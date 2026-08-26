@@ -2916,6 +2916,12 @@ async function loadSettings() {
   if ($('#stgKeepLogs')) $('#stgKeepLogs').value = cfg.keepLogs || 50
   if ($('#stgAutoScroll')) $('#stgAutoScroll').checked = autoScrollEnabled
   if ($('#stgMaxHallStreak')) $('#stgMaxHallStreak').value = cfg.maxHallucinationStreak || 5
+  try {
+    const alerts = await window.director.alertsRead()
+    if ($('#stgAlertStall')) $('#stgAlertStall').checked = alerts.stall !== false
+    if ($('#stgAlertAlto')) $('#stgAlertAlto').checked = alerts.alto !== false
+    if ($('#stgAlertUsage')) $('#stgAlertUsage').checked = alerts.usageLimit !== false
+  } catch {}
 }
 
 async function saveSettings() {
@@ -2931,6 +2937,13 @@ async function saveSettings() {
   cfg.maxHallucinationStreak = parseInt($('#stgMaxHallStreak')?.value) || 5
   await window.director.configWrite(current, cfg)
   if ($('#aiSelect')) { $('#aiSelect').value = cfg.agent; updateAiControl() }
+  try {
+    await window.director.alertsConfig({
+      stall: $('#stgAlertStall')?.checked ?? true,
+      alto: $('#stgAlertAlto')?.checked ?? true,
+      usageLimit: $('#stgAlertUsage')?.checked ?? true
+    })
+  } catch {}
 }
 // Auto-save settings on change
 document.querySelectorAll('#settingsModal input, #settingsModal select').forEach(el => {
