@@ -332,7 +332,6 @@ window.mixerGraph = (() => {
 
     graph = ForceGraph3D({ antialias: true, alpha: true })(containerEl)
       .width(w).height(h)
-      .pixelRatio(window.devicePixelRatio || 1)
       .backgroundColor('rgba(0,0,0,0)')
       .numDimensions(2)
       .warmupTicks(120).cooldownTicks(0)
@@ -357,11 +356,15 @@ window.mixerGraph = (() => {
       graph.d3Force('charge').strength(-120)
     } catch {}
 
-    // Add pulse layer to scene
+    // Add pulse layer + set devicePixelRatio via underlying renderer
     setTimeout(() => {
       if (!graph) return
       _pulseLayer = new THREE.Group()
       graph.scene().add(_pulseLayer)
+      try {
+        const renderer = graph.renderer()
+        if (renderer && renderer.setPixelRatio) renderer.setPixelRatio(window.devicePixelRatio || 1)
+      } catch {}
     }, 50)
 
     // Position camera
