@@ -136,3 +136,4 @@
 - [x] **I-101** Add prefers-reduced-motion media query — disable all 15 keyframe animations for users with vestibular disorders via global reduced-motion override.
 - [x] **I-102** Fix path traversal prefix bypass in readFile + readIterLog — use path.resolve + dir+sep check to prevent sibling directory access via shared prefix.
 - [x] **I-103** Suppress scrollLog during batch log paint on project load — eliminate 200 forced layouts when painting initial log lines.
+- [x] **I-104** Replace auth execSync with spawnSync — eliminate shell interpretation for claude/codex/agy auth status checks.
