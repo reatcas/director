@@ -1428,31 +1428,35 @@ if ($('#selectAllRawBtn')) $('#selectAllRawBtn').onclick = () => {
 
 if ($('#logFilterInput')) {
   const filterInput = $('#logFilterInput')
+  let _filterTimer = null
   filterInput.addEventListener('input', (e) => {
-    const q = e.target.value.toLowerCase()
-    const logEl = $('#log')
-    const countEl = $('#logFilterCount')
-    if (!logEl) return
-    if (!q) {
-      logEl.classList.remove('filtering')
-      if (countEl) countEl.style.display = 'none'
-    } else {
-      logEl.classList.add('filtering')
-      let matchCount = 0
-      const entries = logEl.querySelectorAll('.le, .le-group')
-      for (const el of entries) {
-        if (el.textContent.toLowerCase().includes(q)) {
-          el.classList.add('match')
-          matchCount++
-        } else {
-          el.classList.remove('match')
+    clearTimeout(_filterTimer)
+    _filterTimer = setTimeout(() => {
+      const q = e.target.value.toLowerCase()
+      const logEl = $('#log')
+      const countEl = $('#logFilterCount')
+      if (!logEl) return
+      if (!q) {
+        logEl.classList.remove('filtering')
+        if (countEl) countEl.style.display = 'none'
+      } else {
+        logEl.classList.add('filtering')
+        let matchCount = 0
+        const entries = logEl.querySelectorAll('.le, .le-group')
+        for (const el of entries) {
+          if (el.textContent.toLowerCase().includes(q)) {
+            el.classList.add('match')
+            matchCount++
+          } else {
+            el.classList.remove('match')
+          }
+        }
+        if (countEl) {
+          countEl.textContent = matchCount + ' resultado' + (matchCount !== 1 ? 's' : '')
+          countEl.style.display = ''
         }
       }
-      if (countEl) {
-        countEl.textContent = matchCount + ' resultado' + (matchCount !== 1 ? 's' : '')
-        countEl.style.display = ''
-      }
-    }
+    }, 150)
   })
 
   const logObserver = new MutationObserver((mutations) => {
@@ -2397,9 +2401,11 @@ async function loadProcs() {
 
 if ($('#procsRefresh')) $('#procsRefresh').onclick = loadProcs
 
-// Auto-refresh procesos every 5 seconds since panel is always visible
 loadProcs()
-setInterval(loadProcs, 5000)
+setInterval(() => {
+  if (document.visibilityState === 'hidden') return
+  loadProcs()
+}, 5000)
 
 // ─── Blueprint / Discovery Interview Engine ─────────────────────────────────
 const BP_PHASES = [
