@@ -773,18 +773,22 @@ function nextReset() {
 }
 function aiState() {
   const state = readJSON(aiStateFile(), {})
+  let dirty = false
   for (const [id, defaults] of Object.entries(AI_DEFAULTS)) {
     const existingReset = state[id]?.resetAt
     const newReset = existingReset === undefined ? defaults.resetAt : existingReset
+    const prev = JSON.stringify(state[id])
     state[id] = { ...defaults, ...state[id], resetAt: newReset }
     state[id].models = defaults.models
     state[id].defaultModel = defaults.defaultModel
     if (state[id].resetAt && new Date(state[id].resetAt) <= new Date()) {
       state[id].credits = 100
       state[id].resetAt = nextReset()
+      dirty = true
     }
+    if (!dirty && JSON.stringify(state[id]) !== prev) dirty = true
   }
-  writeJSON(aiStateFile(), state)
+  if (dirty) writeJSON(aiStateFile(), state)
   return state
 }
 ipcMain.handle('ai:credits', () => aiState())
@@ -957,16 +961,16 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
 })
 
 // ─── Saved mixes (named snapshots) ───────────────────────────────────────────
+let _defaultMixesCache = null
 ipcMain.handle('mixer:saved:list', (_e, dir) => {
   if (!dir) return []
   const p = path.join(dir, '.claude/saved-mixes.json')
   const userMixes = readJSON(p, [])
-  // Load preset mixes from Director's shipped defaults
-  const presetsFile = path.join(orchestraSrc(), '.claude/default-mixes.json')
-  const presets = readJSON(presetsFile, [])
-  // Merge: presets first (if not already in user list), then user mixes
+  if (!_defaultMixesCache) {
+    _defaultMixesCache = readJSON(path.join(orchestraSrc(), '.claude/default-mixes.json'), [])
+  }
   const existingIds = new Set(userMixes.map(m => m.id))
-  const merged = [...presets.filter(p => !existingIds.has(p.id)), ...userMixes]
+  const merged = [..._defaultMixesCache.filter(p => !existingIds.has(p.id)), ...userMixes]
   return merged
 })
 
