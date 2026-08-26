@@ -97,3 +97,4 @@
 - [x] **I-67** Renderer.js core UI infrastructure tests — transport, mixer, log viewer, project list, theme (372 total).
 - [x] **I-68** AI credits, auth, login handler + F-04 credits floor invariant tests (386 total).
 - [x] **I-69** Orchestra control, saved mixes, atriles, version management handler tests (403 total).
+- [x] **I-70** Architecture alignment, license headers, package config, test coverage inventory (437 total).
