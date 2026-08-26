@@ -40,6 +40,7 @@
 - CSS class name verification: always grep the actual CSS for class names before writing tests. CSS uses `.split-divider` not `.drag-divider`, `.alloc-inspector` not `#allocInspector`.
 
 ### Test Scale Achievements
-- 1618 tests across 32 files with zero flakiness, ~725ms total runtime.
-- CSS design system tests (92 tests) verify every visual component class, keyframe animation, and state variant exists.
+- 2436 tests across 36 files with zero flakiness, ~766ms total runtime.
+- CSS design system tests (275 tests across 3 files) verify every visual component class, keyframe animation, state variant, light theme override, and modern CSS feature.
+- Cross-file consistency tests (449 tests) bidirectionally verify preload↔main.js IPC channels, renderer→preload methods, DOM IDs↔$ selectors, CSS↔HTML classes. Catches integration drift automatically.
 - Renderer coverage spans: core UI (372), deep functions (121), advanced interactions (125), log system (121), line parser (77).
