@@ -3109,12 +3109,14 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
-// Split divider drag
+// Split divider drag (persists to localStorage)
 ;(function initSplitDivider() {
   const divider = $('#splitDivider')
   const left = document.querySelector('.split-console')
   const right = document.querySelector('.mixer-panel')
   if (!divider || !left || !right) return
+  const saved = parseFloat(localStorage.getItem('director:splitPct'))
+  if (saved > 30 && saved < 85) { left.style.flex = 'none'; left.style.width = saved + '%'; right.style.flex = '1' }
   let dragging = false
   divider.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault() })
   document.addEventListener('mousemove', (e) => {
@@ -3128,5 +3130,8 @@ document.addEventListener('keydown', (e) => {
       right.style.flex = '1'
     }
   })
-  document.addEventListener('mouseup', () => { dragging = false })
+  document.addEventListener('mouseup', () => {
+    if (dragging) { const w = parseFloat(left.style.width); if (w) localStorage.setItem('director:splitPct', w.toFixed(1)) }
+    dragging = false
+  })
 })()
