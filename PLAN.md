@@ -1,8 +1,7 @@
-# Cycle 88 Plan — IMPROVEMENT MODE (security+frontend)
+# Cycle 89 Plan — IMPROVEMENT MODE (backend resource management)
 
 ## Budget (from mixer)
 product=30%(blocked) backend=20% quality=20%(FROZEN) frontend=15% security=10% perf=5%
 
 ## Units
-1. [security] I-97 — git watcher execFileSync + top-level import ✅
-2. [frontend] I-98 — loadKnowledge loading state + error handling ✅
+1. [backend] I-99 — FD leak fix + analyze timeout + usageTracker cleanup ✅
