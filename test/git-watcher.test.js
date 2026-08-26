@@ -14,7 +14,7 @@ describe('pollGitCommits function', () => {
   })
 
   it('uses git log to get current hash', () => {
-    expect(block).toContain('git log -1 --format=%H')
+    expect(block).toContain("'log', '-1', '--format=%H'")
   })
 
   it('detects new commits by hash comparison', () => {

@@ -2,7 +2,7 @@
 // Licensed under the AGPL-3.0 License. See LICENSE in repository root.
 
 const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell } = require('electron')
-const { spawn, execFile } = require('child_process')
+const { spawn, execFile, execFileSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
 
@@ -90,12 +90,10 @@ const gitLastHash = new Map()
 function pollGitCommits(dir) {
   const lastHash = gitLastHash.get(dir) || ''
   try {
-    const currentHash = require('child_process').execSync('git log -1 --format=%H', { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
+    const currentHash = execFileSync('git', ['log', '-1', '--format=%H'], { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
     if (currentHash && currentHash !== lastHash) {
-      const newCommits = require('child_process').execSync(
-        `git log --oneline ${lastHash ? lastHash + '..' : '-1'}`,
-        { cwd: dir, encoding: 'utf8', timeout: 5000 }
-      ).trim().split('\n').filter(Boolean)
+      const logArgs = lastHash ? ['log', '--oneline', lastHash + '..'] : ['log', '--oneline', '-1']
+      const newCommits = execFileSync('git', logArgs, { cwd: dir, encoding: 'utf8', timeout: 5000 }).trim().split('\n').filter(Boolean)
       gitLastHash.set(dir, currentHash)
       for (const c of newCommits) {
         const line = `▸ ✔ [commit] ${c}\n`
@@ -111,7 +109,7 @@ function pollGitCommits(dir) {
 function startGitWatcher(dir) {
   if (gitWatchers.has(dir)) return
   try {
-    const hash = require('child_process').execSync('git log -1 --format=%H', { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
+    const hash = execFileSync('git', ['log', '-1', '--format=%H'], { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
     gitLastHash.set(dir, hash)
   } catch {}
   const iv = setInterval(() => {
