@@ -484,6 +484,7 @@ function playOrchestra(dir, agent = 'claude') {
     cwd: dir, env: { ...process.env, DIRECTOR_AI_AGENT: agent }, detached: true,
     stdio: ['ignore', outFd, errFd]
   })
+  child._directorFds = [outFd, errFd]
   fs.writeFileSync(path.join(dir, '.claude/ORCHESTRA_PID'), String(child.pid))
 
   // ── Apply OS-level resource controls ────────────────────────────────────
@@ -607,6 +608,9 @@ function playOrchestra(dir, agent = 'claude') {
   }
 
   child.on('exit', code => {
+    if (child._directorFds) {
+      for (const fd of child._directorFds) { try { fs.closeSync(fd) } catch {} }
+    }
     snapshotMixer(dir, 'exit')
     procs.delete(dir)
     pollGitCommits(dir)
@@ -617,6 +621,7 @@ function playOrchestra(dir, agent = 'claude') {
     scheduler.persistTelemetry(dir)
     scheduler.cleanup(dir)
     coordinator.unregister(dir)
+    usageTracker.delete(dir)
 
     try { fs.unlinkSync(path.join(dir, '.claude/ORCHESTRA_PID')) } catch {}
     // Check if exited due to usage limit — start watching for resume
@@ -1052,7 +1057,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
   return new Promise(resolve => {
     const read = f => { try { return fs.readFileSync(path.join(dir, f), 'utf8') } catch { return '' } }
     const started = read('.claude/RUN_STARTED').trim()
-    execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], (gitErr, gitOut) => {
+    execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000 }, (gitErr, gitOut) => {
       const commits = gitErr ? [] : (gitOut || '').trim().split('\n').filter(Boolean)
       const cat = {}
       for (const c of commits) {
