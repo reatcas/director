@@ -64,7 +64,7 @@ window.mixerGraph = (() => {
   function nodeColor(node) {
     if (node.id === HUB_ID) return HUB_COLOR
     const w = node.weight || 0
-    if (w <= 0) return '#1a1a2a'
+    if (w <= 0) return '#111120'   // near-invisible for zero-weight stands
     return node.color || '#888888'
   }
 
@@ -181,7 +181,7 @@ window.mixerGraph = (() => {
       .nodeLabel('label')
       .nodeVal(nodeVal)
       .nodeColor(nodeColor)
-      .nodeOpacity(node => node.weight === 0 && node.id !== HUB_ID ? 0.15 : 0.92)
+      .nodeOpacity(0.92)
       .nodeThreeObject(nodeThreeObject)
       .nodeThreeObjectExtend(true)
       .linkColor(link => {
@@ -201,20 +201,10 @@ window.mixerGraph = (() => {
       })
       .graphData(_gData)
 
-    // Configure forces
+    // Configure forces — simple uniform values, no per-node functions
     try {
-      graph.d3Force('link').distance(d => {
-        const src = typeof d.source === 'object' ? d.source.id : d.source
-        if (src === HUB_ID) {
-          // Scale distance by weight so heavier nodes sit closer/same
-          const tgt = typeof d.target === 'object' ? d.target.id : d.target
-          const n = _gData.nodes.find(n => n.id === tgt)
-          const w = n ? (n.weight || 0) : 0
-          return w > 0 ? 65 : 90
-        }
-        return 40
-      }).strength(1)
-      graph.d3Force('charge').strength(node => node.id === HUB_ID ? 0 : -80)
+      graph.d3Force('link').distance(70).strength(0.8)
+      graph.d3Force('charge').strength(-120)
     } catch (e) {}
 
     // Position camera to show 2D plane
@@ -250,12 +240,8 @@ window.mixerGraph = (() => {
       })()
     }
 
-    // Re-apply accessors to update colors, sizes, opacity
-    graph
-      .nodeVal(nodeVal)
-      .nodeColor(nodeColor)
-      .nodeOpacity(node => node.weight === 0 && node.id !== HUB_ID ? 0.15 : 0.92)
-
+    // Re-apply accessors to update colors and sizes
+    graph.nodeVal(nodeVal).nodeColor(nodeColor)
     graph.refresh()
   }
 
