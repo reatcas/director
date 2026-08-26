@@ -270,6 +270,10 @@ class CoordinationProtocol {
     })
   }
 
+  invalidateConflictCache() {
+    this._cachedConflicts = null
+  }
+
   // ─── Event logging ──────────────────────────────────────────────────────
   _logEvent(type, dir, details) {
     this.events.push({

@@ -950,6 +950,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   const cfg = readJSON(p, { version: '2.0.0' })
   cfg.focus = focus
   writeJSON(p, cfg)
+  coordinator.invalidateConflictCache()
   return true
 })
 
