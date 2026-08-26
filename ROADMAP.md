@@ -102,3 +102,5 @@
 - [x] **I-72** Security regression test suite — scans all source files for eval, shell injection, XSS, path traversal, Electron misconfig, PID/signal validation, atomic writes, IPC alignment (570 total).
 - [x] **I-73** Constitution validation tests — CLAUDE.md structure, rule enforcement alignment, state files, ALTO, PRODUCT GATE, ANTI-SLOP, harness-constitution bidirectional checks (640 total).
 - [x] **I-74** IPC handler pattern tests — getClaudeUsage caching, parseComplianceLine, syncProtocol, orchestra:analyze, metrics sampling, playOrchestra setup chain, log tailing (693 total).
+- [x] **I-75** Accessibility + design system tests — ARIA labels, focus-visible, color system, light theme, animations, semantic HTML, modal a11y, CSS security (772 total).
+- [x] **I-76** Error resilience tests — null dir guards, path traversal prevention, try-catch patterns, safe defaults, signal safety, SIGTERM→SIGKILL escalation, writeJSON atomicity (832 total).
