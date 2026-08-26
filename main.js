@@ -1191,11 +1191,12 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
 })
 
 // ─── Lifecycle events persistence ─────────────────────────────────────────────
+const _lifecycleDirReady = new Set()
 function persistLifecycleEvent(dir, type, label, message) {
   if (!dir) return
   try {
     const logDir = path.join(dir, '.claude', 'logs')
-    fs.mkdirSync(logDir, { recursive: true })
+    if (!_lifecycleDirReady.has(logDir)) { fs.mkdirSync(logDir, { recursive: true }); _lifecycleDirReady.add(logDir) }
     const file = path.join(logDir, 'lifecycle-events.json')
     const events = readJSON(file, [])
     events.push({ ts: new Date().toISOString(), type, label, message })
