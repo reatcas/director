@@ -93,3 +93,5 @@
 - [x] **I-63** Git watcher, IPC architecture catalog, preload→main alignment tests (293 total).
 - [x] **I-64** Data flow, hot-reload, startup/shutdown sequence invariant tests (314 total).
 - [x] **I-65** Renderer.js feature invariant tests — F-09 through F-21 coverage verification (334 total).
+- [x] **I-66** Blueprint + orchestra:analyze IPC handler invariant tests (350 total).
+- [x] **I-67** Renderer.js core UI infrastructure tests — transport, mixer, log viewer, project list, theme (372 total).
