@@ -137,3 +137,4 @@
 - [x] **I-102** Fix path traversal prefix bypass in readFile + readIterLog — use path.resolve + dir+sep check to prevent sibling directory access via shared prefix.
 - [x] **I-103** Suppress scrollLog during batch log paint on project load — eliminate 200 forced layouts when painting initial log lines.
 - [x] **I-104** Replace auth execSync with spawnSync — eliminate shell interpretation for claude/codex/agy auth status checks.
+- [x] **I-105** Invalidate default-mixes cache on hot-reload — ensure preset changes take effect without app restart.
