@@ -480,9 +480,11 @@ async function open(dir) {
   if (rawLog && logEl) {
     const lines = rawLog.split('\n')
     const recent = lines.slice(-200)
+    _batchingLog = true
     for (const l of recent) {
       if (l.trim()) parseLogLine(dir, l)
     }
+    _batchingLog = false
   }
 
   // Load persisted lifecycle history first, then tail log
@@ -567,7 +569,9 @@ if ($('#autoScrollBtn')) {
     e.target.style.color = autoScrollEnabled ? 'var(--hi)' : 'var(--tx-muted)'
   }
 }
+let _batchingLog = false
 function scrollLog() {
+  if (_batchingLog) return
   const l = $('#log')
   if(l && autoScrollEnabled) l.scrollTop = l.scrollHeight
 }
