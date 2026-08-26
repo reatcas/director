@@ -1,147 +1,124 @@
 'use strict'
-// Mixer Node Graph — 3D force-directed visualization of the mix focus weights.
-// Built on 3d-force-graph + three.js (CDN-loaded in index.html, same pattern
-// as pulsand NGO ecosystem graph). One hub node + 16 category nodes.
-// Node size ∝ weight%. Active category glows + edge particles flow.
+// Mixer Node Graph — 3D force-directed visualization of mix focus weights.
+// Built on 3d-force-graph + three.js (CDN-loaded in index.html).
+// Simplified approach: built-in nodeColor/nodeVal for all nodes; custom
+// Three.js glow sprite added via nodeThreeObjectExtend(true) only for hub
+// and active category node. Guaranteed to render regardless of THREE errors.
 
 window.mixerGraph = (() => {
   const HUB_ID = '__hub__'
-  const HUB_COLOR = '#00ffee'
-  const MIN_RADIUS = 2.5
-  const MAX_RADIUS = 18
+  const HUB_COLOR = '#00ccff'
 
   let graph = null
   let _container = null
-  let _sections = []          // [[key, label, color, svg], …]
-  let _focus = {}             // { key: weight, … }
-  let _activeCategory = null  // currently working category
-  let _recentPair = []        // last 2 worked categories for cross-edge glow
-  let _gData = null           // stable graphData object (mutated in-place)
-  let _animId = null
+  let _sections = []
+  let _focus = {}
+  let _activeCategory = null
+  let _recentPair = []
+  let _gData = null
   let _mounted = false
+  let _animId = null
+  let _t = 0
 
-  // ── Registry of Three.js objects ──────────────────────────────────────────
-  // nodeThreeObject stores refs here; rAF loop updates them.
-  const nodeReg = new Map()   // id → { group, sphere, mat, glow, glowMat }
+  // Active glow sprite ref (updated by nodeThreeObject)
+  let _hubGlow = null
+  let _activeGlow = null
 
   // ── Glow texture cache ────────────────────────────────────────────────────
   const glowCache = new Map()
-  function makeGlowTexture(hex) {
-    if (glowCache.has(hex)) return glowCache.get(hex)
+  function makeGlowTexture(hexColor) {
+    if (glowCache.has(hexColor)) return glowCache.get(hexColor)
+    if (!window.THREE) return null
     const size = 128
     const c = document.createElement('canvas')
     c.width = c.height = size
     const ctx = c.getContext('2d')
     const r = size / 2
-    const ri = parseInt(hex.slice(1, 3), 16)
-    const gi = parseInt(hex.slice(3, 5), 16)
-    const bi = parseInt(hex.slice(5, 7), 16)
+    // Parse hex safely
+    const hex = hexColor.replace('#', '')
+    const ri = parseInt(hex.slice(0, 2), 16) || 0
+    const gi = parseInt(hex.slice(2, 4), 16) || 0
+    const bi = parseInt(hex.slice(4, 6), 16) || 0
     const g = ctx.createRadialGradient(r, r, 0, r, r, r)
-    g.addColorStop(0,    `rgba(${ri},${gi},${bi},0.9)`)
-    g.addColorStop(0.35, `rgba(${ri},${gi},${bi},0.4)`)
-    g.addColorStop(0.7,  `rgba(${ri},${gi},${bi},0.1)`)
+    g.addColorStop(0,    `rgba(${ri},${gi},${bi},1)`)
+    g.addColorStop(0.3,  `rgba(${ri},${gi},${bi},0.6)`)
+    g.addColorStop(0.7,  `rgba(${ri},${gi},${bi},0.15)`)
     g.addColorStop(1,    `rgba(${ri},${gi},${bi},0)`)
     ctx.fillStyle = g
     ctx.fillRect(0, 0, size, size)
     const tex = new THREE.CanvasTexture(c)
-    glowCache.set(hex, tex)
+    glowCache.set(hexColor, tex)
     return tex
   }
 
-  // ── Resolve hex color to canonical 6-char form ────────────────────────────
-  function toHex6(color) {
-    if (!color) return '#888888'
-    if (color.startsWith('#') && color.length === 7) return color
-    // Fallback: return as-is (already valid for most cases)
-    return color
+  // ── Node sizing ───────────────────────────────────────────────────────────
+  // nodeVal maps to sphere volume: radius ∝ val^(1/3)
+  // We want radius 3..18, so val 3..100 works
+  function nodeVal(node) {
+    if (node.id === HUB_ID) return 30
+    const w = node.weight || 0
+    if (w <= 0) return 1
+    return Math.max(2, w * 1.5)
   }
 
-  // ── Node radius from weight ───────────────────────────────────────────────
-  function nodeRadius(weight) {
-    if (weight <= 0) return MIN_RADIUS
-    return MIN_RADIUS + (Math.min(weight, 100) / 100) * (MAX_RADIUS - MIN_RADIUS)
+  function nodeColor(node) {
+    if (node.id === HUB_ID) return HUB_COLOR
+    const w = node.weight || 0
+    if (w <= 0) return '#1a1a2a'
+    return node.color || '#888888'
   }
 
-  // ── nodeThreeObject — called by 3d-force-graph for each node ──────────────
+  // ── Glow object (added on top of default sphere via nodeThreeObjectExtend) ─
   function nodeThreeObject(node) {
     if (!window.THREE) return null
-
     const isHub = node.id === HUB_ID
-    const radius = isHub ? 6 : nodeRadius(node.weight || 0)
-    const color = toHex6(node.color)
-    const dimmed = !isHub && (node.weight || 0) === 0
-    const opacity = dimmed ? 0.18 : (isHub ? 0.9 : 0.85)
+    const isActive = node.id === _activeCategory
+    if (!isHub && !isActive) return null
 
-    const group = new THREE.Group()
-    group.userData.nodeId = node.id
-
-    // Sphere
-    const geo = new THREE.SphereGeometry(radius, 20, 20)
-    const mat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(color),
-      transparent: true,
-      opacity,
-    })
-    const sphere = new THREE.Mesh(geo, mat)
-    group.add(sphere)
-
-    // Glow sprite — always present, scale driven by rAF
+    const color = isHub ? HUB_COLOR : (node.color || '#00ffee')
     const glowTex = makeGlowTexture(color)
-    const glowMat = new THREE.SpriteMaterial({
+    if (!glowTex) return null
+
+    const mat = new THREE.SpriteMaterial({
       map: glowTex,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: isHub ? 0.55 : 0,
+      opacity: isHub ? 0.7 : 0.85,
     })
-    const glow = new THREE.Sprite(glowMat)
-    const baseGlowSize = radius * (isHub ? 5 : 4)
-    glow.scale.set(baseGlowSize, baseGlowSize, 1)
-    glow.userData.baseSize = baseGlowSize
-    group.add(glow)
+    const sprite = new THREE.Sprite(mat)
+    const baseScale = isHub ? 28 : Math.max(24, (node.weight || 0) * 0.6 + 22)
+    sprite.scale.set(baseScale, baseScale, 1)
+    sprite.userData.baseScale = baseScale
 
-    // Store in registry
-    nodeReg.set(node.id, { group, sphere, mat, glow, glowMat, radius, isHub })
-    return group
+    if (isHub) _hubGlow = sprite
+    if (isActive) _activeGlow = sprite
+
+    return sprite
   }
 
-  // ── Build stable graph data ───────────────────────────────────────────────
+  // ── Build graph data ───────────────────────────────────────────────────────
   function buildData() {
     const nodes = []
     const links = []
 
-    // Hub
-    nodes.push({ id: HUB_ID, label: '⚡', color: HUB_COLOR, weight: -1, fx: 0, fy: 0, fz: 0 })
+    nodes.push({ id: HUB_ID, label: '⚡ DIRECTOR', color: HUB_COLOR, weight: -1, fx: 0, fy: 0, fz: 0 })
 
     for (const [key, label, color] of _sections) {
       const w = _focus[key] ?? 0
-      nodes.push({ id: key, label, color, weight: w })
-      links.push({
-        id: `hub→${key}`,
-        source: HUB_ID,
-        target: key,
-        _active: false,
-        _particles: 0,
-      })
+      nodes.push({ id: key, label: `${label} ${w}%`, color, weight: w })
+      links.push({ id: `hub→${key}`, source: HUB_ID, target: key, _active: false, _particles: 0 })
     }
 
-    // Cross-links between recent pair
     if (_recentPair.length === 2) {
       const [a, b] = _recentPair
-      links.push({
-        id: `cross→${a}→${b}`,
-        source: a,
-        target: b,
-        _active: true,
-        _particles: 3,
-        _cross: true,
-      })
+      links.push({ id: `x→${a}→${b}`, source: a, target: b, _active: true, _particles: 3, _cross: true })
     }
 
     return { nodes, links }
   }
 
-  // ── Sync link active states without rebuilding ────────────────────────────
+  // ── Sync active link particles without full rebuild ────────────────────────
   function syncLinks() {
     if (!_gData) return
     for (const link of _gData.links) {
@@ -150,50 +127,25 @@ window.mixerGraph = (() => {
       link._active = tgt === _activeCategory
       link._particles = link._active ? 5 : 0
     }
-    // Rebuild cross-link
     _gData.links = _gData.links.filter(l => !l._cross)
     if (_recentPair.length === 2) {
       const [a, b] = _recentPair
-      _gData.links.push({
-        id: `cross→${a}→${b}`,
-        source: a,
-        target: b,
-        _active: true,
-        _particles: 3,
-        _cross: true,
-      })
+      _gData.links.push({ id: `x→${a}→${b}`, source: a, target: b, _active: true, _particles: 3, _cross: true })
     }
     if (graph) graph.refresh()
   }
 
-  // ── rAF animation loop — pulse active glow ────────────────────────────────
-  let _t = 0
+  // ── Animation loop — pulse glow sprites ───────────────────────────────────
   function animLoop() {
     _t += 0.05
-    for (const [id, reg] of nodeReg) {
-      const isActive = id === _activeCategory
-      const { glow, glowMat, mat, radius, isHub } = reg
-
-      if (isHub) {
-        // Hub always softly pulses
-        const scale = glow.userData.baseSize * (1 + 0.12 * Math.sin(_t * 0.7))
-        glow.scale.set(scale, scale, 1)
-        continue
-      }
-
-      if (isActive) {
-        // Bright pulsing glow
-        const pulse = 1 + 0.35 * Math.sin(_t * 1.8)
-        const baseSize = Math.max(radius * 4, 20)
-        glow.scale.set(baseSize * pulse, baseSize * pulse, 1)
-        glowMat.opacity = 0.6 + 0.3 * Math.sin(_t * 1.8)
-        mat.opacity = 0.95
-      } else {
-        // Fade glow out
-        glowMat.opacity = Math.max(0, glowMat.opacity - 0.04)
-        if (glowMat.opacity <= 0) glow.scale.set(0, 0, 1)
-        mat.opacity = (reg.isHub) ? 0.9 : ((reg.weight || 0) === 0 ? 0.18 : 0.85)
-      }
+    if (_hubGlow) {
+      const s = _hubGlow.userData.baseScale * (1 + 0.15 * Math.sin(_t * 0.6))
+      _hubGlow.scale.set(s, s, 1)
+    }
+    if (_activeGlow) {
+      const s = _activeGlow.userData.baseScale * (1 + 0.4 * Math.sin(_t * 2))
+      _activeGlow.scale.set(s, s, 1)
+      _activeGlow.material.opacity = 0.6 + 0.35 * Math.sin(_t * 2)
     }
     _animId = requestAnimationFrame(animLoop)
   }
@@ -202,43 +154,45 @@ window.mixerGraph = (() => {
 
   function init(containerEl, sections) {
     if (_mounted) destroy()
-    if (!window.ForceGraph3D || !window.THREE) {
-      // CDN not loaded yet — silently skip, will retry on next loadMixer
+    if (!window.ForceGraph3D) {
+      // Show a message so the user knows why it's empty
+      containerEl.innerHTML = '<div style="color:rgba(0,255,238,.3);font:10px monospace;padding:12px;text-align:center">Loading 3d-force-graph…</div>'
       return
     }
 
     _container = containerEl
     _sections = sections
-    nodeReg.clear()
+    _hubGlow = null
+    _activeGlow = null
     _gData = buildData()
     _mounted = true
 
-    const w = containerEl.clientWidth || 400
-    const h = containerEl.clientHeight || 300
+    const w = containerEl.clientWidth || 500
+    const h = containerEl.clientHeight || 280
 
-    graph = ForceGraph3D({
-      antialias: true,
-      alpha: true,
-    })(containerEl)
+    graph = ForceGraph3D({ antialias: true, alpha: true })(containerEl)
       .width(w)
       .height(h)
       .backgroundColor('#04040a')
       .numDimensions(2)
-      .warmupTicks(100)
+      .warmupTicks(120)
       .cooldownTicks(0)
       .nodeId('id')
       .nodeLabel('label')
+      .nodeVal(nodeVal)
+      .nodeColor(nodeColor)
+      .nodeOpacity(node => node.weight === 0 && node.id !== HUB_ID ? 0.15 : 0.92)
       .nodeThreeObject(nodeThreeObject)
-      .nodeThreeObjectExtend(false)
+      .nodeThreeObjectExtend(true)
       .linkColor(link => {
-        if (!link._active) return 'rgba(255,255,255,0.05)'
+        if (!link._active) return 'rgba(255,255,255,0.04)'
         const tgt = typeof link.target === 'object' ? link.target.id : link.target
         const s = _sections.find(s => s[0] === tgt)
-        return s ? s[2] : '#ffffff'
+        return s ? s[2] : HUB_COLOR
       })
-      .linkWidth(link => link._active ? 1.5 : 0.3)
+      .linkWidth(link => link._active ? 1.2 : 0.25)
       .linkDirectionalParticles(link => link._particles || 0)
-      .linkDirectionalParticleSpeed(0.006)
+      .linkDirectionalParticleSpeed(0.005)
       .linkDirectionalParticleWidth(link => link._active ? 2 : 0)
       .linkDirectionalParticleColor(link => {
         const tgt = typeof link.target === 'object' ? link.target.id : link.target
@@ -247,25 +201,32 @@ window.mixerGraph = (() => {
       })
       .graphData(_gData)
 
-    // Tune forces: moderate repulsion, hub-spoke link distance
+    // Configure forces
     try {
       graph.d3Force('link').distance(d => {
         const src = typeof d.source === 'object' ? d.source.id : d.source
-        return src === HUB_ID ? 70 : 35
-      }).strength(0.9)
-      graph.d3Force('charge').strength(-120)
-    } catch {}
+        if (src === HUB_ID) {
+          // Scale distance by weight so heavier nodes sit closer/same
+          const tgt = typeof d.target === 'object' ? d.target.id : d.target
+          const n = _gData.nodes.find(n => n.id === tgt)
+          const w = n ? (n.weight || 0) : 0
+          return w > 0 ? 65 : 90
+        }
+        return 40
+      }).strength(1)
+      graph.d3Force('charge').strength(node => node.id === HUB_ID ? 0 : -80)
+    } catch (e) {}
 
-    // Set camera to look straight down the z-axis for clean 2D view
+    // Position camera to show 2D plane
     setTimeout(() => {
       if (!graph) return
-      const dist = Math.max(w, h) * 0.55
-      graph.cameraPosition({ x: 0, y: 0, z: dist }, { x: 0, y: 0, z: 0 }, 0)
-    }, 150)
+      const camDist = Math.max(w, h) * 0.7
+      graph.cameraPosition({ x: 0, y: 0, z: camDist }, { x: 0, y: 0, z: 0 }, 0)
+    }, 200)
 
     _animId = requestAnimationFrame(animLoop)
 
-    // Auto-resize when container size changes
+    // Auto-resize
     if (window.ResizeObserver) {
       const ro = new ResizeObserver(() => {
         if (graph && _container) graph.width(_container.clientWidth).height(_container.clientHeight)
@@ -277,43 +238,48 @@ window.mixerGraph = (() => {
 
   function update(focus) {
     _focus = focus || {}
-    if (!graph || !_mounted) return
+    if (!graph || !_gData || !_mounted) return
 
-    // Update weights in existing node objects (mutate in-place)
+    // Mutate existing node data in-place (preserves simulation positions)
     for (const node of _gData.nodes) {
       if (node.id === HUB_ID) continue
       node.weight = _focus[node.id] ?? 0
-      const reg = nodeReg.get(node.id)
-      if (reg) {
-        reg.weight = node.weight
-        const r = nodeRadius(node.weight)
-        // Rescale sphere
-        if (reg.sphere) {
-          const scale = r / reg.radius
-          reg.sphere.scale.set(scale, scale, scale)
-        }
-        reg.glow.userData.baseSize = r * 4
-      }
+      node.label = (() => {
+        const s = _sections.find(s => s[0] === node.id)
+        return s ? `${s[1]} ${node.weight}%` : node.id
+      })()
     }
+
+    // Re-apply accessors to update colors, sizes, opacity
+    graph
+      .nodeVal(nodeVal)
+      .nodeColor(nodeColor)
+      .nodeOpacity(node => node.weight === 0 && node.id !== HUB_ID ? 0.15 : 0.92)
+
     graph.refresh()
   }
 
   function activate(category) {
     const prev = _activeCategory
     _activeCategory = category
+    _activeGlow = null
 
     if (category && category !== prev) {
-      // Track recent pair for cross-edge
-      if (prev && prev !== HUB_ID) {
-        _recentPair = [prev, category]
-      } else {
-        _recentPair = []
-      }
+      _recentPair = prev && prev !== HUB_ID ? [prev, category] : []
     } else if (!category) {
       _recentPair = []
     }
 
-    syncLinks()
+    // Re-apply nodeThreeObject so glow appears on new active node
+    if (graph) {
+      graph.nodeThreeObject(nodeThreeObject)
+      syncLinks()
+    }
+  }
+
+  function resize() {
+    if (!graph || !_container) return
+    graph.width(_container.clientWidth).height(_container.clientHeight)
   }
 
   function destroy() {
@@ -324,18 +290,14 @@ window.mixerGraph = (() => {
       if (_container) _container.innerHTML = ''
       graph = null
     }
-    nodeReg.clear()
-    glowCache.forEach(tex => tex.dispose && tex.dispose())
+    glowCache.forEach(t => t.dispose && t.dispose())
     glowCache.clear()
     _gData = null
     _mounted = false
     _activeCategory = null
     _recentPair = []
-  }
-
-  function resize() {
-    if (!graph || !_container) return
-    graph.width(_container.clientWidth).height(_container.clientHeight)
+    _hubGlow = null
+    _activeGlow = null
   }
 
   return { init, update, activate, destroy, resize }
