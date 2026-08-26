@@ -477,15 +477,13 @@ function startHotReloadWatcher() {
 }
 
 function hotReloadAllProjects(changedFile) {
+  _defaultMixesCache = null
   const projects = readJSON(store(), [])
   let resynced = 0
   for (const p of projects) {
     if (!p.path) continue
-    // Sync protocol files to every registered project (non-destructive)
     syncProtocol(p.path)
     resynced++
-    // Do NOT restart running processes — run.sh picks up new files at next iteration.
-    // Restarting kills Claude mid-work and wastes cycles.
   }
   if (resynced > 0 && win && !win.isDestroyed()) {
     win.webContents.send('orchestra:line', { dir: '', line: `[director] Hot-sync: ${resynced} project(s) updated — ${changedFile}\n` })
