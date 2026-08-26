@@ -95,3 +95,5 @@
 - [x] **I-65** Renderer.js feature invariant tests — F-09 through F-21 coverage verification (334 total).
 - [x] **I-66** Blueprint + orchestra:analyze IPC handler invariant tests (350 total).
 - [x] **I-67** Renderer.js core UI infrastructure tests — transport, mixer, log viewer, project list, theme (372 total).
+- [x] **I-68** AI credits, auth, login handler + F-04 credits floor invariant tests (386 total).
+- [x] **I-69** Orchestra control, saved mixes, atriles, version management handler tests (403 total).
