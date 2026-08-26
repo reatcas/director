@@ -578,29 +578,29 @@ function playOrchestra(dir, agent = 'claude') {
       try {
         let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
         if (existing.includes('## NEXT ITEM')) {
-          const nextItemContent = existing.substring(existing.indexOf('## NEXT ITEM'))
+          const lastIdx = existing.lastIndexOf('## NEXT ITEM')
           lines.push('')
-          lines.push(nextItemContent)
+          lines.push(existing.substring(lastIdx))
         }
         fs.writeFileSync(directivePath, lines.join('\n'))
       } catch {}
     } else {
-      try { 
+      try {
         let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
         if (existing.includes('## NEXT ITEM')) {
-          const nextItemContent = existing.substring(existing.indexOf('## NEXT ITEM'))
-          fs.writeFileSync(directivePath, nextItemContent)
+          const lastIdx = existing.lastIndexOf('## NEXT ITEM')
+          fs.writeFileSync(directivePath, existing.substring(lastIdx))
         } else {
           fs.unlinkSync(directivePath)
         }
       } catch {}
     }
   } else {
-    try { 
+    try {
       let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
       if (existing.includes('## NEXT ITEM')) {
-        const nextItemContent = existing.substring(existing.indexOf('## NEXT ITEM'))
-        fs.writeFileSync(directivePath, nextItemContent)
+        const lastIdx = existing.lastIndexOf('## NEXT ITEM')
+        fs.writeFileSync(directivePath, existing.substring(lastIdx))
       } else {
         fs.unlinkSync(directivePath)
       }
