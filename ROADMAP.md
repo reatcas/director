@@ -106,3 +106,4 @@
 - [x] **I-76** Error resilience tests — null dir guards, path traversal prevention, try-catch patterns, safe defaults, signal safety, SIGTERM→SIGKILL escalation, writeJSON atomicity (832 total).
 - [x] **I-77** Renderer→preload API contract tests — all window.director.* calls verified against preload, event listeners, mixer-chart bridge, UI patterns (920 total).
 - [x] **I-78** Main.js utility function invariant tests — findLogo 5-step search, projectInfo state aggregation, copyDir merge logic, AI provider round-robin, credit reset, snapshotMixer, watchForResume, getClaudeUsage caching, playOrchestra setup chain, hot-reload, syncProtocol (1082 total).
+- [x] **I-79** Renderer.js advanced UI interaction tests — toast notifications, empty state, transport buttons, stall detection, project list, debounced saves, commit breakdown, aurora effects, atril modal, mix export/import, lifecycle history, metrics display, settings, theme management (1207 total).
