@@ -1,7 +1,7 @@
-# Cycle 91 Plan — IMPROVEMENT MODE (a11y/style)
+# Cycle 92 Plan — IMPROVEMENT MODE (security)
 
 ## Budget (from mixer)
 product=30%(blocked) backend=20% quality=20%(FROZEN) frontend=15% security=10% perf=5%
 
 ## Units
-1. [style] I-101 — prefers-reduced-motion media query for all 15 animations ✅
+1. [security] I-102 — fix path traversal prefix bypass in readFile + readIterLog ✅
