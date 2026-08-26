@@ -736,8 +736,8 @@ ipcMain.handle('repertoire:open', (_e, dir) => {
 
 ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
   if (!dir || typeof subpath !== 'string' || !subpath.trim()) return null
-  const p = path.join(dir, subpath)
-  if (!p.startsWith(dir)) return null
+  const p = path.resolve(dir, subpath)
+  if (!p.startsWith(dir + path.sep) && p !== dir) return null
   try {
     return fs.readFileSync(p, 'utf8')
   } catch {
@@ -1039,8 +1039,8 @@ ipcMain.handle('metrics:session-summary', () => {
 // ─── Read iteration log summary ──────────────────────────────────────────────
 ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   if (!dir || typeof logPath !== 'string' || !logPath.trim()) return ''
-  const fullPath = path.isAbsolute(logPath) ? logPath : path.join(dir, logPath)
-  if (!fullPath.startsWith(dir)) return ''
+  const fullPath = path.resolve(dir, logPath)
+  if (!fullPath.startsWith(dir + path.sep) && fullPath !== dir) return ''
   try {
     const content = fs.readFileSync(fullPath, 'utf8').trim()
     if (!content) return ''

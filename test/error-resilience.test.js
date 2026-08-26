@@ -32,12 +32,12 @@ describe('null dir guard on all IPC handlers', () => {
 describe('path traversal protection', () => {
   it('repertoire:readFile validates path stays within project dir', () => {
     const handler = mainJs.split("'repertoire:readFile'")[1]?.split('ipcMain.handle')[0] || ''
-    expect(handler).toContain('startsWith(dir)')
+    expect(handler).toContain('startsWith(dir + path.sep)')
   })
 
   it('orchestra:readIterLog validates path stays within project dir', () => {
     const handler = mainJs.split("'orchestra:readIterLog'")[1]?.split('ipcMain.handle')[0] || ''
-    expect(handler).toContain('startsWith(dir)')
+    expect(handler).toContain('startsWith(dir + path.sep)')
   })
 
   it('repertoire:readFile validates subpath is string', () => {
