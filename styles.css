@@ -2667,3 +2667,12 @@ html.light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.22) }
 html.light details.console-collapsible { border-color: var(--line) }
 html.light .collapsible-header { background: var(--panel2) }
 html.light .collapsible-body textarea { background: var(--panel2); color: var(--txt) }
+
+/* ── Reduced motion ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
