@@ -3005,10 +3005,100 @@ if ($('#aboutModal')) $('#aboutModal').onclick = (e) => {
   if (e.target === $('#aboutModal')) $('#aboutModal').hidden = true
 }
 
+// ─── Keyboard shortcuts (F-24) ──────────────────────────────────────────────
+if ($('#closeShortcuts')) $('#closeShortcuts').onclick = () => { $('#shortcutsModal').hidden = true }
+if ($('#shortcutsModal')) $('#shortcutsModal').onclick = e => { if (e.target === $('#shortcutsModal')) $('#shortcutsModal').hidden = true }
+if ($('#cmdPalette')) $('#cmdPalette').onclick = e => { if (e.target === $('#cmdPalette')) closeCmdPalette() }
+
+function closeCmdPalette() {
+  if ($('#cmdPalette')) $('#cmdPalette').hidden = true
+  if ($('#cmdInput')) $('#cmdInput').value = ''
+  if ($('#cmdResults')) $('#cmdResults').innerHTML = ''
+}
+
+async function openCmdPalette() {
+  if (!$('#cmdPalette')) return
+  $('#cmdPalette').hidden = false
+  const inp = $('#cmdInput')
+  if (inp) { inp.value = ''; inp.focus() }
+  await renderCmdResults('')
+}
+
+async function renderCmdResults(q) {
+  const res = $('#cmdResults')
+  if (!res) return
+  const projects = await window.director.list()
+  const items = projects.map(p => ({ type: 'PROJECT', label: p.name || p.path, path: p.path, running: p.running }))
+  items.push({ type: 'ACTION', label: 'Play / Stop', action: 'toggle' })
+  items.push({ type: 'ACTION', label: 'Kill', action: 'kill' })
+  items.push({ type: 'ACTION', label: 'Export', action: 'export' })
+  const filtered = q ? items.filter(i => i.label.toLowerCase().includes(q.toLowerCase())) : items
+  res.innerHTML = filtered.slice(0, 10).map((it, i) =>
+    `<div class="cmd-item${i === 0 ? ' active' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`
+  ).join('')
+  res.querySelectorAll('.cmd-item').forEach((el, i) => {
+    el.onclick = () => { executeCmdItem(filtered[i]); closeCmdPalette() }
+  })
+}
+
+function executeCmdItem(item) {
+  if (!item) return
+  if (item.type === 'PROJECT') {
+    const cards = document.querySelectorAll('.rack-item')
+    for (const c of cards) { if (c.dataset.dir === item.path) { c.click(); return } }
+  }
+  if (item.action === 'toggle' && current) { const b = $('#playBtn'); if (b) b.click() }
+  if (item.action === 'kill' && current) { const b = $('#killBtn'); if (b) b.click() }
+  if (item.action === 'export' && current) { const b = $('#exportBtn'); if (b) b.click() }
+}
+
+if ($('#cmdInput')) {
+  $('#cmdInput').addEventListener('input', e => renderCmdResults(e.target.value))
+  $('#cmdInput').addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeCmdPalette(); e.stopPropagation() }
+    if (e.key === 'Enter') {
+      const active = document.querySelector('#cmdResults .cmd-item.active')
+      if (active) active.click()
+      closeCmdPalette()
+    }
+  })
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.mixer-tab').forEach(x => x.classList.remove('on'))
+  document.querySelectorAll('.mixer-tab-pane').forEach(x => x.classList.remove('on'))
+  const tab = document.querySelector(`.mixer-tab[data-mtab="${tabId}"]`)
+  const pane = document.getElementById(tabId)
+  if (tab) tab.classList.add('on')
+  if (pane) pane.classList.add('on')
+  if (tabId === 'bpTab') bpLoad()
+  if (tabId === 'knowledgeTab') loadKnowledge('ROADMAP.md', 'knBtnRoadmap')
+  if (tabId === 'notesTab') loadNotes()
+}
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
+    if ($('#cmdPalette') && !$('#cmdPalette').hidden) { closeCmdPalette(); return }
+    if ($('#shortcutsModal') && !$('#shortcutsModal').hidden) { $('#shortcutsModal').hidden = true; return }
     if ($('#settingsModal') && !$('#settingsModal').hidden) { $('#settingsModal').hidden = true; return }
     if ($('#aboutModal') && !$('#aboutModal').hidden) { $('#aboutModal').hidden = true; return }
+    return
+  }
+  const tag = (e.target.tagName || '').toLowerCase()
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return
+  if (e.metaKey && e.shiftKey && e.key === 'p') { e.preventDefault(); openCmdPalette(); return }
+  if (e.key === '?') { if ($('#shortcutsModal')) $('#shortcutsModal').hidden = false; return }
+  if (e.key === ' ') { e.preventDefault(); const b = $('#playBtn'); if (b && current) b.click(); return }
+  if (e.key === 'k' || e.key === 'K') { const b = $('#killBtn'); if (b && current) b.click(); return }
+  if (e.key === 'e' || e.key === 'E') { const b = $('#exportBtn'); if (b && current) b.click(); return }
+  if (e.key === 'm' || e.key === 'M') { switchTab('mixTab'); return }
+  if (e.key === 'b' || e.key === 'B') { switchTab('bpTab'); return }
+  if (e.key === 'n' || e.key === 'N') { switchTab('notesTab'); return }
+  if (e.key === 'l' || e.key === 'L') { switchTab('knowledgeTab'); return }
+  if (e.key >= '1' && e.key <= '9') {
+    const cards = document.querySelectorAll('.rack-item')
+    const idx = parseInt(e.key) - 1
+    if (cards[idx]) cards[idx].click()
   }
 })
 

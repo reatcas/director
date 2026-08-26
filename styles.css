@@ -2668,6 +2668,25 @@ html.light details.console-collapsible { border-color: var(--line) }
 html.light .collapsible-header { background: var(--panel2) }
 html.light .collapsible-body textarea { background: var(--panel2); color: var(--txt) }
 
+/* ── Keyboard shortcuts (F-24) ─────────────────────────── */
+.kbd {
+  display: inline-block; padding: 2px 7px; border-radius: 3px;
+  background: var(--panel3); border: 1px solid var(--line);
+  font: 700 10px var(--mono); color: var(--hi); text-align: center;
+  min-width: 24px;
+}
+#cmdResults .cmd-item {
+  padding: 8px 10px; cursor: pointer; border-radius: 4px;
+  font: 11px var(--mono); color: var(--txt); display: flex; gap: 8px; align-items: center;
+}
+#cmdResults .cmd-item:hover, #cmdResults .cmd-item.active {
+  background: var(--panel3);
+}
+#cmdResults .cmd-type {
+  font: 700 8px var(--sans); letter-spacing: 1px; color: var(--dim);
+  min-width: 50px; text-align: right;
+}
+
 /* ── Reduced motion ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

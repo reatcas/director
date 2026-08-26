@@ -166,6 +166,34 @@
     </div>
   </div>
 
+  <!-- SHORTCUTS MODAL (F-24) -->
+  <div id="shortcutsModal" class="modal-overlay" hidden>
+    <div class="modal-card" style="width:440px;max-height:70vh;overflow-y:auto">
+      <button id="closeShortcuts" class="modal-close" aria-label="Cerrar">✕</button>
+      <h2 class="modal-title" style="font-size:14px">ATAJOS DE TECLADO</h2>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;padding:12px 0;font:11px var(--mono);color:var(--txt)">
+        <kbd class="kbd">Space</kbd><span>Play / Stop</span>
+        <kbd class="kbd">K</kbd><span>Kill orquesta</span>
+        <kbd class="kbd">1–9</kbd><span>Seleccionar proyecto</span>
+        <kbd class="kbd">M</kbd><span>Tab: Mix</span>
+        <kbd class="kbd">B</kbd><span>Tab: Blueprint</span>
+        <kbd class="kbd">N</kbd><span>Tab: Notes</span>
+        <kbd class="kbd">L</kbd><span>Tab: Knowledge</span>
+        <kbd class="kbd">E</kbd><span>Exportar sesión</span>
+        <kbd class="kbd">?</kbd><span>Mostrar atajos</span>
+        <kbd class="kbd">Esc</kbd><span>Cerrar modal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMAND PALETTE (F-24) -->
+  <div id="cmdPalette" class="modal-overlay" hidden>
+    <div class="modal-card" style="width:400px">
+      <input id="cmdInput" type="text" class="mix-import-field mono" placeholder="Buscar proyecto o acción…" style="width:100%;font-size:13px;padding:10px" autofocus>
+      <div id="cmdResults" style="max-height:240px;overflow-y:auto;margin-top:8px"></div>
+    </div>
+  </div>
+
 <div id="app">
   <div id="particleCanvasWrap"><canvas id="particleCanvas"></canvas></div>
 
