@@ -121,3 +121,5 @@
 - [x] **I-91** Restrict local-img:// protocol to repertoire paths + validate atriles:save input schema — prevent arbitrary file reads and unvalidated data persistence.
 - [x] **I-92** Limit scanDirForImage recursion to depth 3 + skip node_modules and hidden dirs — prevent stack overflow on deep project trees.
 - [x] **I-93** Add aria-label="Cerrar" to closeAtrilModal button — screen readers now announce the button correctly, matching other modal close buttons.
+- [x] **I-94** Skip aiState disk write when unchanged + cache default-mixes.json — eliminate redundant I/O on every ai:credits poll and preset reads.
+- [x] **I-95** Invalidate coordination conflict cache on mixer weight change — detectConflicts now reflects current weights instead of returning stale data after slider adjustments.
