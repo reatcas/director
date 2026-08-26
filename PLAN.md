@@ -1,8 +1,8 @@
-# Cycle 69 Plan — IMPROVEMENT MODE (post-limit, no-idle override)
+# Cycle 70 Plan — IMPROVEMENT MODE (post-limit, no-idle override)
 
 ## Budget (from mixer)
 product=30%(blocked) backend=20% quality=20% frontend=15% security=10% perf=5%
 All source files module-banned (3/3). Only new test files viable.
 
 ## Units
-1. [quality] I-80 — Renderer.js deep function tests (1328 total) ✔
+1. [quality] I-81 — Renderer.js log system + button handler tests (1449 total) ✔
