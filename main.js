@@ -201,13 +201,14 @@ const LOGO_CANDIDATES = [
   'app/assets/images/logo.png','app/assets/images/logo.svg',
 ]
 
-function scanDirForImage(dir) {
+function scanDirForImage(dir, depth = 0) {
+  if (depth > 3) return null
   try {
     for (const f of fs.readdirSync(dir)) {
       const fp = path.join(dir, f)
       if (/\.(png|svg|jpg|webp|ico)$/i.test(f) && fs.statSync(fp).isFile()) return fp
-      if (fs.statSync(fp).isDirectory()) {
-        const sub = scanDirForImage(fp)
+      if (fs.statSync(fp).isDirectory() && !f.startsWith('.') && f !== 'node_modules') {
+        const sub = scanDirForImage(fp, depth + 1)
         if (sub) return sub
       }
     }
