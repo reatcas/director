@@ -51,7 +51,7 @@
     const yTicks = [0, 25, 50, 75, 100]
     const grid = yTicks.map(v => {
       const y = yScale(v).toFixed(1)
-      return `<line x1="${PAD}" y1="${y}" x2="${W - RIGHT}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/><text x="${PAD - 4}" y="${y}" text-anchor="end" fill="var(--dim)" font-size="7" dy="2.5">${v}</text>`
+      return `<line x1="${PAD}" y1="${y}" x2="${W - RIGHT}" y2="${y}" stroke="var(--line, rgba(255,255,255,0.06))" stroke-width="0.5"/><text x="${PAD - 4}" y="${y}" text-anchor="end" fill="var(--dim)" font-size="7" dy="2.5">${v}</text>`
     }).join('')
 
     const nEntries = playEntries.length

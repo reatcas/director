@@ -49,3 +49,11 @@
 ### ADR-006: Protocol Sync + Hot Reload
 **Decision:** Protocol files are synced from `resources/orchestra/` into each project at play time. A file watcher auto-syncs changes during runtime.
 **Reason:** Ensures all projects always run the latest harness version. Hot-reload applies to protocol files only — running sessions pick up changes at next iteration without restart.
+
+### ADR-007: Preload Defense-in-Depth
+**Decision:** Security-critical IPC methods (systemKill) validate input types at the preload boundary, not just in main.js handlers.
+**Reason:** The preload bridge is the renderer→main trust boundary. Validating there prevents malformed data from ever reaching process management code, regardless of renderer bugs.
+
+### ADR-008: Modular Frontend Scripts
+**Decision:** New UI features may use separate JS files (e.g., mixer-chart.js) loaded after renderer.js, instead of modifying renderer.js directly.
+**Reason:** When renderer.js reaches module ban limits during orchestra sessions, separate scripts allow continued product work. Scripts share renderer.js globals ($, esc) since they load in the same page context.
