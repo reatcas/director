@@ -591,8 +591,11 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   flex: 0 0 50%;
   min-height: 120px;
   position: relative;
-  background: #04040a;
+  background: radial-gradient(ellipse at 50% 40%, #0a0a28 0%, #05051a 45%, #020208 100%);
   overflow: hidden;
+}
+body.light #nodeGraphSection {
+  background: radial-gradient(ellipse at 50% 40%, #dde8ff 0%, #eef2ff 50%, #f5f8ff 100%);
 }
 .ng-label {
   position: absolute;

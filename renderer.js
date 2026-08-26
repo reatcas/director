@@ -235,6 +235,7 @@ let orchestraState = 'idle' // idle | started | interpreting | usage_limit | fin
 function setOrchestraState(state) {
   orchestraState = state
   if (state === 'idle' || state === 'finished') activateMixerStand(null)
+  if (window.mixerGraph) window.mixerGraph.setRotating(state === 'interpreting' || state === 'started')
   updateMonitorStatus()
   updateTransportButtons()
 }
@@ -1283,6 +1284,10 @@ function addActionEntry(type, label, message) {
   currentGroup = null
   trimLog()
   scrollLog()
+  if (window.mixerGraph) {
+    const evType = type === 'reload' ? 'reload' : 'action'
+    window.mixerGraph.pulse(evType, null)
+  }
   return el
 }
 
@@ -1349,6 +1354,7 @@ function addUsageEntry(message) {
   currentGroup = null
   trimLog()
   scrollLog()
+  if (window.mixerGraph) window.mixerGraph.pulse('pause', null)
   return el
 }
 
@@ -1381,8 +1387,9 @@ function addFeatureEntry(text) {
   `
   logEl.appendChild(el)
 
-  // Activate mixer stand glow for this category
+  // Activate mixer stand glow and graph pulse for this category
   if (category) activateMixerStand(category)
+  if (window.mixerGraph) window.mixerGraph.pulse('feature', category || null)
 
   // Update the current-feature indicator in monitor status
   const featureEl = $('#currentFeature')
@@ -1434,6 +1441,7 @@ function addErrorEntry(text) {
   currentGroup = null
   trimLog()
   scrollLog()
+  if (window.mixerGraph) window.mixerGraph.pulse('error', null)
   return el
 }
 
@@ -1456,6 +1464,7 @@ function addClaudeMessageEntry(text) {
   currentGroup = null
   trimLog()
   scrollLog()
+  if (window.mixerGraph) window.mixerGraph.pulse('milestone', activeStand || null)
   return el
 }
 
@@ -1656,6 +1665,7 @@ function addIterationStartEntry(num, dateStr) {
   currentGroup = null
   trimLog()
   scrollLog()
+  if (window.mixerGraph) window.mixerGraph.pulse('cycle_start', null)
   return el
 }
 
@@ -1682,6 +1692,7 @@ function addIterationEndEntry(num, exitCode) {
   currentGroup = null
   trimLog()
   scrollLog()
+  if (window.mixerGraph) window.mixerGraph.pulse('cycle_end', null)
   return el
 }
 
@@ -1729,6 +1740,7 @@ function addSummaryEntry(text) {
   currentGroup = null
   trimLog()
   scrollLog()
+  if (window.mixerGraph) window.mixerGraph.pulse('result', activeStand || null)
   return el
 }
 
@@ -1911,6 +1923,7 @@ function parseLogLine(dir, line) {
       if (commitCatMatch) {
         activateMixerStand(commitCatMatch[1])
         setTimeout(() => activateMixerStand(null), 3000)
+        if (window.mixerGraph) window.mixerGraph.pulse('commit', commitCatMatch[1])
       }
       addCycleEntry(cl)
       if (current) trackCommit(current)
