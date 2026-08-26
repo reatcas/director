@@ -19,7 +19,9 @@ json_val() { python3 -c "import json,sys;d=json.load(open('$CFG'));print(d.get('
 MODE=$(json_val mode perpetual)
 MAX_ITER=$(json_val maxIterations 0)
 CAVEMAN=$(json_val caveman true)
-COMPACT_AT=$(json_val compactAt 50)
+COMPACT_AT=$(json_val compactAt 35)
+SMART_MODEL=$(json_val smartModel false)
+ARCHITECT_INTERVAL=$(json_val architectInterval 5)
 
 stamp() { echo "[orchestra v$VERSION] $1 $(date '+%Y-%m-%d %H:%M:%S')" | tee -a "$MASTER_LOG"; }
 
@@ -45,19 +47,59 @@ while :; do
 
   MODEL=$(json_val model sonnet)
   MODEL_COMPLEX=$(json_val modelComplex "$MODEL")
+  MODEL_FAST=$(json_val modelFast "$MODEL")
   AI_AGENT=$(json_val agent "${DIRECTOR_AI_AGENT:-claude}")
   COOLDOWN=$(json_val cooldownSeconds 0)
 
   SHARED_MEMORY="$HOME/.director-suite/shared-memory"
   mkdir -p "$SHARED_MEMORY"
 
-  # ── Smart model routing: opus for deep-work, sonnet for regular cycles ──
+  # ── Smart Model Routing ─────────────────────────────────────────────────
+  # Three model tiers:
+  #   modelFast   — cheap/fast for tests, style, i18n, mechanical fixes
+  #   model       — default for regular product/backend/frontend work
+  #   modelComplex — expensive for deep-work, architect reviews
+  #
+  # When smartModel=true, the harness auto-selects based on:
+  #   1. Architect review every N iterations → modelComplex
+  #   2. [deep-work] items pending → modelComplex
+  #   3. Last commit category was test/style/i18n → modelFast
+  #   4. Default → model (base)
   ACTIVE_MODEL="$MODEL"
-  if [ -f ROADMAP.md ]; then
-    DEEP_WORK_PENDING=$(grep -c '\[deep-work\]' ROADMAP.md 2>/dev/null || echo 0)
-    if [ "$DEEP_WORK_PENDING" -gt 0 ] && [ "$MODEL_COMPLEX" != "$MODEL" ]; then
+  ROLE="executor"
+
+  if [ "$SMART_MODEL" = "true" ]; then
+    # Architect review: every ARCHITECT_INTERVAL iterations, run a review pass
+    if [ "$ARCHITECT_INTERVAL" -gt 0 ] && [ "$ITER" -gt 0 ] && [ $((ITER % ARCHITECT_INTERVAL)) -eq 0 ]; then
       ACTIVE_MODEL="$MODEL_COMPLEX"
-      stamp "MODEL-ROUTE: deep-work pending → using $ACTIVE_MODEL (complex)"
+      ROLE="architect"
+      stamp "MODEL-ROUTE: architect review (iter $ITER, every $ARCHITECT_INTERVAL) → $ACTIVE_MODEL"
+    # Deep-work items pending
+    elif [ -f ROADMAP.md ] && grep -q '\[deep-work\]' ROADMAP.md 2>/dev/null; then
+      ACTIVE_MODEL="$MODEL_COMPLEX"
+      ROLE="deep-work"
+      stamp "MODEL-ROUTE: deep-work pending → $ACTIVE_MODEL"
+    # Fast model for mechanical work (check last commit category)
+    elif [ "$ITER" -gt 1 ]; then
+      LAST_MSG=$(git log -1 --format=%s 2>/dev/null || echo "")
+      case "$LAST_MSG" in
+        test\(*|style\(*|i18n\(*|chore:*|chore\(*)
+          if [ "$MODEL_FAST" != "$MODEL" ]; then
+            ACTIVE_MODEL="$MODEL_FAST"
+            ROLE="fast"
+            stamp "MODEL-ROUTE: mechanical follow-up → $ACTIVE_MODEL"
+          fi
+          ;;
+      esac
+    fi
+  else
+    # Legacy routing: only switch for deep-work
+    if [ -f ROADMAP.md ]; then
+      DEEP_WORK_PENDING=$(grep -c '\[deep-work\]' ROADMAP.md 2>/dev/null || echo 0)
+      if [ "$DEEP_WORK_PENDING" -gt 0 ] && [ "$MODEL_COMPLEX" != "$MODEL" ]; then
+        ACTIVE_MODEL="$MODEL_COMPLEX"
+        stamp "MODEL-ROUTE: deep-work pending → $ACTIVE_MODEL"
+      fi
     fi
   fi
 
@@ -68,6 +110,31 @@ while :; do
 CRITICAL INSTRUCTION: CAVEMAN MODE IS ENABLED.
 Always use zero prose in responses. No pleasantries. No yapping. Save tokens.
 You MUST also use MCP codebase memory to save tokens."
+  fi
+
+  # ── Architect role injection ────────────────────────────────────────────
+  if [ "$ROLE" = "architect" ]; then
+    RECENT_COMMITS=$(git log --oneline -20 2>/dev/null || echo "(no commits)")
+    PROMPT_CONTENT="$PROMPT_CONTENT
+
+## ARCHITECT REVIEW MODE
+You are running as the ARCHITECT — you supervise, you do NOT code this iteration.
+Your job: review recent work, assess quality, adjust the plan.
+
+Recent 20 commits:
+$RECENT_COMMITS
+
+Tasks:
+1. Read PLAN.md and ROADMAP.md
+2. Assess: are the last 20 commits aligned with the mixer budget and roadmap priorities?
+3. Identify: any bugs introduced? any patterns violated? any work that should be prioritized next?
+4. Update PLAN.md with your assessment and adjusted unit plan for the next cycle
+5. Update DECISIONS.md if you discover a new pattern worth recording
+6. If tests are red, note it in PLAN.md as PRIORITY 0
+7. Commit your plan update: \`chore(architect): cycle review — [summary]\`
+
+Do NOT write application code. Only update state files (PLAN.md, DECISIONS.md, PENDING.md).
+Keep your output under 300 tokens. Be precise."
   fi
 
   # ── Agent-specific anti-hallucination augmentation ──────────────────────
@@ -132,7 +199,9 @@ You are running inside Director Orchestra. Your output is verified by an externa
     fi
   fi
 
-  echo "[orchestra v$VERSION] movement $ITER — $(date '+%H:%M:%S')" | tee -a "$MASTER_LOG"
+  # Extract short model name for log tags (claude-sonnet-4-6 → sonnet, claude-opus-4-6 → opus)
+  MODEL_TAG=$(echo "$ACTIVE_MODEL" | sed 's/claude-//;s/-[0-9].*//;s/^$/unknown/')
+  echo "[orchestra v$VERSION] movement $ITER [$MODEL_TAG:$ROLE] — $(date '+%H:%M:%S')" | tee -a "$MASTER_LOG"
 
   # ── Auto-capture DB Schema ──────────────────────────────────────────────────
   DB_VISION_DIR=".claude/skills/db-vision"
@@ -272,7 +341,7 @@ for raw in sys.stdin:
       QUALITY_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'test|fix|refactor|quality' || echo 0)
       I18N_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'i18n|translat|bind.*label' || echo 0)
       SECURITY_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | grep -ciE 'security|uuid.*valid|validate.*uuid|auth|rbac|tenant' || echo 0)
-      AUDIT_LINE="[audit] iter=$ITER commits=$REAL_COMMITS claimed=$CLAIMED product=$PRODUCT_COMMITS quality=$QUALITY_COMMITS i18n=$I18N_COMMITS security=$SECURITY_COMMITS product_weight=$PRODUCT_W"
+      AUDIT_LINE="[audit] iter=$ITER model=$MODEL_TAG role=$ROLE commits=$REAL_COMMITS claimed=$CLAIMED product=$PRODUCT_COMMITS quality=$QUALITY_COMMITS i18n=$I18N_COMMITS security=$SECURITY_COMMITS product_weight=$PRODUCT_W"
       echo "[orchestra v$VERSION] $AUDIT_LINE" | tee -a "$MASTER_LOG"
       # Write to learnings file
       echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $AUDIT_LINE agent=$AI_AGENT model=$MODEL" >> .claude/CYCLE_LEARNINGS.md
@@ -496,7 +565,14 @@ SMARTMIX_PY
     fi
   fi
 
-  echo "[orchestra v$VERSION] movement $ITER exited ($EXIT)" | tee -a "$MASTER_LOG"
+  echo "[orchestra v$VERSION] movement $ITER [$MODEL_TAG:$ROLE] exited ($EXIT)" | tee -a "$MASTER_LOG"
+
+  # ── Structured cycle summary (JSONL — lightweight, analyzable) ──────────
+  ITER_END=$(date -u +%s)
+  ITER_DURATION=$((ITER_END - $(date -d "$TS" +%s 2>/dev/null || echo $ITER_END)))
+  ITER_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | wc -l | tr -d ' ')
+  [ "$START_COMMIT" = "$END_COMMIT" ] && ITER_COMMITS=0
+  echo "{\"iter\":$ITER,\"model\":\"$MODEL_TAG\",\"role\":\"$ROLE\",\"exit\":$EXIT,\"commits\":${ITER_COMMITS:-0},\"ts\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" >> "$LOG_DIR/cycle-summary.jsonl"
   [ -f .claude/ALTO ] && continue
 
   # ── Single mode ─────────────────────────────────────────────────────────
