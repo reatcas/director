@@ -256,6 +256,16 @@ body {
 }
 .ai-control { display:flex; align-items:center; gap:7px; padding:0 12px; height:100%; border-right:1px solid var(--line2); background:linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.12) 100%) }
 .ai-control label { font:700 7px var(--sans); letter-spacing:1px; color:var(--dim2); white-space:nowrap }
+.manual-model-wrap { display:flex; align-items:center; gap:7px }
+.manual-model-wrap.hidden { display:none }
+.smart-model-toggle { display:flex; align-items:center; gap:3px; padding:3px 8px; border:1px solid #294352; border-radius:12px; background:#101821; color:var(--dim2); font:700 7px var(--sans); letter-spacing:.8px; cursor:pointer; transition:all .3s ease; white-space:nowrap; height:22px; box-sizing:border-box }
+.smt-icon { font-size:9px; line-height:1 }
+.smt-label { line-height:1; font-size:7px }
+.smart-model-toggle:hover { border-color:#00aaff; color:var(--txt) }
+.smart-model-toggle.active { border-color:transparent; color:#fff; background:linear-gradient(135deg, #00ffee 0%, #8844ff 50%, #ff44aa 100%); box-shadow:0 0 12px rgba(0,255,238,.3), 0 0 24px rgba(136,68,255,.2); animation:smt-glow 3s ease-in-out infinite }
+.smart-model-toggle.active .smt-icon { animation:smt-bolt 1.5s ease-in-out infinite }
+@keyframes smt-glow { 0%,100%{box-shadow:0 0 12px rgba(0,255,238,.3), 0 0 24px rgba(136,68,255,.2)} 50%{box-shadow:0 0 18px rgba(0,255,238,.5), 0 0 36px rgba(136,68,255,.35)} }
+@keyframes smt-bolt { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
 .ai-select-wrap { position:relative }
 .ai-icon { position:absolute; left:7px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:10px; z-index:1 }
 .ai-icon.antigravity { color:var(--ai-cyan); text-shadow:0 0 8px var(--ai-cyan), 0 0 20px rgba(0,210,255,.3); animation:ai-pulse 2s ease-in-out infinite }
@@ -2523,6 +2533,8 @@ html.light .rack-item { border-bottom-color: var(--line) }
 html.light .rack-item:hover { background: var(--panel3) }
 html.light .rack-item.on { background: var(--panel2) }
 html.light .ai-control { background: rgba(0,0,0,.03) }
+html.light .smart-model-toggle { background: var(--panel2); border-color: var(--line); color: var(--dim) }
+html.light .smart-model-toggle.active { color: #fff; border-color: transparent }
 html.light .ai-credit-status { color: var(--dim) }
 html.light #aiSelect, html.light #modelSelect {
   background: var(--panel2); border-color: var(--line); color: var(--txt);

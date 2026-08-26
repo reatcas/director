@@ -782,6 +782,7 @@ async function loadMixer() {
   }
 
   updateSmartMixIndicator(!!cfg.smartMix)
+  updateSmartModelToggle(!!cfg.smartModel)
 
   const focus = (cfg && cfg.focus) || {}
   const box = $('#mixerStrips')
@@ -982,6 +983,42 @@ if ($('#smartMixToggle')) $('#smartMixToggle').onclick = async () => {
   await window.director.configWrite(current, cfg)
   updateSmartMixIndicator(newState)
   showToast(newState ? 'Smart Mix activated — stands will self-regulate' : 'Smart Mix disabled')
+}
+
+// ─── Smart Model Toggle ──────────────────────────────────────────────────────
+function updateSmartModelToggle(active) {
+  const btn = $('#smartModelToggle')
+  const manualWrap = $('#manualModelWrap')
+  if (!btn) return
+  btn.classList.toggle('active', active)
+  if (manualWrap) {
+    manualWrap.classList.toggle('hidden', active)
+  }
+  if (active) {
+    btn.title = 'Smart Model ON — auto-selects models by task complexity (click to disable)'
+  } else {
+    btn.title = 'Smart Model OFF — using single model (click to enable)'
+  }
+  updateTransportButtons()
+}
+
+if ($('#smartModelToggle')) $('#smartModelToggle').onclick = async () => {
+  if (!current) return
+  const cfg = await window.director.mixerRead(current) || {}
+  const newState = !cfg.smartModel
+  cfg.smartModel = newState
+  if (newState && !cfg.modelComplex) {
+    cfg.modelComplex = 'claude-opus-4-6'
+  }
+  if (newState && !cfg.modelFast) {
+    cfg.modelFast = 'claude-haiku-4-5'
+  }
+  if (newState && !cfg.architectInterval) {
+    cfg.architectInterval = 5
+  }
+  await window.director.configWrite(current, cfg)
+  updateSmartModelToggle(newState)
+  showToast(newState ? 'Smart Model ON — auto-routing by task complexity' : 'Smart Model OFF — single model')
 }
 
 // ─── Export All Mixes ───────────────────────────────────────────────────────

@@ -73,8 +73,8 @@ describe('run.sh — json_val reader', () => {
     expect(runSh).toContain('json_val caveman true')
   })
 
-  it('reads COMPACT_AT defaulting to 50', () => {
-    expect(runSh).toContain('json_val compactAt 50')
+  it('reads COMPACT_AT defaulting to 35', () => {
+    expect(runSh).toContain('json_val compactAt 35')
   })
 })
 
@@ -215,8 +215,8 @@ describe('run.sh — post-iteration audit', () => {
     expect(runSh).toContain("grep -ciE 'security|uuid.*valid|validate.*uuid|auth|rbac|tenant'")
   })
 
-  it('formats audit line with all fields', () => {
-    expect(runSh).toContain('[audit] iter=$ITER commits=$REAL_COMMITS claimed=$CLAIMED')
+  it('formats audit line with all fields including model and role', () => {
+    expect(runSh).toContain('[audit] iter=$ITER model=$MODEL_TAG role=$ROLE commits=$REAL_COMMITS claimed=$CLAIMED')
     expect(runSh).toContain('product=$PRODUCT_COMMITS quality=$QUALITY_COMMITS')
     expect(runSh).toContain('i18n=$I18N_COMMITS security=$SECURITY_COMMITS')
     expect(runSh).toContain('product_weight=$PRODUCT_W')

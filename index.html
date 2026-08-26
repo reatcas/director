@@ -213,23 +213,28 @@
       <button id="killBtn" class="tp-btn tp-kill disabled" title="Hard cut" aria-label="Cortar">✕</button>
     </div>
     <div id="aiControl" class="ai-control">
-      <label for="aiSelect">AI DEVELOPER</label>
-      <div class="ai-select-wrap">
-        <span class="ai-icon" id="aiIconMain">✦</span>
-        <select id="aiSelect" aria-label="AI provider">
-          <option value="claude">Claude (Anthropic)</option>
-          <option value="agy">Antigravity</option>
-          <option value="codex">Codex (OpenAI)</option>
-          <option value="aider">Aider (Multi)</option>
-        </select>
+      <button id="smartModelToggle" class="smart-model-toggle" title="Smart Model — auto-selects models by task complexity" aria-label="Smart Model toggle">
+        <span class="smt-icon">⚡</span><span class="smt-label">SMART</span>
+      </button>
+      <div id="manualModelWrap" class="manual-model-wrap">
+        <label for="aiSelect">AI</label>
+        <div class="ai-select-wrap">
+          <span class="ai-icon" id="aiIconMain">✦</span>
+          <select id="aiSelect" aria-label="AI provider">
+            <option value="claude">Claude (Anthropic)</option>
+            <option value="agy">Antigravity</option>
+            <option value="codex">Codex (OpenAI)</option>
+            <option value="aider">Aider (Multi)</option>
+          </select>
+        </div>
+        <div class="ai-select-wrap" style="display:none;">
+          <span class="ai-icon" id="aiIconModel">✦</span>
+          <select id="modelSelect" aria-label="AI model" style="margin-left:5px;">
+          </select>
+        </div>
+        <button id="aiLoginBtn" class="tp-btn" title="Login to AI provider" style="font-size:8px;width:auto;padding:0 6px;">LOGIN</button>
+        <span id="aiAuthDot" class="ai-auth-dot" title="Not connected"></span>
       </div>
-      <div class="ai-select-wrap" style="display:none;">
-        <span class="ai-icon" id="aiIconModel">✦</span>
-        <select id="modelSelect" aria-label="AI model" style="margin-left:5px;">
-        </select>
-      </div>
-      <button id="aiLoginBtn" class="tp-btn" title="Login to AI provider" style="font-size:8px;width:auto;padding:0 6px;">LOGIN</button>
-      <span id="aiAuthDot" class="ai-auth-dot" title="Not connected"></span>
       <span id="aiCreditStatus" class="ai-credit-status">Select an AI to start</span>
     </div>
     <div id="clockArea">
