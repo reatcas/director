@@ -2836,16 +2836,19 @@ document.querySelectorAll('.mixer-tab').forEach(t => {
 
 async function loadKnowledge(file, btnId) {
   if (!current) return
-  
+
   if (btnId) {
     document.querySelectorAll('#knowledgeTab .tp-action').forEach(b => b.classList.remove('warn'))
     document.getElementById(btnId).classList.add('warn')
   }
 
-  const content = await window.director.readFile(current, file)
   const el = document.getElementById('knowledgeContent')
-  if (el) {
-    el.textContent = content || `[File not found: ${file}]`
+  if (el) el.textContent = 'Cargando…'
+  try {
+    const content = await window.director.readFile(current, file)
+    if (el) el.textContent = content || `[Archivo no encontrado: ${file}]`
+  } catch {
+    if (el) el.textContent = `[Error al cargar: ${file}]`
   }
 }
 

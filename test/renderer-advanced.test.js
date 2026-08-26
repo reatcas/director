@@ -552,7 +552,7 @@ describe('loadKnowledge — state file viewer', () => {
   })
 
   it('shows file not found message', () => {
-    expect(body).toContain('File not found')
+    expect(body).toContain('Archivo no encontrado')
   })
 
   it('highlights active button with warn class', () => {
