@@ -124,3 +124,5 @@
 - [x] **I-94** Skip aiState disk write when unchanged + cache default-mixes.json — eliminate redundant I/O on every ai:credits poll and preset reads.
 - [x] **I-95** Invalidate coordination conflict cache on mixer weight change — detectConflicts now reflects current weights instead of returning stale data after slider adjustments.
 - [x] **I-96** Skip loadProcs polling when tab hidden + debounce log filter at 150ms — eliminate background syscalls and per-keystroke DOM thrash.
+- [x] **I-97** Replace execSync with execFileSync in git watcher — eliminate shell interpretation for git log commands and remove repeated require calls.
+- [x] **I-98** Add loading state and error handling to loadKnowledge — show placeholder during load and Spanish error messages on IPC failure.
