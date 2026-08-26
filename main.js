@@ -1091,6 +1091,25 @@ ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   }
 })
 
+// ─── Operator notes (F-25) ────────────────────────────────────────────────────
+ipcMain.handle('notes:read', (_e, dir) => {
+  if (!dir) return ''
+  const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
+  try { return fs.readFileSync(p, 'utf8') } catch { return '' }
+})
+
+ipcMain.handle('notes:write', (_e, dir, content) => {
+  if (!dir || typeof content !== 'string') return false
+  if (content.length > 50000) return false
+  const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
+  const tmp = p + '.tmp'
+  fs.mkdirSync(path.dirname(p), { recursive: true })
+  fs.writeFileSync(tmp, content)
+  fs.renameSync(tmp, p)
+  persistLifecycleEvent(dir, 'note', 'NOTA', content.split('\n')[0].slice(0, 80))
+  return true
+})
+
 // ─── Session export (F-23) ────────────────────────────────────────────────────
 ipcMain.handle('export:session', async (_e, dir) => {
   if (!dir) return { ok: false }

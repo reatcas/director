@@ -67,6 +67,9 @@ contextBridge.exposeInMainWorld('director', {
   alertsRead:         ()       => ipcRenderer.invoke('alerts:read'),
   // Session export (F-23)
   exportSession:      dir      => ipcRenderer.invoke('export:session', dir),
+  // Operator notes (F-25)
+  notesRead:          dir      => ipcRenderer.invoke('notes:read', dir),
+  notesWrite:         (dir, c) => ipcRenderer.invoke('notes:write', dir, c),
   // Events
   onLine:        cb => ipcRenderer.on('orchestra:line',        (_e, d) => cb(d)),
   onExit:        cb => ipcRenderer.on('orchestra:exit',        (_e, d) => cb(d)),

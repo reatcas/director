@@ -2845,6 +2845,7 @@ document.querySelectorAll('.mixer-tab').forEach(t => {
     if (pane) pane.classList.add('on')
     if (t.dataset.mtab === 'bpTab') bpLoad()
     if (t.dataset.mtab === 'knowledgeTab') loadKnowledge('ROADMAP.md', 'knBtnRoadmap')
+    if (t.dataset.mtab === 'notesTab') loadNotes()
   })
 })
 
@@ -2874,6 +2875,24 @@ if (document.getElementById('knBtnDecisions')) document.getElementById('knBtnDec
 if (document.getElementById('knBtnPending')) document.getElementById('knBtnPending').onclick = () => loadKnowledge('PENDING.md', 'knBtnPending')
 if (document.getElementById('knBtnLearnings')) document.getElementById('knBtnLearnings').onclick = () => loadKnowledge('CYCLE_LEARNINGS.md', 'knBtnLearnings')
 if (document.getElementById('knBtnBlueprint')) document.getElementById('knBtnBlueprint').onclick = () => loadKnowledge('.claude/BLUEPRINT.md', 'knBtnBlueprint')
+
+// ─── Operator Notes (F-25) ──────────────────────────────────────────────────
+async function loadNotes() {
+  if (!current) return
+  const area = $('#notesArea')
+  if (!area) return
+  area.value = await window.director.notesRead(current) || ''
+}
+
+let _notesSaveTimer = null
+if ($('#notesArea')) {
+  $('#notesArea').addEventListener('input', () => {
+    clearTimeout(_notesSaveTimer)
+    _notesSaveTimer = setTimeout(async () => {
+      if (current) await window.director.notesWrite(current, $('#notesArea').value)
+    }, 1000)
+  })
+}
 
 // ─── Theme & Settings ───────────────────────────────────────────────────────
 function getStoredTheme() { return localStorage.getItem('director-theme') || 'auto' }
