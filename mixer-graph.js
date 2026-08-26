@@ -398,7 +398,7 @@ window.mixerGraph = (() => {
     } else if (!category) {
       _recentPair = []
     }
-    if (graph) { graph.nodeThreeObject(nodeThreeObject); syncLinks() }
+    if (graph) syncLinks()
   }
 
   function setRotating(on) {
