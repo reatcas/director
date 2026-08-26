@@ -483,6 +483,12 @@ function hotReloadAllProjects(changedFile) {
   for (const p of projects) {
     if (!p.path) continue
     syncProtocol(p.path)
+    // Signal running sessions to restart so they pick up the new run.sh
+    if (changedFile === 'run.sh' && isRunning(p.path)) {
+      try {
+        fs.writeFileSync(path.join(p.path, '.claude/HARNESS_RELOAD'), new Date().toISOString())
+      } catch {}
+    }
     resynced++
   }
   if (resynced > 0 && win && !win.isDestroyed()) {

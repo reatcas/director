@@ -20,8 +20,8 @@ MODE=$(json_val mode perpetual)
 MAX_ITER=$(json_val maxIterations 0)
 CAVEMAN=$(json_val caveman true)
 COMPACT_AT=$(json_val compactAt 35)
-SMART_MODEL=$(json_val smartModel false)
-ARCHITECT_INTERVAL=$(json_val architectInterval 5)
+# SMART_MODEL and ARCHITECT_INTERVAL re-read inside the loop (line ~48)
+# to pick up UI changes mid-session
 
 stamp() { echo "[orchestra v$VERSION] $1 $(date '+%Y-%m-%d %H:%M:%S')" | tee -a "$MASTER_LOG"; }
 
@@ -50,6 +50,8 @@ while :; do
   MODEL_FAST=$(json_val modelFast "$MODEL")
   AI_AGENT=$(json_val agent "${DIRECTOR_AI_AGENT:-claude}")
   COOLDOWN=$(json_val cooldownSeconds 0)
+  SMART_MODEL=$(json_val smartModel false)
+  ARCHITECT_INTERVAL=$(json_val architectInterval 5)
 
   SHARED_MEMORY="$HOME/.director-suite/shared-memory"
   mkdir -p "$SHARED_MEMORY"
@@ -174,6 +176,13 @@ You are running inside Director Orchestra. Your output is verified by an externa
   esac
 
   [ -f .claude/ALTO ] && { stamp "FINE — ALTO detected after $ITER iterations."; break; }
+
+  # ── Harness reload: Director hot-synced a new run.sh — exit to pick it up ──
+  if [ -f .claude/HARNESS_RELOAD ]; then
+    rm -f .claude/HARNESS_RELOAD
+    stamp "HARNESS-RELOAD: new run.sh detected — restarting to apply changes"
+    exit 0  # auto-restart will spawn with the new run.sh
+  fi
 
   # ── Bounded mode ────────────────────────────────────────────────────────
   if [ "$MODE" != "perpetual" ] && [ "$MAX_ITER" -gt 0 ] && [ "$ITER" -ge "$MAX_ITER" ]; then
