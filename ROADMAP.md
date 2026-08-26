@@ -128,3 +128,4 @@
 - [x] **I-98** Add loading state and error handling to loadKnowledge — show placeholder during load and Spanish error messages on IPC failure.
 - [x] **I-99** Close leaked FDs on orchestra exit + analyze timeout + usageTracker cleanup — prevent FD exhaustion after many play/stop cycles, git hang in analyze, and memory leak from stale entries.
 - [x] **I-100** Fix PRODUCT_DIRECTIVE.md NEXT ITEM accumulation — use lastIndexOf to keep only the most recent NEXT ITEM section instead of re-appending all duplicates on each restart.
+- [x] **I-101** Add prefers-reduced-motion media query — disable all 15 keyframe animations for users with vestibular disorders via global reduced-motion override.
