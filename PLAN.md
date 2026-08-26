@@ -1,7 +1,9 @@
-# Cycle 83 Plan — CHORE (category ban break after 3 test: commits)
+# Cycle 85 Plan — IMPROVEMENT MODE (category ban break)
 
 ## Budget (from mixer)
-product=30%(blocked) backend=20% quality=20% frontend=15% security=10% perf=5%
+product=30%(blocked) backend=20% quality=20%(FROZEN) frontend=15% security=10% perf=5%
 
 ## Units
-1. [chore] Push + test inventory snapshot — 2578 tests, 38 files, <800ms runtime
+1. [security] I-91 — local-img path traversal restriction + atriles:save validation ✅
+2. [perf] I-92 — scanDirForImage depth limit + node_modules skip ✅
+3. [frontend] I-93 — closeAtrilModal aria-label accessibility fix ✅
