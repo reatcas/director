@@ -1,7 +1,7 @@
-# Cycle 89 Plan — IMPROVEMENT MODE (backend resource management)
+# Cycle 90 Plan — IMPROVEMENT MODE (backend bug fix)
 
 ## Budget (from mixer)
 product=30%(blocked) backend=20% quality=20%(FROZEN) frontend=15% security=10% perf=5%
 
 ## Units
-1. [backend] I-99 — FD leak fix + analyze timeout + usageTracker cleanup ✅
+1. [backend] I-100 — fix PRODUCT_DIRECTIVE NEXT ITEM accumulation ✅
