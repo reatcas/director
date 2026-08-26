@@ -98,3 +98,5 @@
 - [x] **I-68** AI credits, auth, login handler + F-04 credits floor invariant tests (386 total).
 - [x] **I-69** Orchestra control, saved mixes, atriles, version management handler tests (403 total).
 - [x] **I-70** Architecture alignment, license headers, package config, test coverage inventory (437 total).
+- [x] **I-71** Deep harness invariant tests — signal traps, backoff, hallucination/blocked streakers, usage limit parsing, anti-slop detection, Smart Mix v3 classification, stream-json parser (513 total).
+- [x] **I-72** Security regression test suite — scans all source files for eval, shell injection, XSS, path traversal, Electron misconfig, PID/signal validation, atomic writes, IPC alignment (570 total).
