@@ -27,7 +27,10 @@
     pulse: Math.random() * Math.PI * 2
   }))
 
+  let _particlesRunning = true
+
   function draw() {
+    if (!_particlesRunning) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     for (const p of particles) {
       p.x += p.vx; p.y += p.vy; p.pulse += .025
@@ -62,6 +65,10 @@
     }
     requestAnimationFrame(draw)
   }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { _particlesRunning = false }
+    else { _particlesRunning = true; requestAnimationFrame(draw) }
+  })
   requestAnimationFrame(draw)
 })()
 
