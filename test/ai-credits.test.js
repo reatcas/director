@@ -48,12 +48,14 @@ describe('ai:auth-status handler', () => {
 describe('ai:login handler', () => {
   const block = mainJs.split("'ai:login'")[1]?.split('\nipcMain')[0] || ''
 
-  it('handles claude login', () => {
-    expect(block).toContain('claude auth login')
+  it('handles claude login via execFile', () => {
+    expect(block).toContain("execFile('claude'")
+    expect(block).toContain("'auth', 'login'")
   })
 
-  it('handles codex login', () => {
-    expect(block).toContain('codex login')
+  it('handles codex login via execFile', () => {
+    expect(block).toContain("execFile('codex'")
+    expect(block).toContain("'login'")
   })
 
   it('wraps in try/catch', () => {

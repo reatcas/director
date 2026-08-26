@@ -842,7 +842,6 @@ ipcMain.handle('ai:select', (_e, id) => {
 })
 
 // ─── AI Auth: status check & login ──────────────────────────────────────────
-const { exec } = require('child_process')
 
 function runCmd(cmd, args, timeout = 5000) {
   const r = spawnSync(cmd, args, { encoding: 'utf8', timeout })
@@ -878,18 +877,18 @@ ipcMain.handle('ai:auth-status', (_e, id) => {
 ipcMain.handle('ai:login', (_e, id) => {
   try {
     if (id === 'claude') {
-      exec('claude auth login', { timeout: 120000 })
+      execFile('claude', ['auth', 'login'], { timeout: 120000 })
       return { ok: true, msg: 'Claude login opened in browser' }
     }
     if (id === 'codex') {
-      exec('codex login', { timeout: 120000 })
+      execFile('codex', ['login'], { timeout: 120000 })
       return { ok: true, msg: 'Codex login opened in browser' }
     }
     if (id === 'aider') {
       return { ok: false, msg: 'Aider uses API keys. Set OPENAI_API_KEY or ANTHROPIC_API_KEY in your shell profile.' }
     }
     if (id === 'agy') {
-      exec('agy', { timeout: 120000 })
+      execFile('agy', [], { timeout: 120000 })
       return { ok: true, msg: 'Antigravity session started — authenticate in the opened window' }
     }
     return { ok: false, msg: 'Unknown provider' }
