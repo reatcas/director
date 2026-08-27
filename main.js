@@ -412,7 +412,9 @@ function startMetricsSampling(dir) {
     // Sample process resources
     scheduler.sampleProcess(dir)
     // Compute context delta
-    const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
+    const _smPath = path.join(dir, '.claude/orchestra.json')
+    let cfg = {}
+    try { if (fs.statSync(_smPath).size <= 512_000) cfg = readJSON(_smPath, {}) } catch {}
     contextProto.computeDelta(dir, cfg.focus || {})
     // Push metrics to renderer
     if (win) {
@@ -1078,14 +1080,18 @@ function snapshotMixer(dir, event) {
 
 ipcMain.handle('mixer:read',  (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  return readJSON(path.join(dir, '.claude/orchestra.json'), null)
+  const _mrPath = path.join(dir, '.claude/orchestra.json')
+  let cfg = null
+  try { if (fs.statSync(_mrPath).size <= 512_000) cfg = readJSON(_mrPath, null) } catch {}
+  return cfg
 })
 ipcMain.handle('mixer:write', (_e, dir, focus) => {
   if (!isKnownProject(dir)) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
   if (Object.values(focus).some(v => typeof v !== 'number' || v < 0 || v > 100)) return false
   const p = path.join(dir, '.claude/orchestra.json')
-  const cfg = readJSON(p, { version: '2.0.0' })
+  let cfg = { version: '2.0.0' }
+  try { if (fs.statSync(p).size <= 512_000) cfg = readJSON(p, { version: '2.0.0' }) } catch {}
   cfg.focus = focus
   writeJSON(p, cfg)
   coordinator.invalidateConflictCache()
@@ -1840,10 +1846,13 @@ app.whenReady().then(() => {
       if (!allowedDirs.some(d => filePath.startsWith(d + path.sep) || filePath.startsWith(d + '/'))) {
         return new Response('', { status: 403 })
       }
-      const data = fs.readFileSync(filePath)
       const ext = path.extname(filePath).toLowerCase()
       const mimeMap = { '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.svg':'image/svg+xml', '.webp':'image/webp', '.ico':'image/x-icon', '.gif':'image/gif' }
-      return new Response(data, { headers: { 'Content-Type': mimeMap[ext] || 'image/png' } })
+      if (!mimeMap[ext]) return new Response('', { status: 415 })
+      const imgStat = fs.statSync(filePath)
+      if (imgStat.size > 10_485_760) return new Response('', { status: 413 })
+      const data = fs.readFileSync(filePath)
+      return new Response(data, { headers: { 'Content-Type': mimeMap[ext] } })
     } catch {
       return new Response('', { status: 404 })
     }
