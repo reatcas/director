@@ -1000,7 +1000,7 @@ function snapshotMixer(dir, event) {
 }
 
 ipcMain.handle('mixer:read',  (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   return readJSON(path.join(dir, '.claude/orchestra.json'), null)
 })
 ipcMain.handle('mixer:write', (_e, dir, focus) => {
