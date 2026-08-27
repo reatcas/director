@@ -1,24 +1,23 @@
-# Cycle 140 Plan — IMPROVEMENT MODE
+# Cycle 141 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 140
+## MIXER BUDGET — Cycle 141
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
+| quality_tests | 35 | 5 | 0/5 |
 | backend | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
-| performance | 10 | FROZEN (30th) | — |
-| business_logic | 5 | SKIP (proportional) | — |
+| business_logic | 5 | 1 | 0/1 |
+| security | 20 | FROZEN (3rd: 139,140,→141) | — |
+| performance | 10 | FROZEN (31st) | — |
 | ux_accessibility | 5 | SKIP (proportional) | — |
 | data_db | 5 | SKIP (proportional) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-388 — mixer:write + mixer:saved:save: NaN bypass fix (add !Number.isFinite(v) to focus validation)
-2. [security] I-389 — orchestra:writeConfig: validate nice as int in [-20,19]; claudeUsageBudget as finite non-negative number
-3. [backend] I-390 — orchestra:readIterLog: add NUL byte check on logPath
-4. [frontend] I-391 — renderCmdResults: add role=option + aria-selected to cmd-item divs
-5-8. [quality_tests] cycle140-coverage.test.js
+1. [backend] I-392 — metrics:roadmap-freshness: wrap statSync in try/catch (race condition: existsSync then statSync can throw)
+2. [frontend] I-393 — switchTab: sync aria-selected on mixer tab buttons; notesArea gets aria-label
+3. [business_logic] I-394 — mixer:saved:save: whitespace-only name rejection (name.trim().length === 0)
+4-8. [quality_tests] cycle141-coverage.test.js — 5 units
 
 ## Stats
-- 3404 tests passing (cycle 139 close)
+- 3411 tests passing (cycle 140 close)

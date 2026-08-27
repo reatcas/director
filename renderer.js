@@ -3279,11 +3279,11 @@ if ($('#cmdInput')) {
 }
 
 function switchTab(tabId) {
-  document.querySelectorAll('.mixer-tab').forEach(x => x.classList.remove('on'))
+  document.querySelectorAll('.mixer-tab').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-selected', 'false') })
   document.querySelectorAll('.mixer-tab-pane').forEach(x => x.classList.remove('on'))
   const tab = document.querySelector(`.mixer-tab[data-mtab="${tabId}"]`)
   const pane = document.getElementById(tabId)
-  if (tab) tab.classList.add('on')
+  if (tab) { tab.classList.add('on'); tab.setAttribute('aria-selected', 'true') }
   if (pane) pane.classList.add('on')
   if (tabId === 'bpTab') bpLoad()
   if (tabId === 'knowledgeTab') loadKnowledge('ROADMAP.md', 'knBtnRoadmap')

@@ -1166,6 +1166,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
 ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   if (!isKnownProject(dir)) return false
   if (typeof name !== 'string' || name.length === 0 || name.length > 256) return false
+  if (name.trim().length === 0) return false
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(name)) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
   if (Object.keys(focus).some(k => !_VALID_CATS.has(k))) return false
@@ -1536,7 +1537,8 @@ ipcMain.handle('metrics:roadmap-freshness', (_e, dir) => {
   if (hit !== null) return hit
   const roadmapPath = path.join(dir, 'ROADMAP.md')
   if (!fs.existsSync(roadmapPath)) return { exists: false }
-  const mtime = fs.statSync(roadmapPath).mtimeMs
+  let mtime
+  try { mtime = fs.statSync(roadmapPath).mtimeMs } catch { return { exists: true } }
   return new Promise(resolve => {
     execFile('git', ['-C', dir, 'log', '-1', '--format=%ct'], (err, stdout) => {
       if (err || !stdout.trim()) return resolve(metricsSet('freshness:' + dir, { exists: true, mtime, isStale: false }, _SLOW_METRICS_TTL))
