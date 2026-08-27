@@ -1,0 +1,135 @@
+{
+  "dir": "/Users/reatcas/director",
+  "timestamp": "2026-08-27T00:37:22.619Z",
+  "nice": 12,
+  "memBudgetMB": 46,
+  "tokenBudget": 250000,
+  "avgIntensity": 6.25,
+  "maxIntensity": 30,
+  "totalWeight": 100,
+  "normalizedIntensity": 0.0625,
+  "categoryBudgets": {
+    "product": {
+      "weight": 30,
+      "normalizedShare": 0.3,
+      "contextRetentionFactor": 0.525,
+      "tokenBudgetShare": 0.3,
+      "hotPath": false
+    },
+    "backend": {
+      "weight": 10,
+      "normalizedShare": 0.1,
+      "contextRetentionFactor": 0.170696792019834,
+      "tokenBudgetShare": 0.1,
+      "hotPath": false
+    },
+    "frontend": {
+      "weight": 15,
+      "normalizedShare": 0.15,
+      "contextRetentionFactor": 0.22057340516541463,
+      "tokenBudgetShare": 0.15,
+      "hotPath": false
+    },
+    "business_logic": {
+      "weight": 5,
+      "normalizedShare": 0.05,
+      "contextRetentionFactor": 0.14031199220093177,
+      "tokenBudgetShare": 0.05,
+      "hotPath": false
+    },
+    "security": {
+      "weight": 10,
+      "normalizedShare": 0.1,
+      "contextRetentionFactor": 0.170696792019834,
+      "tokenBudgetShare": 0.1,
+      "hotPath": false
+    },
+    "quality_tests": {
+      "weight": 15,
+      "normalizedShare": 0.15,
+      "contextRetentionFactor": 0.22057340516541463,
+      "tokenBudgetShare": 0.15,
+      "hotPath": false
+    },
+    "devops_infra": {
+      "weight": 0,
+      "normalizedShare": 0,
+      "contextRetentionFactor": 0.122607444540336,
+      "tokenBudgetShare": 0,
+      "hotPath": false
+    },
+    "performance": {
+      "weight": 5,
+      "normalizedShare": 0.05,
+      "contextRetentionFactor": 0.14031199220093177,
+      "tokenBudgetShare": 0.05,
+      "hotPath": false
+    },
+    "ux_accessibility": {
+      "weight": 5,
+      "normalizedShare": 0.05,
+      "contextRetentionFactor": 0.14031199220093177,
+      "tokenBudgetShare": 0.05,
+      "hotPath": false
+    },
+    "data_db": {
+      "weight": 3,
+      "normalizedShare": 0.03,
+      "contextRetentionFactor": 0.13203470693231503,
+      "tokenBudgetShare": 0.03,
+      "hotPath": false
+    },
+    "documentation": {
+      "weight": 0,
+      "normalizedShare": 0,
+      "contextRetentionFactor": 0.122607444540336,
+      "tokenBudgetShare": 0,
+      "hotPath": false
+    },
+    "i18n": {
+      "weight": 2,
+      "normalizedShare": 0.02,
+      "contextRetentionFactor": 0.12853383978926017,
+      "tokenBudgetShare": 0.02,
+      "hotPath": false
+    },
+    "refactoring": {
+      "weight": 0,
+      "normalizedShare": 0,
+      "contextRetentionFactor": 0.122607444540336,
+      "tokenBudgetShare": 0,
+      "hotPath": false
+    },
+    "architecture": {
+      "weight": 0,
+      "normalizedShare": 0,
+      "contextRetentionFactor": 0.122607444540336,
+      "tokenBudgetShare": 0,
+      "hotPath": false
+    },
+    "api_integrations": {
+      "weight": 0,
+      "normalizedShare": 0,
+      "contextRetentionFactor": 0.122607444540336,
+      "tokenBudgetShare": 0,
+      "hotPath": false
+    },
+    "error_handling": {
+      "weight": 0,
+      "normalizedShare": 0,
+      "contextRetentionFactor": 0.122607444540336,
+      "tokenBudgetShare": 0,
+      "hotPath": false
+    }
+  },
+  "system": {
+    "cpuCount": 10,
+    "cpuModel": "Apple M4",
+    "totalMemMB": 16384,
+    "freeMemMB": 202,
+    "loadAvg1": 2.0615234375,
+    "loadAvg5": 2.37841796875,
+    "platform": "darwin",
+    "timestamp": "2026-08-27T00:37:22.619Z"
+  }
+}
