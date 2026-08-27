@@ -191,7 +191,7 @@
   <!-- COMMAND PALETTE (F-24) -->
   <div id="cmdPalette" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Paleta de comandos">
     <div class="modal-card" style="width:400px">
-      <input id="cmdInput" type="text" class="mix-import-field mono" placeholder="Buscar proyecto o acción…" style="width:100%;font-size:13px;padding:10px" autofocus aria-label="Buscar en Paleta de comandos">
+      <input id="cmdInput" type="text" class="mix-import-field mono" placeholder="Buscar proyecto o acción…" style="width:100%;font-size:13px;padding:10px" autofocus aria-label="Buscar en Paleta de comandos" aria-autocomplete="list" aria-controls="cmdResults">
       <div id="cmdResults" role="listbox" aria-label="Resultados de la Paleta de comandos" aria-live="polite" style="max-height:240px;overflow-y:auto;margin-top:8px"></div>
     </div>
   </div>

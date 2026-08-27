@@ -732,7 +732,8 @@ function playOrchestra(dir, agent = 'claude') {
               try { if (fs.statSync(cfgPath).size <= 512_000) cfg = readJSON(cfgPath, {}) } catch {}
               cfg.agent = nextAgent
               if (AI_DEFAULTS[nextAgent]?.defaultModel) cfg.model = AI_DEFAULTS[nextAgent].defaultModel
-              writeJSON(cfgPath, cfg)
+              const _asCfgSer = JSON.stringify(cfg)
+              if (_asCfgSer.length <= 512_000) writeJSON(cfgPath, JSON.parse(_asCfgSer))
             } catch {}
             try {
               playOrchestra(dir, nextAgent)
@@ -930,8 +931,8 @@ ipcMain.handle('ai:select', (_e, id) => {
   const state = aiState()
   if (!state[id]) return { ok: false, error: 'Unknown AI' }
   state.selected = id
-  writeJSON(aiStateFile(), state)
-  invalidateAiStateCache()
+  const _aiSSer = JSON.stringify(state)
+  if (_aiSSer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aiSSer)); invalidateAiStateCache() }
   return { ok: true }
 })
 
@@ -1000,7 +1001,8 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   if (!state[agent]) return { ok: false, err: 'Select an AI developer first' }
   state.selected = agent
   state[agent].credits = Math.max(0, state[agent].credits - 1)
-  writeJSON(aiStateFile(), state); invalidateAiStateCache()
+  const _aisPlaySer = JSON.stringify(state)
+  if (_aisPlaySer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisPlaySer)); invalidateAiStateCache() }
   _metricsCache.delete('claude-usage:' + dir)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
   return playOrchestra(dir, agent)
@@ -1144,7 +1146,8 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   let cfg = { version: '2.0.0' }
   try { if (fs.statSync(p).size <= 512_000) cfg = readJSON(p, { version: '2.0.0' }) } catch {}
   cfg.focus = focus
-  writeJSON(p, cfg)
+  const _mwSer = JSON.stringify(cfg)
+  if (_mwSer.length <= 512_000) writeJSON(p, JSON.parse(_mwSer))
   coordinator.invalidateConflictCache()
   _metricsCache.delete('allocation:' + dir)
   return true
@@ -1427,7 +1430,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter) => {
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
   if (!Array.isArray(events)) events = []
-  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string')
+  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && typeof e.label === 'string')
   if (_llType) events = events.filter(e => e.type === _llType)
   return { events: events.slice(-_llLimit), total: events.length }
 })

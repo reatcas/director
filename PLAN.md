@@ -1,21 +1,24 @@
-# Cycle 159 Plan — IMPROVEMENT MODE
+# Cycle 160 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 159 (security BANNED: 3 consecutive)
+## MIXER BUDGET — Cycle 160
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 5 | 0/5 |
+| quality_tests | 35 | 4 | 0/4 |
+| security | 20 | 2 | 0/2 |
 | backend | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
-| ux_accessibility | 5 | 1 | 0/1 |
-| security | 20 | BANNED | — |
+| ux_accessibility | 5 | SKIP (proportional) | — |
+| business_logic | 5 | SKIP (proportional) | — |
+| data_db | 5 | SKIP (proportional) | — |
 | performance | 10 | FROZEN | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [backend] I-468 — export:session: filter lifecycle + mixerHistory to valid objects
-2. [frontend] I-469 — #notesArea: add maxlength="50000" to match backend validation
-3. [ux_accessibility] I-470 — #lifecycleTimeline: role=list + aria-label; lc-event role=listitem
-4-8. [quality_tests] cycle159-coverage.test.js — 5 tests
+1. [security] I-471 — ai:select + orchestra:play: _aiSSer 256KB cap on aiState writes
+2. [security] I-472 — mixer:write + agent-switch cfg: _mwSer/_asCfgSer 512KB caps
+3. [backend] I-473 — lifecycle:list: require e.ts + e.label string in event filter
+4. [frontend] I-474 — #cmdInput: aria-autocomplete=list + aria-controls=cmdResults
+5-8. [quality_tests] cycle160-coverage.test.js — 4 tests
 
 ## Stats
-- 3538 tests at cycle start
+- 3544 tests at cycle start
