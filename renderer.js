@@ -1365,7 +1365,7 @@ function addUsageEntry(message) {
     <span class="le-icon">⏸</span>
     <span class="le-time">${time}</span>
     <span class="le-badge">PAUSE</span>
-    <span class="le-msg">${message} <span class="le-retry">(attempt #1)</span></span>
+    <span class="le-msg">${esc(message)} <span class="le-retry">(attempt #1)</span></span>
   `
   logEl.appendChild(el)
   usageEntry = el
@@ -2748,6 +2748,9 @@ function renderBpPhases() {
     const isCurrent = BP_QUESTIONS[bpState.currentQuestion]?.phase === phase.id
     const pill = document.createElement('div')
     pill.className = 'bp-phase-pill' + (isCurrent ? ' active' : '') + (pct === 100 ? ' done' : '')
+    pill.setAttribute('role', 'listitem')
+    pill.setAttribute('tabindex', '0')
+    pill.setAttribute('aria-label', `${phase.name} — ${pct}%${isCurrent ? ' (fase actual)' : ''}`)
     pill.style.setProperty('--phase-color', phase.color)
     pill.innerHTML = `
       <span class="bp-phase-icon">${phase.icon}</span>
@@ -2755,6 +2758,7 @@ function renderBpPhases() {
       <span class="bp-phase-pct">${pct}%</span>
       <div class="bp-phase-bar"><div class="bp-phase-fill" style="width:${pct}%"></div></div>
     `
+    pill.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pill.click() } }
     pill.onclick = () => {
       const firstQ = BP_QUESTIONS.findIndex(q => q.phase === phase.id)
       if (firstQ >= 0) {

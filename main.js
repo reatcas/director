@@ -1257,7 +1257,7 @@ ipcMain.handle('metrics:session-summary', () => {
       if (isRunning(p.path)) active++; else idle++
       try {
         const ctx = contextProto.getMetrics(p.path)
-        if (ctx && ctx.aggregated) totalTokens += ctx.aggregated.totalTokensProcessed || 0
+        if (ctx && ctx.aggregated) totalTokens += Number.isFinite(ctx.aggregated.totalTokensProcessed) ? ctx.aggregated.totalTokensProcessed : 0
       } catch {}
       try {
         const reportPath = path.join(p.path, 'ORCHESTRA_REPORT.md')

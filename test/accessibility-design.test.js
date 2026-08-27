@@ -82,7 +82,7 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('orquesta') || l.includes('Eliminar') || l.includes('JSON') ||
       l.includes('Guardar') || l.includes('stand') || l.includes('personalizado') ||
       l.includes('Compresión') || l.includes('Límite') || l.includes('Historial') || l.includes('Panel') ||
-      l.includes('Análisis') || l.includes('Distribución')
+      l.includes('Análisis') || l.includes('Distribución') || l.includes('Fases')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })
