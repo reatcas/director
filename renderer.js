@@ -3358,6 +3358,15 @@ if ($('#cmdInput')) {
       })
       items[nextIdx].scrollIntoView({ block: 'nearest' })
     }
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const _cpItems = Array.from(document.querySelectorAll('#cmdResults .cmd-item'))
+      if (!_cpItems.length) return
+      const _cpActive = _cpItems.findIndex(el => el.classList.contains('active'))
+      const _cpNext = e.shiftKey ? (_cpActive - 1 + _cpItems.length) % _cpItems.length : (_cpActive + 1) % _cpItems.length
+      _cpItems.forEach((el, i) => { el.classList.toggle('active', i === _cpNext); el.setAttribute('aria-selected', String(i === _cpNext)) })
+      _cpItems[_cpNext].scrollIntoView({ block: 'nearest' })
+    }
   })
 }
 

@@ -1,6 +1,6 @@
-# Cycle 156 Plan — IMPROVEMENT MODE
+# Cycle 157 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 156
+## MIXER BUDGET — Cycle 157
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 0/4 |
@@ -14,11 +14,11 @@
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-456 — repertoire:add: _rapSer write size cap on projects store
-2. [security] I-457 — copyDir settings.json merge: _cdMergeSer write size cap
-3. [backend] I-458 — mixer:saved:list: cap merged array at 200 items
-4. [frontend] I-459 — renderCmdResults: use module-level projects instead of IPC per keystroke
-5-8. [quality_tests] cycle156-coverage.test.js — 4 tests
+1. [security] I-460 — repertoire:remove: _rrSer write size cap
+2. [security] I-461 — orchestra:clearLog ctx-metrics trim: _ctxTrimSer write size cap
+3. [backend] I-462 — mixer:read: sanitize cfg.focus with _VALID_CATS + Number.isFinite
+4. [frontend] I-463 — cmdPalette keydown: Tab focus trap within modal
+5-8. [quality_tests] cycle157-coverage.test.js — 4 tests
 
 ## Stats
-- 3518 tests at cycle start
+- 3524 tests at cycle start

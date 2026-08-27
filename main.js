@@ -820,7 +820,8 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   if (typeof dir !== 'string') return false
   let _rrProjects = []
   try { if (fs.statSync(store()).size <= 512_000) _rrProjects = readJSON(store(), []) } catch {}
-  writeJSON(store(), _rrProjects.filter(p => p.path !== dir))
+  const _rrSer = JSON.stringify(_rrProjects.filter(p => p.path !== dir))
+  if (_rrSer.length <= 512_000) writeJSON(store(), JSON.parse(_rrSer))
   invalidateProjectsCache()
   stopTailing(dir)
   stopMetricsSampling(dir)
@@ -1086,7 +1087,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const ctxFile = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
     let hist = []
     try { if (fs.statSync(ctxFile).size <= 1_048_576) hist = readJSON(ctxFile, []) } catch {}
-    if (hist.length > 500) writeJSON(ctxFile, hist.slice(-500))
+    if (hist.length > 500) { const _ctxTrimSer = JSON.stringify(hist.slice(-500)); if (_ctxTrimSer.length <= 1_048_576) writeJSON(ctxFile, JSON.parse(_ctxTrimSer)) }
   } catch {}
 })
 
@@ -1125,6 +1126,11 @@ ipcMain.handle('mixer:read',  (_e, dir) => {
   const _mrPath = path.join(dir, '.claude/orchestra.json')
   let cfg = null
   try { if (fs.statSync(_mrPath).size <= 512_000) cfg = readJSON(_mrPath, null) } catch {}
+  if (cfg && cfg.focus && typeof cfg.focus === 'object') {
+    const _mrFocus = {}
+    for (const k of Object.keys(cfg.focus)) { if (_VALID_CATS.has(k) && Number.isFinite(cfg.focus[k])) _mrFocus[k] = cfg.focus[k] }
+    cfg = { ...cfg, focus: _mrFocus }
+  }
   return cfg
 })
 const _VALID_CATS = new Set(['product','backend','frontend','business_logic','security','quality_tests','devops_infra','performance','data_db','i18n','ux_accessibility'])
