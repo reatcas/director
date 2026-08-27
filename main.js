@@ -1204,7 +1204,8 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
   mixes = mixes.filter(m => m.id !== id)
-  writeJSON(p, mixes)
+  const _msdSer = JSON.stringify(mixes)
+  if (_msdSer.length <= 512_000) writeJSON(p, JSON.parse(_msdSer))
   return true
 })
 
@@ -1467,6 +1468,7 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   const file = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
   let hist = []
   try { if (fs.statSync(file).size <= 1_048_576) hist = readJSON(file, []) } catch {}
+  hist = hist.filter(h => h && typeof h === 'object')
   if (hist.length > 500) { hist = hist.slice(-500); try { writeJSON(file, hist) } catch {} }
   if (hist.length > 0) {
     const last = hist[hist.length - 1]
@@ -1696,14 +1698,18 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
   const valid = atriles.every(a =>
     a && typeof a === 'object' &&
     typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 &&
-    typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096
+    typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 &&
+    (a.description === undefined || a.description === null || (typeof a.description === 'string' && a.description.length <= 1024))
   )
   if (!valid) return false
   if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false
+  if (atriles.some(a => typeof a.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.description))) return false
   const _asPaths = atriles.map(a => a.path)
   if (new Set(_asPaths).size !== _asPaths.length) return false
-  writeJSON(customAtrilesFile(), atriles)
-  _atrilesCache = atriles
+  const _asSer = JSON.stringify(atriles)
+  if (_asSer.length > 512_000) return false
+  writeJSON(customAtrilesFile(), JSON.parse(_asSer))
+  _atrilesCache = JSON.parse(_asSer)
   return true
 })
 

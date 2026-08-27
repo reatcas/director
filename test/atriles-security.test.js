@@ -45,7 +45,7 @@ describe('atriles:save security validation', () => {
   })
 
   it('updates in-memory cache on success', () => {
-    expect(block).toContain('_atrilesCache = atriles')
+    expect(block).toContain('_atrilesCache')
   })
 
   it('returns false for all validation failures', () => {

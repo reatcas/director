@@ -1992,7 +1992,7 @@ function parseLogLine(dir, line) {
 // ─── Lifecycle History (persisted across sessions) ───────────────────────────
 async function loadLifecycleHistory() {
   if (!current) return
-  const res = await window.director.lifecycleList(current)
+  const res = await window.director.lifecycleList(current, 80)
   const events = res?.events ?? (Array.isArray(res) ? res : [])
   if (!events || events.length === 0) return
 
@@ -2867,7 +2867,7 @@ async function loadLifecycleTimeline() {
   const countEl = $('#lifecycleCount')
   if (!el) return
 
-  const res = await window.director.lifecycleList(current)
+  const res = await window.director.lifecycleList(current, 50)
   const events = res?.events ?? (Array.isArray(res) ? res : [])
   const total = res?.total ?? events.length
   if (!events || events.length === 0) {

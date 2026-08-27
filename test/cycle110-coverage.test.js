@@ -33,7 +33,8 @@ describe('atriles:list cache', () => {
 
   it('atriles:save updates cache on write', () => {
     const block = mainJs.split("'atriles:save'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('_atrilesCache = atriles')
+    expect(block).toContain('_atrilesCache')
+    expect(block).toContain('_asSer')
   })
 })
 

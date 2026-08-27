@@ -1,6 +1,6 @@
-# Cycle 153 Plan — IMPROVEMENT MODE
+# Cycle 154 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 153
+## MIXER BUDGET — Cycle 154
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 0/4 |
@@ -14,11 +14,11 @@
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-440 — mixer:saved:export: add alphanumeric ID regex (match mixer:saved:delete)
-2. [security] I-441 — mixer:saved:save: add write size cap 512KB via _msSer
-3. [backend] I-442 — mixer:history: use Number.isInteger(limit) instead of typeof === 'number'
-4. [frontend] I-443 — switchTab: set aria-hidden on inactive tabpanels
-5-8. [quality_tests] cycle153-coverage.test.js — 4 tests
+1. [security] I-444 — atriles:save: validate description field + _asSer write cap
+2. [security] I-445 — mixer:saved:delete: add _msdSer write cap
+3. [backend] I-446 — metrics:context: filter corrupt history entries
+4. [frontend] I-447 — loadLifecycleHistory/loadLifecycleTimeline: pass explicit limits
+5-8. [quality_tests] cycle154-coverage.test.js — 4 tests
 
 ## Stats
-- 3496 tests at cycle start
+- 3502 tests at cycle start
