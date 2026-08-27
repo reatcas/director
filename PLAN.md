@@ -1,27 +1,27 @@
-# Cycle 209 Plan — IMPROVEMENT MODE
+# Cycle 210 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 209 (no bans — no category in all of C206+C207+C208)
+## MIXER BUDGET — Cycle 210 (backend+business_logic BANNED — in C207+C208+C209)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 3 | 0/3 |
 | security | 20 | 2 | 0/2 |
 | performance | 10 | 1 | 0/1 |
-| backend | 5 | 1 | 0/1 |
-| business_logic | 5 | 1 | 0/1 |
-| frontend | 5 | 0 | SKIP |
-| ux_accessibility | 5 | 0 | SKIP |
+| frontend | 5 | 1 | 0/1 |
+| ux_accessibility | 5 | 1 | 0/1 |
 | data_db | 5 | 0 | SKIP |
+| backend | 5 | 0 | BANNED |
+| business_logic | 5 | 0 | BANNED |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] S-49 — mixer:saved:list: validate focus object values are numeric 0-100 in user mixes filter (currently validates focus is object but not value types)
-2. [security] S-50 — lifecycle:list return shape: cap event.message at 4096 bytes before returning to renderer (IPC boundary output guard)
-3. [performance] P-49 — metrics:coordination: add 2s TTL cache (coordinator.getStatus() is uncached, called on every renderer poll)
-4. [backend] I-588 — orchestra:clearLog: invalidate metrics:snapshot and metrics:context caches for dir on clearLog (stale data after log clear)
-5. [business_logic] BL-06 — orchestra:upgrade: invalidate version-check cache for dir after upgrade (currently cached 30s, stays stale after upgrade completes)
-6. [quality_tests] T-83 — test C209: S-49 mix focus validation + S-50 lifecycle:list message cap
-7. [quality_tests] T-84 — test C209: P-49 coordination cache + I-588 clearLog cache invalidation
-8. [quality_tests] T-85 — test C209: BL-06 version-check invalidation on upgrade
+1. [security] S-51 — metrics:context: validate totalTokens/totalTokensSaved values are non-negative integers before accumulating
+2. [security] S-52 — blueprint:readiness: cap size of readiness check fields before returning (tech_stack, modules lengths)
+3. [performance] P-50 — metrics:resource: invalidate cache on orchestra:kill (live data stale after process stops)
+4. [frontend] FE-05 — renderer.js: add sessionSummary refresh on refresh() call (keeps session panel in sync with project list changes)
+5. [ux_accessibility] A-20 — mixer slider inputs: ensure aria-valuetext shows current % for screen readers in renderer renderMixer
+6. [quality_tests] T-86 — test C210: S-51 context metrics validation + S-52 readiness field cap
+7. [quality_tests] T-87 — test C210: P-50 resource cache invalidation on kill
+8. [quality_tests] T-88 — test C210: FE-05 sessionSummary refresh + A-20 mixer aria-valuetext
 
 ## Stats
-- 3874 tests at cycle start
+- 3884 tests at cycle start

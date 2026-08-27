@@ -62,12 +62,12 @@ describe('orchestra:fine evicts session-summary cache (BL-04)', () => {
 
 describe('sessionSummary ss-item aria-labels (A-18)', () => {
   it('active item has aria-label with orquestas activas', () => {
-    const block = rendererJs.split('loadSessionSummary')[1]?.split('\nasync function')[0] || rendererJs.split('function loadSessionSummary')[1]?.split('\nfunction')[0] || ''
+    const block = rendererJs.split('async function loadSessionSummary')[1]?.split('\nfunction')[0] || ''
     expect(block).toContain('orquestas activas')
   })
 
   it('idle item has aria-label with orquestas inactivas', () => {
-    const block = rendererJs.split('loadSessionSummary')[1]?.split('\nasync function')[0] || rendererJs.split('function loadSessionSummary')[1]?.split('\nfunction')[0] || ''
+    const block = rendererJs.split('async function loadSessionSummary')[1]?.split('\nfunction')[0] || ''
     expect(block).toContain('orquestas inactivas')
   })
 

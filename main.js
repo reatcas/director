@@ -1127,6 +1127,7 @@ ipcMain.handle('orchestra:kill', (_e, dir) => {
   }
   _metricsCache.delete('claude-usage:' + dir)
   _metricsCache.delete('session-summary')
+  _metricsCache.delete('resource:' + dir)
   _invalidateIsRunning(dir)
   stopTailing(dir)
   stopWatchingResume(dir)
@@ -1685,17 +1686,17 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   hist = hist.filter(h => h && typeof h === 'object' && (h.ts === undefined || typeof h.ts === 'string'))
   const _mcHist = hist.length > 500 ? hist.slice(-500) : hist
   if (_mcHist.length > 0) {
-    const last = hist[hist.length - 1]
+    const last = _mcHist[_mcHist.length - 1]
     let totalProcessed = 0, totalSaved = 0
-    for (const m of hist) { totalProcessed += (Number.isFinite(m.totalTokens) ? m.totalTokens : 0); totalSaved += (Number.isFinite(m.totalTokensSaved) ? m.totalTokensSaved : 0) }
+    for (const m of _mcHist) { totalProcessed += (Number.isFinite(m.totalTokens) && m.totalTokens >= 0 ? m.totalTokens : 0); totalSaved += (Number.isFinite(m.totalTokensSaved) && m.totalTokensSaved >= 0 ? m.totalTokensSaved : 0) }
     return metricsSet('context:' + dir, {
       lastDelta: { metrics: last },
       aggregated: {
-        cycles: hist.length,
+        cycles: _mcHist.length,
         totalTokensProcessed: totalProcessed,
         totalTokensSaved: totalSaved,
         cumulativeCompression: totalProcessed > 0 ? Math.round((totalSaved/totalProcessed)*1000)/10 : 0,
-        avgSavedPerCycle: hist.length > 0 ? Math.floor(totalSaved/hist.length) : 0
+        avgSavedPerCycle: _mcHist.length > 0 ? Math.floor(totalSaved/_mcHist.length) : 0
       },
       historySize: hist.length
     }, _SLOW_METRICS_TTL)

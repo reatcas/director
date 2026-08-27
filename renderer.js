@@ -451,6 +451,7 @@ async function refresh() {
     updateTransportButtons()
   }
   updateStageView()
+  loadSessionSummary()
 }
 
 async function loadSessionSummary() {
@@ -2949,13 +2950,13 @@ async function loadLifecycleTimeline() {
   const total = res?.total ?? events.length
   if (!events || events.length === 0) {
     el.innerHTML = '<div style="padding:8px;color:var(--dim);font:9px var(--mono)">Sin eventos</div>'
-    if (countEl) countEl.textContent = '0'
+    if (countEl) { countEl.textContent = '0'; countEl.setAttribute('aria-label', '0 eventos en ciclo de vida') }
     return
   }
 
   const recent = events.slice(-50)
   const _unfTotal = res?.unfilteredTotal ?? total
-  if (countEl) countEl.textContent = String(_unfTotal)
+  if (countEl) { countEl.textContent = String(_unfTotal); countEl.setAttribute('aria-label', `${_unfTotal} eventos en ciclo de vida`) }
 
   const _hint = _unfTotal > recent.length ? `<div class="lc-hint" aria-label="${_unfTotal - recent.length} eventos anteriores disponibles">+ ${_unfTotal - recent.length} anteriores</div>` : ''
   el.innerHTML = _hint + recent.map(ev => {
