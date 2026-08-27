@@ -1475,6 +1475,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   const p = blueprintFile(dir)
   fs.mkdirSync(path.dirname(p), { recursive: true })
   writeJSON(p, JSON.parse(serialized))
+  _readinessCache.delete(dir)
   return true
 })
 
@@ -1614,8 +1615,12 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
   return { brief, briefPath, roadmapGenerated: !fs.existsSync(roadmapPath) }
 })
 
+const _readinessCache = new Map()
 ipcMain.handle('blueprint:readiness', (_e, dir) => {
   if (!isKnownProject(dir)) return { ready: false, missing: ['project'] }
+  const now = Date.now()
+  const cached = _readinessCache.get(dir)
+  if (cached && now - cached.ts < 5_000) return cached.val
   const bp = readJSON(blueprintFile(dir), null)
   if (!bp || !bp.answers) return { ready: false, missing: ['blueprint'], hasBlueprint: false }
 
@@ -1627,7 +1632,7 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
   if (!a.projectType) missing.push('tipo de proyecto')
   if ((!bp.modules || bp.modules.length === 0) && !a.description) missing.push('módulos o descripción')
 
-  return {
+  const val = {
     ready: missing.length === 0,
     missing,
     hasBlueprint: true,
@@ -1636,6 +1641,8 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
     modules: (bp.modules || []).length,
     answeredFields: Object.keys(a).filter(k => a[k] && a[k].trim()).length
   }
+  _readinessCache.set(dir, { ts: now, val })
+  return val
 })
 
 // ─── App lifecycle ────────────────────────────────────────────────────────────
