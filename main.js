@@ -508,7 +508,8 @@ function syncProtocol(dir) {
   // Overwrite all protocol files with the latest version
   for (const f of UPGRADE_FILES) {
     const srcPath = path.join(src, f), dstPath = path.join(dir, f)
-    if (!fs.existsSync(srcPath)) continue
+    let _ugSrcSt = false; try { fs.statSync(srcPath); _ugSrcSt = true } catch {}
+    if (!_ugSrcSt) continue
     try {
       fs.mkdirSync(path.dirname(dstPath), { recursive: true })
       fs.copyFileSync(srcPath, dstPath)
@@ -892,7 +893,8 @@ ipcMain.handle('orchestra:install', (_e, dir) => {
   copyDir(orchestraSrc(), dir)
   try { fs.chmodSync(path.join(dir, 'run.sh'), 0o755) } catch {}
   const hooks = path.join(dir, '.claude/hooks')
-  if (fs.existsSync(hooks)) for (const f of fs.readdirSync(hooks)) { try { fs.chmodSync(path.join(hooks, f), 0o755) } catch {} }
+  let _hkSt = false; try { fs.statSync(hooks); _hkSt = true } catch {}
+  if (_hkSt) for (const f of fs.readdirSync(hooks)) { try { fs.chmodSync(path.join(hooks, f), 0o755) } catch {} }
   return projectInfo(dir)
 })
 
@@ -1858,11 +1860,11 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (data.sessions !== undefined && !Array.isArray(data.sessions)) return false
   if (Array.isArray(data.sessions) && data.sessions.length > 500) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => !s || typeof s !== 'object' || Array.isArray(s) || Object.keys(s).length > 20)) return false
-  if (Array.isArray(data.sessions) && data.sessions.some(s => s.started !== undefined && (typeof s.started !== 'string' || s.started.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.started)))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.started !== undefined && (typeof s.started !== 'string' || s.started.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.started) || !/^\d{4}-\d{2}-\d{2}T/.test(s.started)))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.label !== undefined && (typeof s.label !== 'string' || s.label.length > 128 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.label)))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.duration !== undefined && (typeof s.duration !== 'number' || !Number.isFinite(s.duration) || s.duration < 0))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.commits !== undefined && (!Number.isInteger(s.commits) || s.commits < 0))) return false
-  if (Array.isArray(data.sessions) && data.sessions.some(s => s.ended !== undefined && (typeof s.ended !== 'string' || s.ended.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.ended)))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.ended !== undefined && (typeof s.ended !== 'string' || s.ended.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.ended) || !/^\d{4}-\d{2}-\d{2}T/.test(s.ended)))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.agent !== undefined && (typeof s.agent !== 'string' || s.agent.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.agent)))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.model !== undefined && (typeof s.model !== 'string' || s.model.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.model)))) return false
   const serialized = JSON.stringify(data)
@@ -2105,13 +2107,16 @@ app.whenReady().then(() => {
     if (!p.path) continue
     if (isRunning(p.path) && !procs.has(p.path)) {
       const logFile = path.join(p.path, '.claude/logs/orchestra.log')
-      if (fs.existsSync(logFile)) startTailing(p.path, logFile)
+      let _lfSt = false; try { fs.statSync(logFile); _lfSt = true } catch {}
+      if (_lfSt) startTailing(p.path, logFile)
     }
     const usageSig = path.join(p.path, USAGE_LIMIT_SIGNAL)
-    if (fs.existsSync(usageSig) && !isRunning(p.path)) {
+    let _usSt = false; try { fs.statSync(usageSig); _usSt = true } catch {}
+    if (_usSt && !isRunning(p.path)) {
       const pidFile = path.join(p.path, '.claude/ORCHESTRA_PID')
       let pidStillAlive = false
-      if (fs.existsSync(pidFile)) {
+      let _pidSt = false; try { fs.statSync(pidFile); _pidSt = true } catch {}
+      if (_pidSt) {
         try {
           const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim())
           pidStillAlive = pid > 0 && pidAlive(pid)
