@@ -977,6 +977,15 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   const masterLog = path.join(dir, '.claude/logs/orchestra.log')
   try { if (fs.existsSync(stdoutLog)) fs.writeFileSync(stdoutLog, '') } catch {}
   try { if (fs.existsSync(masterLog)) fs.writeFileSync(masterLog, '') } catch {}
+  // Prune analysis-*.txt files: keep only the 5 most recent
+  try {
+    const claudeDir = path.join(dir, '.claude')
+    const files = fs.readdirSync(claudeDir).filter(f => f.startsWith('analysis-') && f.endsWith('.txt'))
+    if (files.length > 5) {
+      files.sort()
+      files.slice(0, files.length - 5).forEach(f => { try { fs.unlinkSync(path.join(claudeDir, f)) } catch {} })
+    }
+  } catch {}
 })
 
 ipcMain.handle('orchestra:tail', (_e, dir) => {
@@ -996,6 +1005,7 @@ function snapshotMixer(dir, event) {
   const histFile = path.join(dir, '.claude/mixer-history.json')
   const hist = readJSON(histFile, [])
   hist.push({ ts: new Date().toISOString(), event, focus: { ...cfg.focus } })
+  if (hist.length > 100) hist.splice(0, hist.length - 100)
   writeJSON(histFile, hist)
 }
 
