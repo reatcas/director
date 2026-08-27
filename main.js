@@ -781,6 +781,9 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   // Evict any cached metrics for removed project
   for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir)) _metricsCache.delete(key) }
   _readinessCache.delete(dir)
+  // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
+  const lcLogDir = path.join(dir, '.claude', 'logs')
+  _lifecycleDirReady.delete(lcLogDir)
   return true
 })
 
