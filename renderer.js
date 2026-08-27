@@ -3278,6 +3278,9 @@ document.addEventListener('keydown', (e) => {
   const tag = (e.target.tagName || '').toLowerCase()
   if (tag === 'input' || tag === 'textarea' || tag === 'select') return
   if (e.metaKey && e.shiftKey && e.key === 'p') { e.preventDefault(); openCmdPalette(); return }
+  if (e.ctrlKey && e.key === 'p') { e.preventDefault(); const b = $('#playBtn'); if (b && current) b.click(); return }
+  if (e.ctrlKey && e.key === '.') { e.preventDefault(); const b = $('#fineBtn'); if (b && current) b.click(); return }
+  if (e.ctrlKey && e.key === 'k') { e.preventDefault(); const b = $('#killBtn'); if (b && current) b.click(); return }
   if (e.key === '?') { if ($('#shortcutsModal')) $('#shortcutsModal').hidden = false; return }
   if (e.key === ' ') { e.preventDefault(); const b = $('#playBtn'); if (b && current) b.click(); return }
   if (e.key === 'k' || e.key === 'K') { const b = $('#killBtn'); if (b && current) b.click(); return }
