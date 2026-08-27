@@ -1,28 +1,28 @@
-# Cycle 127 Plan — IMPROVEMENT MODE
+# Cycle 128 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 127
+## MIXER BUDGET — Cycle 128
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 4/4 |
 | security | 20 | 2 | 2/2 |
-| backend | 5 | 1 | 1/1 |
+| frontend | 5 | 1 | 1/1 |
 | ux_accessibility | 5 | 1 | 1/1 |
-| frontend | 5 | FROZEN (3rd: 124,125,126) | — |
-| performance | 10 | FROZEN (18th) | — |
+| backend | 5 | FROZEN (3rd: 125,126,127) | — |
+| performance | 10 | FROZEN (19th) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-305 — exit handler: ROADMAP.md size guard 1MB ✅
-2. [security] I-306 — metrics:session-summary: ORCHESTRA_REPORT 1MB per-project guard ✅
-3. [backend] I-307 — mixer:history: mixer-history.json 512KB size guard ✅
-4. [ux_accessibility] I-308 — clearLogBtn/autoScrollBtn/toggleRawBtn/copyLogBtn: Spanish aria-labels ✅
-5. [quality_tests] I-309 — test ROADMAP.md exit handler size guard ✅
-6. [quality_tests] I-310 — test session-summary report size guard ✅
-7. [quality_tests] I-311 — test mixer:history size guard ✅
-8. [quality_tests] I-312 — test console action button aria-labels ✅
+1. [security] I-313 — PRODUCT_DIRECTIVE.md reads: 512KB size guard (3 occurrences) ✅
+2. [security] I-314 — findLogo: package.json 512KB guard before readJSON ✅
+3. [frontend] I-315 — refreshAnalysis/copyAnalysis/exportMixesBtn/importMixesBtn: Spanish aria-labels ✅
+4. [ux_accessibility] I-316 — consoleSection: role=region + aria-label ✅
+5. [quality_tests] I-317 — test PRODUCT_DIRECTIVE.md size guards ✅
+6. [quality_tests] I-318 — test findLogo package.json guard ✅
+7. [quality_tests] I-319 — test analysis/mixer button aria-labels ✅
+8. [quality_tests] I-320 — test consoleSection region aria ✅
 
 ## Stats
-- 3251 tests passing (was 3240 at cycle start)
-- +11 net tests added this cycle
-- Comprehensive size guards now cover all major file read paths
-- All console action buttons now accessible with Spanish labels
+- 3261 tests passing (was 3251 at cycle start)
+- +10 net tests added this cycle
+- PRODUCT_DIRECTIVE.md reads now bounded — prevents unbounded file reads
+- consoleSection and analysis buttons now fully accessible
