@@ -676,6 +676,8 @@ if ($('#playBtn')) $('#playBtn').onclick = async () => {
     showToast(result?.err || 'Unable to start')
     return
   }
+  const _lrPlay = document.getElementById('a11y-live')
+  if (_lrPlay) { _lrPlay.textContent = ''; requestAnimationFrame(() => { _lrPlay.textContent = 'Orquesta iniciada' }) }
   await loadAiCredits()
   setTimeout(() => { if (orchestraState === 'started') setOrchestraState('interpreting') }, 3000)
   refresh()
@@ -716,6 +718,8 @@ if ($('#fineBtn')) $('#fineBtn').onclick = async () => {
   const p = proj()
   if (!p || !p.running) return
   addActionEntry('fine', 'FINE', 'Closing last measure… the orchestra will finish the current cycle')
+  const _lrFine = document.getElementById('a11y-live')
+  if (_lrFine) { _lrFine.textContent = ''; requestAnimationFrame(() => { _lrFine.textContent = 'Cerrando último compás' }) }
   await window.director.fine(current)
   if ($('#pstatus')) {
     $('#pstatus').textContent = 'CLOSING LAST MEASURE…'
@@ -727,6 +731,8 @@ if ($('#killBtn')) $('#killBtn').onclick = async () => {
   const p = proj()
   if (!p || !p.running) return
   addActionEntry('kill', 'CUT', 'Termination signal sent — immediate cut')
+  const _lrKill = document.getElementById('a11y-live')
+  if (_lrKill) { _lrKill.textContent = ''; requestAnimationFrame(() => { _lrKill.textContent = 'Orquesta detenida' }) }
   await window.director.kill(current)
   setOrchestraState('finished')
   refresh()

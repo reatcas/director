@@ -831,6 +831,7 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   stopWatchingResume(dir)
   // Evict any cached metrics for removed project
   for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir)) _metricsCache.delete(key) }
+  usageTracker.delete(dir)
   _readinessCache.delete(dir)
   // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
   const lcLogDir = path.join(dir, '.claude', 'logs')
@@ -1742,6 +1743,7 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
   if (!valid) return false
   if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false
   if (atriles.some(a => typeof a.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.description))) return false
+  if (atriles.some(a => typeof a.icon === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.icon))) return false
   const _asPaths = atriles.map(a => a.path)
   if (new Set(_asPaths).size !== _asPaths.length) return false
   const _asSer = JSON.stringify(atriles)
@@ -1765,6 +1767,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (!isKnownProject(dir)) return false
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false
   if (data.answers && typeof data.answers === 'object') {
+    if (Object.keys(data.answers).length > 200) return false
     const _bsAnswerVals = Object.values(data.answers)
     if (_bsAnswerVals.some(v => v !== null && typeof v === 'object')) return false
     if (_bsAnswerVals.some(v => typeof v === 'string' && v.length > 2000)) return false
