@@ -109,7 +109,7 @@ body {
 .monitor-status, .metrics-strip, #mixerFooter,
 #mixesHeader, .mix-card, .strip, .strip-h, .analysis-bar,
 .section-header { user-select: none }
-#app { display: flex; flex-direction: column; height: 100vh; position: relative }
+#app { display: flex; flex-direction: row; height: 100vh; position: relative }
 
 /* ── Particle canvas overlay ──────────────────────────────────────────────── */
 #particleCanvasWrap {

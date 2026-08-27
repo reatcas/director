@@ -57,7 +57,8 @@ window.mixerGraph = (() => {
   function nodeColor(node) {
     if (node.id === HUB_ID) return HUB_COLOR
     const w = node.weight || 0
-    return w <= 0 ? '#111120' : (node.color || '#888888')
+    if (w <= 0) return '#2a2a40'  // dim but visible on dark background
+    return node.color || '#888888'
   }
 
   // ── Glow sprite (extends default sphere for hub + active node) ───────────
@@ -320,14 +321,13 @@ window.mixerGraph = (() => {
     const h = containerEl.clientHeight || 280
     _camDist = Math.max(w, h) * 0.72
 
+    // Build graph without data first so we can configure forces BEFORE warmup
     graph = ForceGraph3D({ antialias: true, alpha: true })(containerEl)
       .width(w).height(h)
       .backgroundColor('rgba(0,0,0,0)')
       .numDimensions(2)
-      .warmupTicks(120).cooldownTicks(0)
       .nodeId('id').nodeLabel('label')
       .nodeVal(nodeVal).nodeColor(nodeColor).nodeOpacity(0.92)
-      .nodeResolution(16)
       .linkColor(linkColorFn)
       .linkWidth(linkWidthFn)
       .linkDirectionalParticles(linkParticlesFn)
@@ -338,12 +338,15 @@ window.mixerGraph = (() => {
         const s   = _sections.find(s => s[0] === tgt)
         return s ? s[2] : HUB_COLOR
       })
-      .graphData(_gData)
 
+    // Configure forces BEFORE warmup so the 120 warmup ticks use our layout forces
     try {
       graph.d3Force('link').distance(70).strength(0.8)
       graph.d3Force('charge').strength(-120)
     } catch {}
+
+    // Now set data — warmup ticks run here with our forces already applied
+    graph.warmupTicks(180).cooldownTicks(0).graphData(_gData)
 
     // Add pulse layer + set devicePixelRatio via underlying renderer
     setTimeout(() => {
