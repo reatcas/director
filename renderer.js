@@ -421,7 +421,7 @@ async function refresh() {
     li.innerHTML = `<span class="led"></span>
       ${logoHTML(p, true)}
       <span class="pn">${esc(p.name)}</span>
-      <span class="pv">${p.running ? 'LIVE' : p.installed ? 'v' + p.version : '—'}${stallBadge}</span>`
+      <span class="pv">${p.running ? 'LIVE' : p.installed ? 'v' + esc(String(p.version)) : '—'}${stallBadge}</span>`
     li.onclick = () => open(p.path)
     ul.appendChild(li)
   }
@@ -2615,12 +2615,12 @@ async function loadProcs() {
     row.className = 'proc-row'
     row.innerHTML = `
       <span class="proc-type" style="color:${s.color};border-color:${s.color}40;background:${s.color}12">${s.label}</span>
-      <span class="proc-pid mono">${p.pid}</span>
-      <span class="proc-stats mono">${p.cpu}% CPU · ${p.mem}% MEM · ${p.time}</span>
+      <span class="proc-pid mono">${esc(String(p.pid))}</span>
+      <span class="proc-stats mono">${esc(String(p.cpu))}% CPU · ${esc(String(p.mem))}% MEM · ${esc(String(p.time))}</span>
       <span class="proc-cmd mono">${esc(p.cmd)}</span>
       <div class="proc-actions">
-        <button class="proc-kill-btn" data-pid="${p.pid}" data-sig="SIGTERM" title="Terminate (SIGTERM)">◼ TERM</button>
-        <button class="proc-kill-btn danger" data-pid="${p.pid}" data-sig="SIGKILL" title="Kill (SIGKILL)">✕ KILL</button>
+        <button class="proc-kill-btn" data-pid="${esc(String(p.pid))}" data-sig="SIGTERM" aria-label="Terminar proceso ${esc(String(p.pid))} (SIGTERM)">◼ TERM</button>
+        <button class="proc-kill-btn danger" data-pid="${esc(String(p.pid))}" data-sig="SIGKILL" aria-label="Eliminar proceso ${esc(String(p.pid))} (SIGKILL)">✕ KILL</button>
       </div>
     `
     list.appendChild(row)

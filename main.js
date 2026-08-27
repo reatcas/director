@@ -1570,9 +1570,10 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
     if (!lines.length) return null
     const recent = lines.slice(-10)
-    const scores = recent.map(l => parseComplianceLine(l)).filter(Boolean).map(c => c.score)
+    const scores = recent.map(l => parseComplianceLine(l)).filter(Boolean).map(c => c.score).filter(s => s !== null)
     const last = parseComplianceLine(recent[recent.length - 1])
-    const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
+    const _rawAvg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
+    const avg = Number.isFinite(_rawAvg) ? _rawAvg : null
     return metricsSet('compliance:' + dir, { last, avgScore: avg, cycles: scores.length, history: scores }, _SLOW_METRICS_TTL)
   } catch { return null }
 })
