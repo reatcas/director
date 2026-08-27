@@ -20,7 +20,8 @@ const coordinator  = new CoordinationProtocol()
 
 const store     = () => path.join(app.getPath('userData'), 'repertoire.json')
 const aiStateFile = () => path.join(app.getPath('userData'), 'ai-credits.json')
-const orchestraSrc = () => path.join(__dirname, 'resources', 'orchestra')
+let _orchestraSrc = null
+const orchestraSrc = () => _orchestraSrc || (_orchestraSrc = path.join(__dirname, 'resources', 'orchestra'))
 const procs   = new Map()
 const tailers = new Map()
 const resumeTimers   = new Map()   // dir → timer for auto-resume
@@ -1504,8 +1505,9 @@ ipcMain.handle('system:kill-proc', (_e, pid, signal = 'SIGTERM') => {
 // ─── Custom Atriles (app-wide) ───────────────────────────────────────────────
 const customAtrilesFile = () => path.join(app.getPath('userData'), 'custom-atriles.json')
 
+let _atrilesCache = null
 ipcMain.handle('atriles:list', () => {
-  return readJSON(customAtrilesFile(), [])
+  return _atrilesCache || (_atrilesCache = readJSON(customAtrilesFile(), []))
 })
 
 ipcMain.handle('atriles:save', (_e, atriles) => {
@@ -1513,6 +1515,7 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
   const valid = atriles.every(a => a && typeof a === 'object' && typeof a.name === 'string' && typeof a.path === 'string')
   if (!valid) return false
   writeJSON(customAtrilesFile(), atriles)
+  _atrilesCache = atriles
   return true
 })
 
