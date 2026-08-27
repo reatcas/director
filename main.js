@@ -803,6 +803,7 @@ ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
   if (!p.startsWith(dir + path.sep) && p !== dir) return null
   try {
     const stat = fs.statSync(p)
+    if (!stat.isFile()) return null
     if (stat.size > 2_097_152) return null
     return fs.readFileSync(p, 'utf8')
   } catch {
@@ -1023,6 +1024,12 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
     if (pruned.length < events.length) writeJSON(lcFile, pruned)
   } catch {}
+  // Cap context-metrics telemetry at 500 entries
+  try {
+    const ctxFile = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
+    const hist = readJSON(ctxFile, [])
+    if (hist.length > 500) writeJSON(ctxFile, hist.slice(-500))
+  } catch {}
 })
 
 ipcMain.handle('orchestra:tail', (_e, dir) => {
@@ -1211,12 +1218,14 @@ ipcMain.handle('export:session', async (_e, dir) => {
     plan: read('PLAN.md'),
     pending: read('PENDING.md')
   }
+  const serialized = JSON.stringify(snapshot, null, 2)
+  if (serialized.length > 10_485_760) return { ok: false, err: 'Export too large (>10MB)' }
   const result = await dialog.showSaveDialog(win, {
     defaultPath: path.join(app.getPath('documents'), `director-session-${snapshot.project}-${Date.now()}.json`),
     filters: [{ name: 'JSON', extensions: ['json'] }]
   })
   if (result.canceled) return { ok: false }
-  fs.writeFileSync(result.filePath, JSON.stringify(snapshot, null, 2))
+  fs.writeFileSync(result.filePath, serialized)
   return { ok: true, path: result.filePath }
 })
 
