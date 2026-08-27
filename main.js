@@ -717,7 +717,7 @@ function playOrchestra(dir, agent = 'claude') {
       persistLifecycleEvent(dir, 'exit', 'FIN', `Interpretación finalizada (código ${code})`)
       try {
         const roadmapPath = path.join(dir, 'ROADMAP.md')
-        if (fs.existsSync(roadmapPath)) {
+        if (fs.existsSync(roadmapPath) && fs.statSync(roadmapPath).size <= 1_048_576) {
           const lines = fs.readFileSync(roadmapPath, 'utf8').split('\n')
           const nextItem = lines.find(l => l.trim().startsWith('- [ ]'))
           if (nextItem) {
@@ -1148,7 +1148,9 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
 // ─── Mixer history (F-17) ───────────────────────────────────────────────────
 ipcMain.handle('mixer:history', (_e, dir, limit) => {
   if (!isKnownProject(dir)) return []
-  const hist = readJSON(path.join(dir, '.claude/mixer-history.json'), [])
+  const p = path.join(dir, '.claude/mixer-history.json')
+  let hist = []
+  try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
   const n = typeof limit === 'number' && limit > 0 ? Math.min(limit, 500) : 50
   return hist.slice(-n)
 })
@@ -1166,6 +1168,7 @@ ipcMain.handle('metrics:session-summary', () => {
     } catch {}
     try {
       const reportPath = path.join(p.path, 'ORCHESTRA_REPORT.md')
+      if (fs.statSync(reportPath).size > 1_048_576) continue
       const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
       if (lines.length) {
         const last = parseComplianceLine(lines[lines.length - 1])
