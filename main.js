@@ -671,8 +671,8 @@ function playOrchestra(dir, agent = 'claude') {
       lines.push('6. **NEVER STOP**: If ROADMAP is empty, scan the codebase and find improvements. A senior developer always finds work to do.')
       
       try {
-        const _ds = fs.existsSync(directivePath) ? fs.statSync(directivePath).size : 0
-        let existing = _ds > 0 && _ds <= 512_000 ? fs.readFileSync(directivePath, 'utf8') : ''
+        let existing = ''
+        try { const _ds = fs.statSync(directivePath); if (_ds.size > 0 && _ds.size <= 512_000) existing = fs.readFileSync(directivePath, 'utf8') } catch {}
         if (existing.includes('## NEXT ITEM')) {
           const lastIdx = existing.lastIndexOf('## NEXT ITEM')
           lines.push('')
@@ -682,8 +682,8 @@ function playOrchestra(dir, agent = 'claude') {
       } catch {}
     } else {
       try {
-        const _ds2 = fs.existsSync(directivePath) ? fs.statSync(directivePath).size : 0
-        let existing = _ds2 > 0 && _ds2 <= 512_000 ? fs.readFileSync(directivePath, 'utf8') : ''
+        let existing = ''
+        try { const _ds2 = fs.statSync(directivePath); if (_ds2.size > 0 && _ds2.size <= 512_000) existing = fs.readFileSync(directivePath, 'utf8') } catch {}
         if (existing.includes('## NEXT ITEM')) {
           const lastIdx = existing.lastIndexOf('## NEXT ITEM')
           fs.writeFileSync(directivePath, existing.substring(lastIdx))
@@ -694,8 +694,8 @@ function playOrchestra(dir, agent = 'claude') {
     }
   } else {
     try {
-      const _ds3 = fs.existsSync(directivePath) ? fs.statSync(directivePath).size : 0
-      let existing = _ds3 > 0 && _ds3 <= 512_000 ? fs.readFileSync(directivePath, 'utf8') : ''
+      let existing = ''
+      try { const _ds3 = fs.statSync(directivePath); if (_ds3.size > 0 && _ds3.size <= 512_000) existing = fs.readFileSync(directivePath, 'utf8') } catch {}
       if (existing.includes('## NEXT ITEM')) {
         const lastIdx = existing.lastIndexOf('## NEXT ITEM')
         fs.writeFileSync(directivePath, existing.substring(lastIdx))
@@ -1288,12 +1288,15 @@ ipcMain.handle('metrics:session-summary', () => {
       } catch {}
       try {
         const reportPath = path.join(p.path, 'ORCHESTRA_REPORT.md')
-        if (fs.statSync(reportPath).size > 1_048_576) continue
-        const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
-        if (lines.length) {
-          const last = parseComplianceLine(lines[lines.length - 1])
-          if (last && (worstCompliance === null || last.score < worstCompliance.score)) {
-            worstCompliance = { dir: p.path, name: p.name, ...last }
+        const _ssSt = fs.statSync(reportPath)
+        if (_ssSt.size > 1_048_576) continue
+        if (_complianceMtimeCache.get(p.path) !== _ssSt.mtimeMs) {
+          const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
+          if (lines.length) {
+            const last = parseComplianceLine(lines[lines.length - 1])
+            if (last && (worstCompliance === null || last.score < worstCompliance.score)) {
+              worstCompliance = { dir: p.path, name: p.name, ...last }
+            }
           }
         }
       } catch {}
@@ -1791,12 +1794,16 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
     const _bsAnswerVals = Object.values(data.answers)
     if (_bsAnswerVals.some(v => v !== null && typeof v === 'object')) return false
     if (_bsAnswerVals.some(v => typeof v === 'string' && v.length > 2000)) return false
+    if (_bsAnswerVals.some(v => typeof v === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(v))) return false
   }
   if (data.modules && Array.isArray(data.modules)) {
     if (data.modules.length > 100) return false
     if (data.modules.some(m => !m || typeof m !== 'object' || typeof m.name !== 'string' || m.name.length > 256)) return false
+    if (data.modules.some(m => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(m.name))) return false
     if (data.modules.some(m => m.description !== undefined && (typeof m.description !== 'string' || m.description.length > 2000))) return false
+    if (data.modules.some(m => m.description !== undefined && typeof m.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(m.description))) return false
     if (data.modules.some(m => m.notes !== undefined && (typeof m.notes !== 'string' || m.notes.length > 2000))) return false
+    if (data.modules.some(m => m.notes !== undefined && typeof m.notes === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(m.notes))) return false
     if (data.modules.some(m => m.features !== undefined && (!Array.isArray(m.features) || m.features.length > 50 || m.features.some(f => typeof f !== 'string' || f.length > 512)))) return false
     if (data.modules.some(m => m.dependencies !== undefined && (!Array.isArray(m.dependencies) || m.dependencies.length > 50 || m.dependencies.some(d => typeof d !== 'string' || d.length > 256)))) return false
   }

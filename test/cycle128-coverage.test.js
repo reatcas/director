@@ -9,11 +9,12 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
 describe('PRODUCT_DIRECTIVE.md size guards (I-313)', () => {
   it('playOrchestra guards directive read with 512KB limit', () => {
     expect(mainJs).toContain('512_000')
-    expect(mainJs).toContain('_ds <= 512_000')
+    expect(mainJs).toContain('.size <= 512_000')
   })
 
   it('all three directive reads have size guard pattern', () => {
-    const count = (mainJs.match(/_ds\d* <= 512_000/g) || []).length
+    const block = mainJs.split('function playOrchestra')[1]?.split('\nfunction ')[0] || ''
+    const count = (block.match(/_ds\d*\.size <= 512_000/g) || []).length
     expect(count).toBeGreaterThanOrEqual(3)
   })
 })

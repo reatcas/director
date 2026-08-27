@@ -1245,7 +1245,7 @@ async function loadMixes() {
 
     card.innerHTML = `
       <div class="mix-card-info">
-        <div class="mix-card-name">${esc(m.name)}</div>
+        <div class="mix-card-name" title="${esc(m.name)}">${esc(m.name)}</div>
         ${ribbon}
         <div class="mix-card-meta">${date}</div>
       </div>

@@ -20,7 +20,8 @@ describe('metrics:session-summary report size guard (I-306)', () => {
   const block = mainJs.split("'metrics:session-summary'")[1]?.split('\nipcMain')[0] || ''
 
   it('guards each project ORCHESTRA_REPORT.md at 1MB', () => {
-    expect(block).toContain("statSync(reportPath).size > 1_048_576")
+    expect(block).toContain('1_048_576')
+    expect(block).toContain('reportPath')
   })
 
   it('skips oversized reports with continue', () => {
