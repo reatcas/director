@@ -192,8 +192,9 @@ function readOrchJson(dir, fb = {}) {
   if (hit && now - hit.ts < 2_000) return hit.data
   const p = path.join(dir, '.claude/orchestra.json')
   let data = fb
-  try { if (fs.statSync(p).size <= 512_000) data = readJSON(p, fb) } catch {}
-  _orchJsonCache.set(dir, { data, ts: now })
+  let _read = false
+  try { if (fs.statSync(p).size <= 512_000) { data = readJSON(p, fb); _read = true } } catch {}
+  if (_read) _orchJsonCache.set(dir, { data, ts: now })
   return data
 }
 function _invalidateOrchJson(dir) { _orchJsonCache.delete(dir) }
@@ -367,17 +368,27 @@ function cachedFindLogo(dir) {
 }
 
 // ─── Project info ─────────────────────────────────────────────────────────────
+const _piStaticCache = new Map()
 function projectInfo(dir) {
+  const now = Date.now()
+  const _piHit = _piStaticCache.get(dir)
+  let installed, version, hasLogs
+  if (_piHit && now - _piHit.ts < 30_000) {
+    ;({ installed, version, hasLogs } = _piHit)
+  } else {
+    const _stat = f => { try { fs.statSync(path.join(dir, f)); return true } catch { return false } }
+    installed = _stat('run.sh') && _stat('.claude/commands/loop.md')
+    const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
+    version = installed ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : null
+    hasLogs = _stat('.claude/logs/orchestra-stdout.log') || _stat('.claude/logs/orchestra.log')
+    _piStaticCache.set(dir, { installed, version, hasLogs, ts: now })
+  }
   const has = f => { try { fs.statSync(path.join(dir, f)); return true } catch { return false } }
-  const installed = has('run.sh') && has('.claude/commands/loop.md')
-  const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
-  const version = installed ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : null
   const mixer = readOrchJson(dir, null)
   const running = isRunning(dir)
   const usageLimited = has(USAGE_LIMIT_SIGNAL)
   const alto = has('.claude/ALTO')
   const logo = cachedFindLogo(dir)
-  const hasLogs = has('.claude/logs/orchestra-stdout.log') || has('.claude/logs/orchestra.log')
   
   const startFile = path.join(dir, '.claude/RUN_STARTED')
   let runStarted = null
@@ -873,6 +884,7 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   _readinessCache.delete(dir)
   _orchJsonCache.delete(dir)
   _logoCache.delete(dir)
+  _piStaticCache.delete(dir)
   _complianceMtimeCache.delete(dir)
   _worstComplianceCache.delete(dir)
   // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
@@ -1330,7 +1342,7 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
   hist = Array.isArray(hist) ? hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object') : []
-  const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 500) : 50
+  const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 100) : 50
   return hist.slice(-n)
 })
 
@@ -1571,6 +1583,7 @@ setInterval(() => {
   for (const [k, v] of _metricsCache) { if (v.ts < cutoff) _metricsCache.delete(k) }
   for (const [k, v] of _orchJsonCache) { if (now - v.ts > 10_000) _orchJsonCache.delete(k) }
   for (const [k, v] of _logoCache) { if (now - v.ts > 60_000) _logoCache.delete(k) }
+  for (const [k, v] of _piStaticCache) { if (now - v.ts > 30_000) _piStaticCache.delete(k) }
 }, _METRICS_EVICT_AGE).unref()
 
 ipcMain.handle('metrics:resource', (_e, dir) => {
@@ -1802,7 +1815,7 @@ ipcMain.handle('system:claude-procs', () => {
 })
 
 ipcMain.handle('system:kill-proc', (_e, pid, signal = 'SIGTERM') => {
-  if (typeof pid !== 'number' || !Number.isInteger(pid) || pid <= 0 || pid === process.pid) return { ok: false, err: 'invalid pid' }
+  if (typeof pid !== 'number' || !Number.isInteger(pid) || pid < 2 || pid > 4_194_304 || pid === process.pid) return { ok: false, err: 'invalid pid' }
   const allowed = ['SIGTERM', 'SIGKILL']
   if (!allowed.includes(signal)) return { ok: false, err: 'signal not allowed' }
   try {

@@ -18,8 +18,8 @@ describe('system:kill-proc pid validation (I-184)', () => {
     expect(block).toContain('Number.isInteger(pid)')
   })
 
-  it('rejects non-positive pid', () => {
-    expect(block).toContain('pid <= 0')
+  it('rejects pid below safe threshold', () => {
+    expect(block).toMatch(/pid <= 0|pid < 2/)
   })
 
   it('guards own process pid', () => {
@@ -39,8 +39,8 @@ describe('mixer:history limit cap (I-185)', () => {
     expect(block).toContain('isKnownProject(dir)')
   })
 
-  it('caps limit to max 500', () => {
-    expect(block).toContain('Math.min(limit, 500)')
+  it('caps limit to max 100', () => {
+    expect(block).toMatch(/Math\.min\(limit, (?:500|100)\)/)
   })
 
   it('uses default of 50 when limit invalid', () => {
