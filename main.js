@@ -1685,6 +1685,8 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
   )
   if (!valid) return false
   if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false
+  const _asPaths = atriles.map(a => a.path)
+  if (new Set(_asPaths).size !== _asPaths.length) return false
   writeJSON(customAtrilesFile(), atriles)
   _atrilesCache = atriles
   return true
@@ -1715,6 +1717,9 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
     if (data.modules.some(m => m.features !== undefined && (!Array.isArray(m.features) || m.features.length > 50 || m.features.some(f => typeof f !== 'string' || f.length > 512)))) return false
     if (data.modules.some(m => m.dependencies !== undefined && (!Array.isArray(m.dependencies) || m.dependencies.length > 50 || m.dependencies.some(d => typeof d !== 'string' || d.length > 256)))) return false
   }
+  if (data.completeness !== undefined && (typeof data.completeness !== 'number' || !Number.isFinite(data.completeness) || data.completeness < 0 || data.completeness > 100)) return false
+  if (data.sessions !== undefined && !Array.isArray(data.sessions)) return false
+  if (Array.isArray(data.sessions) && data.sessions.length > 500) return false
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false
   const p = blueprintFile(dir)

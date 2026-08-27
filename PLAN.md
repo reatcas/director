@@ -1,24 +1,23 @@
-# Cycle 148 Plan — IMPROVEMENT MODE
+# Cycle 149 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 148
+## MIXER BUDGET — Cycle 149
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
-| backend | 5 | 1 | 0/1 |
-| frontend | 5 | 1 | 0/1 |
-| ux_accessibility | 5 | SKIP (proportional) | — |
-| business_logic | 5 | SKIP (proportional) | — |
-| data_db | 5 | SKIP (proportional) | — |
-| performance | 10 | FROZEN (35th) | — |
+| quality_tests | 35 | 5 | 0/5 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| business_logic | 5 | 1 | 0/1 |
+| data_db | 5 | 1 | 0/1 |
+| security | 20 | FROZEN (3rd consecutive) | — |
+| backend | 5 | FROZEN (3rd consecutive) | — |
+| frontend | 5 | FROZEN (3rd consecutive) | — |
+| performance | 10 | FROZEN (36th) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-417 — coordination-protocol.js: 1MB size cap on coordination-metrics write
-2. [security] I-418 — blueprint:save: validate module.description, features, dependencies types
-3. [backend] I-419 — preload.js: forward lines param for orchestra:tail
-4. [frontend] I-420 — settingsModal: add keyboard focus trap (Tab cycles within modal)
-5-8. [quality_tests] cycle148-coverage.test.js — 4 tests
+1. [ux_accessibility] I-421 — atrilModal: add keyboard focus trap
+2. [business_logic] I-422 — blueprint:save: validate sessions array + completeness field
+3. [data_db] I-423 — atriles:save: reject duplicate paths
+4-8. [quality_tests] cycle149-coverage.test.js — 5 tests
 
 ## Stats
-- 3464 tests passing at cycle start
+- 3471 tests passing at cycle start

@@ -3032,6 +3032,19 @@ function openAtrilModal() {
 if ($('#addAtrilBtn')) $('#addAtrilBtn').onclick = openAtrilModal
 if ($('#closeAtrilModal')) $('#closeAtrilModal').onclick = () => { $('#atrilModal').hidden = true }
 if ($('#atrilModal')) $('#atrilModal').onclick = (e) => { if (e.target === $('#atrilModal')) $('#atrilModal').hidden = true }
+if ($('#atrilModal')) $('#atrilModal').addEventListener('keydown', e => {
+  const modal = $('#atrilModal')
+  if (!modal || modal.hidden) return
+  if (e.key === 'Escape') { modal.hidden = true; return }
+  if (e.key === 'Tab') {
+    const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    if (!focusable.length) return
+    e.preventDefault()
+    const idx = focusable.indexOf(document.activeElement)
+    const next = e.shiftKey ? (idx - 1 + focusable.length) % focusable.length : (idx + 1) % focusable.length
+    focusable[next].focus()
+  }
+})
 
 if ($('#atrilSaveBtn')) $('#atrilSaveBtn').onclick = async () => {
   const name = $('#atrilName')?.value.trim()
