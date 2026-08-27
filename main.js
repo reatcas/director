@@ -980,7 +980,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
 })
 
 ipcMain.handle('orchestra:tail', (_e, dir) => {
-  if (!dir) return ''
+  if (!isKnownProject(dir)) return ''
   const masterLog = path.join(dir, '.claude/logs/orchestra.log')
   const log = masterLog
   if (!fs.existsSync(log)) return ''
@@ -1236,7 +1236,7 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
 
 // ─── Telemetry / Metrics IPC ──────────────────────────────────────────────────
 ipcMain.handle('metrics:resource', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const live = scheduler.getMetrics(dir)
   if (live && live.allocation) return live
   // Compute allocation from current mixer weights on demand
@@ -1249,7 +1249,7 @@ ipcMain.handle('metrics:resource', (_e, dir) => {
 })
 
 ipcMain.handle('metrics:context', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const live = contextProto.getMetrics(dir)
   if (live && live.lastDelta) return live
   // Read persisted telemetry if no live data
@@ -1279,19 +1279,19 @@ ipcMain.handle('metrics:coordination', () => {
 })
 
 ipcMain.handle('metrics:snapshot', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
   return contextProto.computeDelta(dir, cfg.focus || {})
 })
 
 ipcMain.handle('metrics:allocation', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
   return scheduler.computeAllocation(dir, cfg.focus || {})
 })
 
 ipcMain.handle('metrics:claude-usage', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   return getClaudeUsage(dir)
 })
 
@@ -1317,7 +1317,7 @@ function parseComplianceLine(line) {
 }
 
 ipcMain.handle('metrics:compliance', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const reportPath = path.join(dir, 'ORCHESTRA_REPORT.md')
   try {
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
@@ -1331,7 +1331,7 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
 })
 
 ipcMain.handle('metrics:roadmap-freshness', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const roadmapPath = path.join(dir, 'ROADMAP.md')
   if (!fs.existsSync(roadmapPath)) return { exists: false }
   const mtime = fs.statSync(roadmapPath).mtimeMs
@@ -1366,7 +1366,7 @@ const UPGRADE_FILES = [
 ]
 
 ipcMain.handle('orchestra:version-check', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const bundled = (() => { try { return fs.readFileSync(path.join(orchestraSrc(), '.claude/ORCHESTRA_VERSION'), 'utf8').trim() } catch { return null } })()
   const project = (() => { try { return fs.readFileSync(path.join(dir, '.claude/ORCHESTRA_VERSION'), 'utf8').trim() } catch { return null } })()
   return { bundled, project, needsUpgrade: !!(bundled && project && bundled !== project) }

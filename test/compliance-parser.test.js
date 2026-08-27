@@ -76,8 +76,8 @@ describe('compliance metrics IPC handler', () => {
     expect(block).toContain('Math.round')
   })
 
-  it('validates dir parameter', () => {
+  it('validates dir via isKnownProject', () => {
     const block = mainJs.split("'metrics:compliance'")[1]?.split('ipcMain')[0] || ''
-    expect(block).toContain('if (!dir)')
+    expect(block).toContain('isKnownProject(dir)')
   })
 })

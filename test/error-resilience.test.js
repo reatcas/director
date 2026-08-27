@@ -77,9 +77,10 @@ describe('try-catch error handling', () => {
 })
 
 describe('return value safety', () => {
-  it('has >15 null dir guards in handlers', () => {
+  it('has dir guards (isKnownProject or !dir) in handlers', () => {
+    const knownCount = (mainJs.match(/isKnownProject\(dir\)/g) || []).length
     const nullDirCount = (mainJs.match(/if \(!dir\) return/g) || []).length
-    expect(nullDirCount).toBeGreaterThan(15)
+    expect(knownCount + nullDirCount).toBeGreaterThan(15)
   })
 
   it('null dir returns use null, [], false, or void', () => {
