@@ -1121,6 +1121,7 @@ function snapshotMixer(dir, event) {
   const cutoffISO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   let hist = []
   try { if (fs.statSync(histFile).size <= 512_000) hist = readJSON(histFile, []) } catch {}
+  if (!Array.isArray(hist)) hist = []
   hist = hist.filter(h => typeof h.ts === 'string' && h.ts >= cutoffISO)
   const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
   hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: { ...cfg.focus } })
@@ -1200,6 +1201,8 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   const p = path.join(dir, '.claude/saved-mixes.json')
   let userMixes = []
   try { if (fs.statSync(p).size <= 512_000) userMixes = readJSON(p, []) } catch {}
+  if (!Array.isArray(userMixes)) userMixes = []
+  userMixes = userMixes.filter(m => m && typeof m === 'object' && !Array.isArray(m))
   if (!_defaultMixesCache) {
     const _dmPath = path.join(orchestraSrc(), '.claude/default-mixes.json')
     _defaultMixesCache = []
@@ -1790,6 +1793,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (data.completeness !== undefined && (typeof data.completeness !== 'number' || !Number.isFinite(data.completeness) || data.completeness < 0 || data.completeness > 100)) return false
   if (data.sessions !== undefined && !Array.isArray(data.sessions)) return false
   if (Array.isArray(data.sessions) && data.sessions.length > 500) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => !s || typeof s !== 'object' || Array.isArray(s) || (s.started !== undefined && (typeof s.started !== 'string' || s.started.length > 64)))) return false
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false
   const p = blueprintFile(dir)

@@ -1163,7 +1163,8 @@ if ($('#importMixesBtn')) $('#importMixesBtn').onclick = () => {
     const text = await file.text()
     try {
       const data = JSON.parse(text)
-      const mixes = data.mixes || (Array.isArray(data) ? data : [data])
+      const _rawMixes = data.mixes || (Array.isArray(data) ? data : [data])
+      const mixes = Array.isArray(_rawMixes) ? _rawMixes : []
       let imported = 0
       for (const m of mixes) {
         if (m.focus) {
