@@ -6,28 +6,24 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const rendererJs = fs.readFileSync(path.join(ROOT, 'renderer.js'), 'utf8')
 const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
 
-describe('split divider keyboard accessibility (I-490)', () => {
-  it('#splitDividerV has tabindex="0"', () => {
-    const block = indexHtml.split('splitDividerV')[1]?.split('>')[0] || ''
-    expect(block).toContain('tabindex="0"')
+describe('3-column layout structure (I-490)', () => {
+  it('#leftColumn exists in HTML', () => {
+    expect(indexHtml).toContain('id="leftColumn"')
   })
 
-  it('#splitDividerV has aria-valuenow, aria-valuemin, aria-valuemax', () => {
-    const block = indexHtml.split('splitDividerV')[1]?.split('>')[0] || ''
-    expect(block).toContain('aria-valuenow=')
-    expect(block).toContain('aria-valuemin="15"')
-    expect(block).toContain('aria-valuemax="80"')
+  it('#nodeGraphSection is inside leftColumn', () => {
+    const leftIdx = indexHtml.indexOf('id="leftColumn"')
+    const ngIdx   = indexHtml.indexOf('id="nodeGraphSection"')
+    expect(ngIdx).toBeGreaterThan(leftIdx)
   })
 
-  it('initSplitDivider sets aria-valuenow via setAttribute', () => {
-    const block = rendererJs.split('initSplitDivider')[1]?.split('})()')[ 0] || ''
-    expect(block).toContain("setAttribute('aria-valuenow'")
+  it('#mixerDrawer is a permanent right column (role=complementary)', () => {
+    expect(indexHtml).toContain('id="mixerDrawer"')
+    expect(indexHtml).toContain('role="complementary"')
   })
 
-  it('initSplitDivider handles ArrowLeft and ArrowRight keys', () => {
-    const block = rendererJs.split('initSplitDivider')[1]?.split('})()')[ 0] || ''
-    expect(block).toContain("e.key === 'ArrowLeft'")
-    expect(block).toContain("e.key === 'ArrowRight'")
+  it('#consoleSection is referenced in renderer updateStageView', () => {
+    expect(rendererJs).toContain("$('#consoleSection')")
   })
 })
 

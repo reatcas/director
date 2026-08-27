@@ -186,12 +186,12 @@ describe('index.html — workspace layout', () => {
     expect(html).toContain('id="stage"')
   })
 
-  it('defines #splitLayout', () => {
-    expect(html).toContain('id="splitLayout"')
+  it('defines #leftColumn', () => {
+    expect(html).toContain('id="leftColumn"')
   })
 
-  it('defines #splitDividerV', () => {
-    expect(html).toContain('id="splitDividerV"')
+  it('defines #nodeGraphSection inside leftColumn', () => {
+    expect(html).toContain('id="nodeGraphSection"')
   })
 })
 

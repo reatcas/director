@@ -347,7 +347,7 @@ function showToast(msg) {
 // ─── Empty State / Tabs visibility ───────────────────────────────────────────
 function updateStageView() {
   const emptyState = $('#emptyState')
-  const unified = $('#splitLayout')
+  const unified = $('#consoleSection')
   const hasProject = !!current
 
   if (emptyState) {
@@ -2268,32 +2268,9 @@ async function loadMetrics() {
   updateMetricsDisplay({ resource, context, coordination, claudeUsage })
 }
 
-// ─── Mixer Drawer toggle ───────────────────────────────────────────────────────
+// ─── Mix console panel (always visible, no toggle needed) ─────────────────────
 ;(function initMixerDrawer() {
-  const toggleBtn = $('#mixerDrawerToggle')
-  const closeBtn = $('#mixerDrawerClose')
-  const drawer = $('#mixerDrawer')
-  const overlay = $('#mixerDrawerOverlay')
-  if (!drawer) return
-
-  function openDrawer() {
-    drawer.classList.add('open')
-    drawer.setAttribute('aria-hidden', 'false')
-    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true')
-    if (overlay) overlay.classList.add('visible')
-  }
-  function closeDrawer() {
-    drawer.classList.remove('open')
-    drawer.setAttribute('aria-hidden', 'true')
-    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false')
-    if (overlay) overlay.classList.remove('visible')
-  }
-
-  if (toggleBtn) toggleBtn.addEventListener('click', () => {
-    drawer.classList.contains('open') ? closeDrawer() : openDrawer()
-  })
-  if (closeBtn) closeBtn.addEventListener('click', closeDrawer)
-  if (overlay) overlay.addEventListener('click', closeDrawer)
+  // Panel is a permanent column — no open/close behaviour needed.
 })()
 
 // ─── Resource Allocation Inspector (F-13) ─────────────────────────────────────
@@ -3537,45 +3514,8 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
-// Vertical split divider drag — resizes node graph vs console sections
+// Split divider removed — layout is now 3 fixed columns (leftColumn, stage, mixerDrawer)
 ;(function initSplitDivider() {
-  const divider = $('#splitDividerV')
-  const left = $('#nodeGraphSection')
-  const right = $('#consoleSection')
-  if (!divider || !left || !right) return
-  // Clear any stale vertical saved value
   localStorage.removeItem('director:splitVPct')
-  const saved = parseFloat(localStorage.getItem('director:splitHPct'))
-  if (saved > 15 && saved < 80) {
-    left.style.flex = 'none'
-    left.style.width = saved + '%'
-  }
-  function _setSplitPct(pct) {
-    pct = Math.max(15, Math.min(80, pct))
-    left.style.flex = 'none'
-    left.style.width = pct + '%'
-    divider.setAttribute('aria-valuenow', Math.round(pct))
-    if (window.mixerGraph && mixerGraphInited) window.mixerGraph.resize()
-  }
-  let dragging = false
-  divider.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault() })
-  document.addEventListener('mousemove', (e) => {
-    if (!dragging) return
-    const parent = divider.parentElement
-    const rect = parent.getBoundingClientRect()
-    const pct = ((e.clientX - rect.left) / rect.width) * 100
-    if (pct > 15 && pct < 80) _setSplitPct(pct)
-  })
-  document.addEventListener('mouseup', () => {
-    if (dragging) {
-      const w = parseFloat(left.style.width)
-      if (w) localStorage.setItem('director:splitHPct', w.toFixed(1))
-    }
-    dragging = false
-  })
-  divider.addEventListener('keydown', (e) => {
-    const cur = parseFloat(left.style.width) || 50
-    if (e.key === 'ArrowLeft') { e.preventDefault(); _setSplitPct(cur - 2); localStorage.setItem('director:splitHPct', (Math.max(15, cur - 2)).toFixed(1)) }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); _setSplitPct(cur + 2); localStorage.setItem('director:splitHPct', (Math.min(80, cur + 2)).toFixed(1)) }
-  })
+  localStorage.removeItem('director:splitHPct')
 })()

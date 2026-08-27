@@ -167,8 +167,8 @@ describe('light theme completeness', () => {
     expect(css).toContain('html.light #transport')
   })
 
-  it('overrides rack panel', () => {
-    expect(css).toContain('html.light #rack')
+  it('overrides left column', () => {
+    expect(css).toContain('html.light #leftColumn')
   })
 
   it('overrides Smart Mix elements', () => {

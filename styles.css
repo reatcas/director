@@ -105,7 +105,7 @@ body {
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
-#transport, #rack, .empty-state,
+#transport, #leftColumn, .empty-state,
 .monitor-status, .metrics-strip, #mixerFooter,
 #mixesHeader, .mix-card, .strip, .strip-h, .analysis-bar,
 .section-header { user-select: none }
@@ -391,13 +391,20 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 ══════════════════════════════════════════ */
 #workspace { display: flex; flex: 1; min-height: 0; position: relative; z-index: 1 }
 
+/* ── Left column: rack + node graph ──────────────────────────────────────── */
+#leftColumn {
+  width: 190px; min-width: 190px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+}
+
 /* ══════════════════════════════════════════
    CHANNEL RACK
 ══════════════════════════════════════════ */
 #rack {
-  width: 190px; min-width: 190px;
+  flex: 1; min-height: 0;
   background: var(--panel);
-  border-right: 1px solid var(--line);
   display: flex; flex-direction: column;
 }
 #rackHead {
@@ -589,27 +596,15 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 }
 #usageBanner span { color: var(--fl-yellow); flex: 1 }
 
-/* ══════════════════════════════════════════
-   SPLIT LAYOUT (v0.0.6)
-══════════════════════════════════════════ */
-#splitLayout,
-.split-layout {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-}
+/* #stage is a flex column; consoleSection fills it */
 
-/* ── Node graph section (left half) ───────────────────────────────────────── */
+/* ── Node graph section (bottom of left column) ────────────────────────────── */
 #nodeGraphSection {
-  flex: 0 0 50%;
-  min-width: 200px;
-  min-height: 0;
+  height: 210px; min-height: 210px; flex-shrink: 0;
   position: relative;
   background: radial-gradient(ellipse at 50% 40%, #0a0a28 0%, #05051a 45%, #020208 100%);
   overflow: hidden;
+  border-top: 1px solid var(--line);
 }
 body.light #nodeGraphSection {
   background: radial-gradient(ellipse at 50% 40%, #dde8ff 0%, #eef2ff 50%, #f5f8ff 100%);
@@ -634,35 +629,7 @@ body.light #nodeGraphSection {
   display: block;
 }
 
-/* ── Vertical drag divider ─────────────────────────────────────────────────── */
-.split-divider-v {
-  width: 4px;
-  min-width: 4px;
-  flex-shrink: 0;
-  background: var(--line);
-  cursor: ew-resize;
-  position: relative;
-  transition: background .15s;
-}
-.split-divider-v::after {
-  content: '';
-  position: absolute;
-  top: 20%;
-  bottom: 20%;
-  left: 1px;
-  width: 1px;
-  background: rgba(0,255,238,0.12);
-  box-shadow: 0 0 4px rgba(0,255,238,0.08);
-  border-radius: 1px;
-  transition: background .15s, box-shadow .15s;
-}
-.split-divider-v:hover { background: var(--line2) }
-.split-divider-v:hover::after {
-  background: rgba(0,255,238,0.3);
-  box-shadow: 0 0 8px rgba(0,255,238,0.2);
-}
-
-/* ── Console section (bottom half) ─────────────────────────────────────────── */
+/* ── Console section ────────────────────────────────────────────────────────── */
 #consoleSection {
   flex: 1;
   display: flex;
@@ -671,38 +638,17 @@ body.light #nodeGraphSection {
   overflow: hidden;
 }
 
-/* ── Mixer drawer (slides in from right) ──────────────────────────────────── */
-.drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 299;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .25s;
-}
-.drawer-overlay.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
+/* ── Mix console panel (permanent right column) ────────────────────────────── */
+.drawer-overlay { display: none }
 .mixer-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 340px;
-  z-index: 300;
+  width: 340px; min-width: 260px; flex-shrink: 0;
   background: var(--panel);
   border-left: 1px solid var(--line);
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
-  transition: transform .28s cubic-bezier(.4,0,.2,1);
   overflow: hidden;
 }
-.mixer-drawer.open {
-  transform: translateX(0);
-}
+#mixerDrawerToggle { display: none }
 .mixer-drawer-header {
   display: flex;
   align-items: center;
@@ -2738,7 +2684,7 @@ html.light #particleCanvasWrap { opacity: 0.03 }
 
 /* ── Transport bar ────────────────────────────────────────── */
 html.light #transport { background: #ffffff; border-bottom-color: var(--line); box-shadow: 0 1px 4px rgba(0,0,0,.06) }
-html.light #rack { background: var(--panel); border-right-color: var(--line) }
+html.light #leftColumn { background: var(--panel); border-right-color: var(--line) }
 html.light .rack-item { border-bottom-color: var(--line) }
 html.light .rack-item:hover { background: var(--panel3) }
 html.light .rack-item.on { background: var(--panel2) }

@@ -383,7 +383,7 @@ describe('mixer-graph.js — init() resilience', () => {
   })
 
   it('wraps force configuration in try/catch', () => {
-    expect(graphJs).toContain("graph.d3Force('link').distance(70)")
+    expect(graphJs).toContain("graph.d3Force('link').distance(35)")
     expect(graphJs).toContain('} catch {}')
   })
 })

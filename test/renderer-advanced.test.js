@@ -45,8 +45,8 @@ describe('updateStageView — empty/active state toggle', () => {
     expect(body).toContain("$('#emptyState')")
   })
 
-  it('references splitLayout element', () => {
-    expect(body).toContain("$('#splitLayout')")
+  it('references consoleSection element', () => {
+    expect(body).toContain("$('#consoleSection')")
   })
 
   it('toggles emptyState on/off class based on current project', () => {
@@ -59,7 +59,7 @@ describe('updateStageView — empty/active state toggle', () => {
     expect(body).toContain('hidden = true')
   })
 
-  it('shows splitLayout only when project selected', () => {
+  it('shows consoleSection only when project selected', () => {
     expect(body).toContain("display = hasProject ? 'flex' : 'none'")
   })
 })

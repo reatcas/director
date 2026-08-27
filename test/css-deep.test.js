@@ -7,8 +7,8 @@ const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8')
 
 // ─── Layout structure ───────────────────────────────────────────────────────
 describe('layout structure — split panel', () => {
-  it('defines #splitLayout as flex container', () => {
-    expect(css).toContain('#splitLayout')
+  it('defines #leftColumn', () => {
+    expect(css).toContain('#leftColumn')
   })
 
   it('defines console column', () => {
@@ -19,13 +19,13 @@ describe('layout structure — split panel', () => {
     expect(css).toContain('.mixer-panel')
   })
 
-  it('defines split divider', () => {
-    expect(css).toContain('.split-divider')
+  it('defines nodeGraphSection', () => {
+    expect(css).toContain('#nodeGraphSection')
   })
 
-  it('split divider has cursor style', () => {
-    const divider = css.split('.split-divider')[1]?.split('}')[0] || ''
-    expect(divider).toContain('cursor')
+  it('nodeGraphSection has fixed height', () => {
+    const ng = css.split('#nodeGraphSection')[1]?.split('}')[0] || ''
+    expect(ng).toContain('height')
   })
 })
 

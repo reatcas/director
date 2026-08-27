@@ -31,17 +31,19 @@ describe('orchestra:tail per-line truncation (I-506)', () => {
   })
 })
 
-describe('mixerDrawer aria-expanded + aria-modal (I-507)', () => {
-  it('toggle button has aria-expanded and aria-controls', () => {
-    expect(indexHtml).toContain('aria-expanded="false" aria-controls="mixerDrawer"')
+describe('mixerDrawer permanent panel (I-507)', () => {
+  it('drawer is a complementary landmark, not a dialog', () => {
+    expect(indexHtml).toContain('id="mixerDrawer"')
+    expect(indexHtml).toContain('role="complementary"')
   })
 
-  it('drawer has role=dialog and aria-modal', () => {
-    expect(indexHtml).toContain('role="dialog" aria-modal="true"')
+  it('drawer has no aria-modal (it is always visible)', () => {
+    const drawerBlock = indexHtml.split('id="mixerDrawer"')[1]?.split('</div>')[0] || ''
+    expect(drawerBlock).not.toContain('aria-modal')
   })
 
-  it('openDrawer sets aria-hidden false and aria-expanded true', () => {
-    expect(rendererJs).toContain("drawer.setAttribute('aria-hidden', 'false')")
-    expect(rendererJs).toContain("toggleBtn.setAttribute('aria-expanded', 'true')")
+  it('initMixerDrawer is a noop (panel is always visible)', () => {
+    expect(rendererJs).toContain('initMixerDrawer')
+    expect(rendererJs).not.toContain("drawer.setAttribute('aria-hidden'")
   })
 })

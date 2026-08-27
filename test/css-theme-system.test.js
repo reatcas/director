@@ -62,8 +62,8 @@ describe('light theme — component overrides', () => {
     expect(css).toContain('html.light #transport')
   })
 
-  it('overrides rack', () => {
-    expect(css).toContain('html.light #rack')
+  it('overrides left column', () => {
+    expect(css).toContain('html.light #leftColumn')
   })
 
   it('overrides rack-item hover and active', () => {
@@ -383,11 +383,11 @@ describe('user-select: none — non-selectable UI elements', () => {
     expect(css).toContain('user-select: none')
   })
 
-  it('covers transport, rack, empty-state, monitor', () => {
+  it('covers transport, leftColumn, empty-state, monitor', () => {
     const selLine = css.split('user-select: none')[0] || ''
     const lastLines = selLine.slice(-200)
     expect(lastLines).toContain('#transport')
-    expect(lastLines).toContain('#rack')
+    expect(lastLines).toContain('#leftColumn')
   })
 })
 

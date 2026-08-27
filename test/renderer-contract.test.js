@@ -200,14 +200,12 @@ describe('renderer theme management', () => {
   })
 })
 
-describe('renderer panel resizer', () => {
-  it('has draggable divider', () => {
-    expect(rendererJs).toContain('mousedown')
-    expect(rendererJs).toContain('mousemove')
-    expect(rendererJs).toContain('mouseup')
+describe('renderer layout init', () => {
+  it('has initSplitDivider cleanup', () => {
+    expect(rendererJs).toContain('initSplitDivider')
   })
 
-  it('tracks dragging state', () => {
-    expect(rendererJs).toContain('dragging')
+  it('clears stale localStorage split keys', () => {
+    expect(rendererJs).toContain("localStorage.removeItem('director:splitVPct')")
   })
 })

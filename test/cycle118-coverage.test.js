@@ -81,8 +81,11 @@ describe('node graph accessibility (I-242)', () => {
     expect(html).toMatch(/id="mixerGraphCanvas"[^>]*aria-hidden="true"/)
   })
 
-  it('splitDividerV has role=separator', () => {
-    expect(html).toMatch(/id="splitDividerV"[^>]*role="separator"/)
+  it('nodeGraphSection is inside leftColumn', () => {
+    const leftIdx = html.indexOf('id="leftColumn"')
+    const ngIdx   = html.indexOf('id="nodeGraphSection"')
+    expect(leftIdx).toBeGreaterThanOrEqual(0)
+    expect(ngIdx).toBeGreaterThan(leftIdx)
   })
 })
 

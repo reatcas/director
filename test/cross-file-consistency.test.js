@@ -86,7 +86,7 @@ describe('index.html ↔ renderer — critical DOM IDs exist in HTML', () => {
     'aboutModal', 'settingsModal', 'atrilModal',
     'closeAbout', 'closeSettings', 'closeAtrilModal',
     'emptyState', 'usageBanner',
-    'splitLayout', 'splitDividerV',
+    'leftColumn', 'nodeGraphSection',
     'dropzone', 'projects',
     'atrilName', 'atrilDesc', 'atrilColors', 'atrilIcons', 'atrilSaveBtn',
   ]
@@ -128,7 +128,7 @@ describe('index.html ↔ CSS — critical CSS classes exist in stylesheet', () =
     'usage-bar', 'usage-bar-fill',
     'alloc-inspector', 'alloc-toggle', 'alloc-body', 'alloc-summary', 'alloc-categories',
     'feature-strip', 'fs-label', 'fs-val',
-    'split-layout', 'split-divider-v',
+    'ng-label', 'mg-canvas',
     'mixer-drawer', 'mixer-tabs', 'mixer-tab', 'mixer-tab-pane',
     'mixer-strips-v', 'strip-h',
     'smart-mix-bar', 'smart-toggle', 'smart-toggle-aurora', 'smart-toggle-glass', 'smart-toggle-knob', 'smart-label',

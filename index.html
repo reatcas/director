@@ -274,6 +274,8 @@
   </header>
 
   <div id="workspace">
+    <!-- LEFT COLUMN: rack + node graph -->
+    <div id="leftColumn">
     <!-- CHANNEL RACK -->
     <aside id="rack" role="complementary" aria-label="Panel de repertorio">
       <div id="rackHead">
@@ -284,8 +286,14 @@
       <ul id="projects" role="list" aria-label="Repertorio de proyectos"></ul>
       <div id="sessionSummary" role="status" aria-live="polite" aria-label="Resumen de sesión" tabindex="0"></div>
     </aside>
+    <!-- NODE GRAPH (below rack) -->
+    <div id="nodeGraphSection" class="ng-section" role="application" tabindex="0" aria-roledescription="Grafo interactivo" aria-label="Grafo de nodos del mixer — navega con mouse">
+      <div id="mixerGraphCanvas" class="mg-canvas" aria-hidden="true"></div>
+      <div class="ng-label">⟡ NODE GRAPH</div>
+    </div>
+    </div><!-- /#leftColumn -->
 
-    <!-- MAIN STAGE — split layout v6 -->
+    <!-- MAIN STAGE — console -->
     <main id="stage" aria-label="Escenario principal">
       <!-- Empty state (no project selected) -->
       <div id="emptyState" class="empty-state on" role="status" aria-label="Sin proyecto seleccionado">
@@ -307,19 +315,7 @@
         <span id="usageBannerText">Usage limit active — waiting for automatic resume…</span>
       </div>
 
-      <!-- ═══ SPLIT LAYOUT (vertical: node graph top, console bottom) ═══ -->
-      <div id="splitLayout" class="split-layout">
-
-        <!-- NODE GRAPH HALF -->
-        <div id="nodeGraphSection" class="ng-section" role="application" tabindex="0" aria-roledescription="Grafo interactivo" aria-label="Grafo de nodos del mixer — navega con mouse">
-          <div id="mixerGraphCanvas" class="mg-canvas" aria-hidden="true"></div>
-          <div class="ng-label">⟡ NODE GRAPH</div>
-        </div>
-
-        <!-- VERTICAL RESIZE HANDLE -->
-        <div class="split-divider-v" id="splitDividerV" role="separator" aria-label="Divisor de panel" aria-orientation="vertical" tabindex="0" aria-valuemin="15" aria-valuemax="80" aria-valuenow="50"></div>
-
-        <!-- CONSOLE HALF -->
+        <!-- CONSOLE -->
         <div id="consoleSection" class="console-section" role="region" aria-label="Consola de orquesta">
 
           <!-- Monitor status bar -->
@@ -439,17 +435,14 @@
           </details>
 
         </div>
+
+    </main>
+
+    <!-- MIX CONSOLE PANEL (right column) -->
+    <div id="mixerDrawer" class="mixer-drawer" role="complementary" aria-label="Consola de mezcla">
+      <div class="mixer-drawer-header">
+        <span class="mixer-drawer-title">MIX CONSOLE</span>
       </div>
-
-      <!-- MIXER DRAWER OVERLAY -->
-      <div id="mixerDrawerOverlay" class="drawer-overlay"></div>
-
-      <!-- MIXER DRAWER (slides in from right) -->
-      <div id="mixerDrawer" class="mixer-drawer" role="dialog" aria-modal="true" aria-label="Consola de mezcla" aria-hidden="true">
-        <div class="mixer-drawer-header">
-          <span class="mixer-drawer-title">MIX CONSOLE</span>
-          <button id="mixerDrawerClose" class="tp-btn" aria-label="Cerrar mixer">✕</button>
-        </div>
         <div class="mixer-tabs" role="tablist" aria-label="Paneles del mezclador">
           <button id="tab-mixTab" class="mixer-tab on" data-mtab="mixTab" role="tab" aria-selected="true" aria-controls="mixTab" aria-label="Mezcla de categorías">MIX</button>
           <button id="tab-bpTab" class="mixer-tab" data-mtab="bpTab" role="tab" aria-selected="false" aria-controls="bpTab" aria-label="Blueprint del proyecto">BLUEPRINT</button>
@@ -541,9 +534,8 @@
           <textarea id="notesArea" class="mono" placeholder="Escribe notas sobre esta sesión…" aria-label="Notas del operador para esta sesión" maxlength="50000" style="flex:1;margin:0 10px 10px;padding:8px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:4px;font-size:11px;resize:none"></textarea>
         </div>
 
-      </div>
+    </div>
 
-    </main>
   </div>
 </div>
 <!-- Three.js + Timer shim + 3d-force-graph (same load order as pulsand NGO

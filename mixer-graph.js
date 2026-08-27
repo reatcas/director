@@ -340,8 +340,8 @@ window.mixerGraph = (() => {
 
     // Configure forces BEFORE warmup so the 120 warmup ticks use our layout forces
     try {
-      graph.d3Force('link').distance(70).strength(0.8)
-      graph.d3Force('charge').strength(-120)
+      graph.d3Force('link').distance(35).strength(0.9)
+      graph.d3Force('charge').strength(-60)
     } catch {}
 
     // Now set data — warmup ticks run here with our forces already applied
