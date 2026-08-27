@@ -271,7 +271,9 @@ function findLogo(dir) {
   }
   // 2. Check package.json icon/logo field
   try {
-    const pkg = readJSON(path.join(dir, 'package.json'), null)
+    const pkgPath = path.join(dir, 'package.json')
+    const pkgStat = fs.existsSync(pkgPath) ? fs.statSync(pkgPath) : null
+    const pkg = (pkgStat && pkgStat.size <= 512_000) ? readJSON(pkgPath, null) : null
     if (pkg) {
       for (const field of ['icon', 'logo', 'image']) {
         if (pkg[field] && typeof pkg[field] === 'string') {
@@ -631,7 +633,8 @@ function playOrchestra(dir, agent = 'claude') {
       lines.push('6. **NEVER STOP**: If ROADMAP is empty, scan the codebase and find improvements. A senior developer always finds work to do.')
       
       try {
-        let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+        const _ds = fs.existsSync(directivePath) ? fs.statSync(directivePath).size : 0
+        let existing = _ds > 0 && _ds <= 512_000 ? fs.readFileSync(directivePath, 'utf8') : ''
         if (existing.includes('## NEXT ITEM')) {
           const lastIdx = existing.lastIndexOf('## NEXT ITEM')
           lines.push('')
@@ -641,7 +644,8 @@ function playOrchestra(dir, agent = 'claude') {
       } catch {}
     } else {
       try {
-        let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+        const _ds2 = fs.existsSync(directivePath) ? fs.statSync(directivePath).size : 0
+        let existing = _ds2 > 0 && _ds2 <= 512_000 ? fs.readFileSync(directivePath, 'utf8') : ''
         if (existing.includes('## NEXT ITEM')) {
           const lastIdx = existing.lastIndexOf('## NEXT ITEM')
           fs.writeFileSync(directivePath, existing.substring(lastIdx))
@@ -652,7 +656,8 @@ function playOrchestra(dir, agent = 'claude') {
     }
   } else {
     try {
-      let existing = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+      const _ds3 = fs.existsSync(directivePath) ? fs.statSync(directivePath).size : 0
+      let existing = _ds3 > 0 && _ds3 <= 512_000 ? fs.readFileSync(directivePath, 'utf8') : ''
       if (existing.includes('## NEXT ITEM')) {
         const lastIdx = existing.lastIndexOf('## NEXT ITEM')
         fs.writeFileSync(directivePath, existing.substring(lastIdx))

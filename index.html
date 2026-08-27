@@ -319,7 +319,7 @@
         <div class="split-divider-v" id="splitDividerV" role="separator" aria-label="Divisor de panel" aria-orientation="vertical"></div>
 
         <!-- CONSOLE HALF -->
-        <div id="consoleSection" class="console-section">
+        <div id="consoleSection" class="console-section" role="region" aria-label="Consola de orquesta">
 
           <!-- Monitor status bar -->
           <div id="monitorStatus" class="monitor-status idle">
@@ -426,8 +426,8 @@
               <span class="section-icon">✎</span>
               <span class="section-title">CRITIQUE</span>
               <div class="section-actions">
-                <button id="refreshAnalysis" class="ms-copy">UPDATE</button>
-                <button id="copyAnalysis" class="ms-copy">COPY</button>
+                <button id="refreshAnalysis" class="ms-copy" aria-label="Actualizar análisis">UPDATE</button>
+                <button id="copyAnalysis" class="ms-copy" aria-label="Copiar análisis">COPY</button>
               </div>
             </summary>
             <div class="collapsible-body">
@@ -480,8 +480,8 @@
             <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:100px">
             <button id="saveMixer" class="tp-action">SAVE</button>
             <button id="addAtrilBtn" class="tp-action" title="Add custom stand">+ STAND</button>
-            <button id="exportMixesBtn" class="tp-action dim" title="Export all mixes to JSON">↥</button>
-            <button id="importMixesBtn" class="tp-action dim" title="Import mixes library from JSON">↧</button>
+            <button id="exportMixesBtn" class="tp-action dim" title="Export all mixes to JSON" aria-label="Exportar mezclas">↥</button>
+            <button id="importMixesBtn" class="tp-action dim" title="Import mixes library from JSON" aria-label="Importar mezclas">↧</button>
             <span id="mixerSaved" class="saved-msg" hidden>✓</span>
           </div>
         </div>

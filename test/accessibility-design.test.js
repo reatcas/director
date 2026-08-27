@@ -75,7 +75,9 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('Sin') || l.includes('seleccionado') || l.includes('sistema') ||
       l.includes('Smart') || l.includes('Alternar') ||
       l.includes('Limpiar') || l.includes('terminal') || l.includes('desplazamiento') ||
-      l.includes('bruto') || l.includes('historial')
+      l.includes('bruto') || l.includes('historial') ||
+      l.includes('Actualizar') || l.includes('análisis') ||
+      l.includes('Importar') || l.includes('mezclas') || l.includes('Consola')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })
