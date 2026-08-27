@@ -186,6 +186,11 @@ function killProcessGroup(pid, signal = 'SIGTERM') {
   }, 5000)
 }
 
+function isKnownProject(dir) {
+  if (!dir || typeof dir !== 'string') return false
+  return readJSON(store(), []).some(p => p.path === dir)
+}
+
 function isRunning(dir) {
   if (procs.has(dir)) return true
   const pidFile = path.join(dir, '.claude/ORCHESTRA_PID')
@@ -1217,6 +1222,9 @@ ipcMain.handle('lifecycle:list', (_e, dir) => {
 })
 
 ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
+  if (!isKnownProject(dir)) return false
+  if (typeof type !== 'string' || typeof label !== 'string' || typeof message !== 'string') return false
+  if (type.length > 64 || label.length > 128 || message.length > 1024) return false
   persistLifecycleEvent(dir, type, label, message)
   return true
 })

@@ -231,6 +231,40 @@ describe('timeout protection on external commands', () => {
   })
 })
 
+describe('lifecycle:add input validation', () => {
+  it('main.js defines isKnownProject helper', () => {
+    expect(srcs['main.js']).toContain('function isKnownProject(dir)')
+  })
+
+  it('isKnownProject validates dir type before checking store', () => {
+    expect(srcs['main.js']).toContain("typeof dir !== 'string'")
+  })
+
+  it('lifecycle:add rejects unknown project dirs', () => {
+    const handler = srcs['main.js'].split("'lifecycle:add'")[1]?.split('ipcMain.handle')[0] || ''
+    expect(handler).toContain('isKnownProject(dir)')
+  })
+
+  it('lifecycle:add validates string types for all fields', () => {
+    const handler = srcs['main.js'].split("'lifecycle:add'")[1]?.split('ipcMain.handle')[0] || ''
+    expect(handler).toContain("typeof type !== 'string'")
+    expect(handler).toContain("typeof label !== 'string'")
+    expect(handler).toContain("typeof message !== 'string'")
+  })
+
+  it('lifecycle:add enforces length limits on all string inputs', () => {
+    const handler = srcs['main.js'].split("'lifecycle:add'")[1]?.split('ipcMain.handle')[0] || ''
+    expect(handler).toContain('type.length > 64')
+    expect(handler).toContain('label.length > 128')
+    expect(handler).toContain('message.length > 1024')
+  })
+
+  it('lifecycle:add returns false on validation failure', () => {
+    const handler = srcs['main.js'].split("'lifecycle:add'")[1]?.split('ipcMain.handle')[0] || ''
+    expect(handler).toMatch(/return false/)
+  })
+})
+
 describe('IPC channel naming conventions', () => {
   it('all ipcMain.handle calls use namespaced channels', () => {
     const handles = srcs['main.js'].match(/ipcMain\.handle\(['"]([^'"]+)/g) || []
