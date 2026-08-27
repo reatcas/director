@@ -1126,6 +1126,7 @@ ipcMain.handle('orchestra:kill', (_e, dir) => {
     } catch {}
   }
   _metricsCache.delete('claude-usage:' + dir)
+  _metricsCache.delete('session-summary')
   _invalidateIsRunning(dir)
   stopTailing(dir)
   stopWatchingResume(dir)
@@ -1310,8 +1311,12 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
 
 // ─── Saved mixes (named snapshots) ───────────────────────────────────────────
 let _defaultMixesCache = null
+const _savedMixesCache = new Map()
+function _invalidateSavedMixes(dir) { _savedMixesCache.delete(dir) }
 ipcMain.handle('mixer:saved:list', (_e, dir) => {
   if (!isKnownProject(dir)) return []
+  const _smCached = _savedMixesCache.get(dir)
+  if (_smCached) return _smCached
   const p = path.join(dir, '.claude/saved-mixes.json')
   let userMixes = []
   try { if (fs.statSync(p).size <= 512_000) userMixes = readJSON(p, []) } catch {}
@@ -1325,7 +1330,9 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   const existingIds = new Set(userMixes.map(m => m.id))
   const validDefaults = _defaultMixesCache.filter(p => p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^[0-9a-z_\-]+$/.test(p.id) && p.id.length <= 64 && typeof p.name === 'string' && p.name.length > 0 && p.name.length <= 256 && p.focus && typeof p.focus === 'object' && !Array.isArray(p.focus))
   const merged = [...validDefaults.filter(p => !existingIds.has(p.id)), ...userMixes]
-  return merged.slice(0, 200)
+  const _slResult = merged.slice(0, 200)
+  _savedMixesCache.set(dir, _slResult)
+  return _slResult
 })
 
 ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
@@ -1346,6 +1353,7 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   const _msSer = JSON.stringify(mixes)
   if (_msSer.length > 512_000) return false
   writeJSON(p, JSON.parse(_msSer))
+  _invalidateSavedMixes(dir)
   return true
 })
 
@@ -1360,6 +1368,7 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
   mixes = mixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.id === 'string' && m.id !== id)
   const _msdSer = JSON.stringify(mixes)
   if (_msdSer.length <= 512_000) writeJSON(p, JSON.parse(_msdSer))
+  _invalidateSavedMixes(dir)
   return true
 })
 
@@ -1370,8 +1379,9 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
   const p = path.join(dir, '.claude/saved-mixes.json')
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
-  const mix = mixes.find(m => m.id === id)
+  const mix = mixes.find(m => m && typeof m === 'object' && m.id === id)
   if (!mix) return null
+  if (!mix.focus || typeof mix.focus !== 'object' || Object.values(mix.focus).some(v => typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100)) return null
   return JSON.stringify(mix, null, 2)
 })
 
@@ -1696,7 +1706,9 @@ ipcMain.handle('metrics:coordination', () => {
 
 ipcMain.handle('metrics:snapshot', (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  return contextProto.computeDelta(dir, readOrchJson(dir).focus || {})
+  const _snHit = metricsGet('snapshot:' + dir)
+  if (_snHit !== null) return _snHit
+  return metricsSet('snapshot:' + dir, contextProto.computeDelta(dir, readOrchJson(dir).focus || {}))
 })
 
 ipcMain.handle('metrics:allocation', (_e, dir) => {
@@ -1802,9 +1814,11 @@ const UPGRADE_FILES = [
 
 ipcMain.handle('orchestra:version-check', (_e, dir) => {
   if (!isKnownProject(dir)) return null
+  const _vcHit = metricsGet('version-check:' + dir)
+  if (_vcHit !== null) return _vcHit
   const bundled = (() => { try { const p = path.join(orchestraSrc(), '.claude/ORCHESTRA_VERSION'); return fs.statSync(p).size <= 1024 ? fs.readFileSync(p, 'utf8').trim() : null } catch { return null } })()
   const project = (() => { try { const p = path.join(dir, '.claude/ORCHESTRA_VERSION'); return fs.statSync(p).size <= 1024 ? fs.readFileSync(p, 'utf8').trim() : null } catch { return null } })()
-  return { bundled, project, needsUpgrade: !!(bundled && project && bundled !== project) }
+  return metricsSet('version-check:' + dir, { bundled, project, needsUpgrade: !!(bundled && project && bundled !== project) }, _SLOW_METRICS_TTL)
 })
 
 ipcMain.handle('orchestra:upgrade', (_e, dir) => {
@@ -1837,6 +1851,8 @@ ipcMain.handle('orchestra:upgrade', (_e, dir) => {
 // ─── System process monitor ───────────────────────────────────────────────────
 const { execFile: execFileAsync } = require('child_process')
 ipcMain.handle('system:claude-procs', () => {
+  const _cpHit = metricsGet('sys:claude-procs')
+  if (_cpHit !== null) return Promise.resolve(_cpHit)
   return new Promise(resolve => {
     execFile('ps', ['aux'], (err, stdout) => {
       if (err) return resolve([])
@@ -1867,7 +1883,7 @@ ipcMain.handle('system:claude-procs', () => {
         else if (cmd.includes('Electron') || cmd.includes('director')) type = 'director'
         procs.push({ pid, cpu, mem, started, time, cmd: cmd.slice(0, 120), type, project })
       }
-      resolve(procs)
+      resolve(metricsSet('sys:claude-procs', procs, 5_000))
     })
   })
 })

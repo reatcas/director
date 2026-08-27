@@ -460,7 +460,9 @@ async function loadSessionSummary() {
     const s = await window.director.sessionSummary()
     if (!s || typeof s !== 'object') { el.textContent = ''; return }
     const tokK = s.totalTokens > 0 ? (s.totalTokens / 1000).toFixed(1) + 'k' : '—'
-    el.innerHTML = `<span class="ss-item" aria-label="${esc(String(s.active || 0))} orquestas activas"><span class="ss-val ss-live">${esc(String(s.active || 0))}</span><span>activos</span></span><span class="ss-item" aria-label="${esc(String(s.idle || 0))} orquestas inactivas"><span class="ss-val">${esc(String(s.idle || 0))}</span><span>idle</span></span><span class="ss-item" aria-label="${esc(tokK)} tokens totales"><span class="ss-val">${esc(tokK)}</span><span>tok</span></span>`
+    const total = typeof s.total === 'number' ? s.total : (s.active || 0) + (s.idle || 0)
+    el.setAttribute('aria-label', `Sesión: ${esc(String(s.active || 0))} activos, ${esc(String(s.idle || 0))} inactivos, ${esc(tokK)} tokens`)
+    el.innerHTML = `<span class="ss-item" aria-label="${esc(String(s.active || 0))} orquestas activas"><span class="ss-val ss-live">${esc(String(s.active || 0))}</span><span>activos</span></span><span class="ss-item" aria-label="${esc(String(s.idle || 0))} orquestas inactivas"><span class="ss-val">${esc(String(s.idle || 0))}</span><span>idle</span></span><span class="ss-item" aria-label="${esc(tokK)} tokens totales"><span class="ss-val">${esc(tokK)}</span><span>tok</span></span><span class="ss-item"><span class="ss-val">${esc(String(total))}</span><span>total</span></span>`
   } catch { }
 }
 
