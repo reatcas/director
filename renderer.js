@@ -151,7 +151,9 @@ const logCache = new Map()
 let aiCredits = {}
 
 function formatReset(iso) {
-  return iso ? new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso)) : '—'
+  if (!iso) return '—'
+  const _frD = new Date(iso)
+  return isNaN(_frD.getTime()) ? iso.slice(0, 16) : new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(_frD)
 }
 async function loadAiCredits() {
   aiCredits = await window.director.aiCredits() || {}

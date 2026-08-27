@@ -417,11 +417,13 @@ function getClaudeUsage(dir) {
     try {
       const files = fs.readdirSync(logDir).filter(f => f.startsWith('iter-') && f.endsWith('.log'))
       for (const f of files) {
-        const st = fs.statSync(path.join(logDir, f))
-        if (runStarted && st.mtimeMs >= runStarted) {
-          iterCount++
-          totalBytes += st.size
-        }
+        try {
+          const st = fs.statSync(path.join(logDir, f))
+          if (runStarted && st.mtimeMs >= runStarted) {
+            iterCount++
+            totalBytes += st.size
+          }
+        } catch {}
       }
     } catch {}
     const _guPath = path.join(dir, '.claude/orchestra.json')
@@ -1082,8 +1084,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   if (!isKnownProject(dir)) return
   const stdoutLog = path.join(dir, '.claude/logs/orchestra-stdout.log')
   const masterLog = path.join(dir, '.claude/logs/orchestra.log')
-  try { if (fs.existsSync(stdoutLog)) fs.writeFileSync(stdoutLog, '') } catch {}
-  try { if (fs.existsSync(masterLog)) fs.writeFileSync(masterLog, '') } catch {}
+  try { fs.writeFileSync(stdoutLog, '') } catch {}
+  try { fs.writeFileSync(masterLog, '') } catch {}
   // Prune analysis-*.txt files: keep only the 5 most recent
   try {
     const claudeDir = path.join(dir, '.claude')
@@ -1855,6 +1857,8 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.duration !== undefined && (typeof s.duration !== 'number' || !Number.isFinite(s.duration) || s.duration < 0))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.commits !== undefined && (!Number.isInteger(s.commits) || s.commits < 0))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.ended !== undefined && (typeof s.ended !== 'string' || s.ended.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.ended)))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.agent !== undefined && (typeof s.agent !== 'string' || s.agent.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.agent)))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.model !== undefined && (typeof s.model !== 'string' || s.model.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.model)))) return false
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false
   const p = blueprintFile(dir)

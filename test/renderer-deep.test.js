@@ -649,7 +649,7 @@ describe('formatReset — credit reset time formatting', () => {
   })
 
   it('returns dash for missing iso', () => {
-    expect(rendererJs).toContain("iso ? new Intl.DateTimeFormat")
+    expect(rendererJs).toContain("if (!iso) return '—'")
   })
 })
 
