@@ -278,12 +278,12 @@ function findLogo(dir) {
       for (const field of ['icon', 'logo', 'image']) {
         if (pkg[field] && typeof pkg[field] === 'string') {
           const fp = path.join(dir, pkg[field])
-          if (fs.existsSync(fp)) return fp
+          if (fp.startsWith(dir + path.sep) && fs.existsSync(fp)) return fp
         }
       }
       if (pkg.build && pkg.build.icon) {
         const fp = path.join(dir, pkg.build.icon)
-        if (fs.existsSync(fp)) return fp
+        if (fp.startsWith(dir + path.sep) && fs.existsSync(fp)) return fp
       }
     }
   } catch {}
@@ -775,6 +775,7 @@ ipcMain.handle('repertoire:list', () => {
 
 ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
   if (droppedPath !== undefined && droppedPath !== null && typeof droppedPath !== 'string') return null
+  if (droppedPath && (droppedPath.includes('\x00') || !path.isAbsolute(droppedPath))) return null
   let dir = droppedPath
   if (!dir) {
     const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] })
@@ -1131,7 +1132,9 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   let userMixes = []
   try { if (fs.statSync(p).size <= 512_000) userMixes = readJSON(p, []) } catch {}
   if (!_defaultMixesCache) {
-    _defaultMixesCache = readJSON(path.join(orchestraSrc(), '.claude/default-mixes.json'), [])
+    const _dmPath = path.join(orchestraSrc(), '.claude/default-mixes.json')
+    _defaultMixesCache = []
+    try { if (fs.statSync(_dmPath).size <= 512_000) _defaultMixesCache = readJSON(_dmPath, []) } catch {}
   }
   const existingIds = new Set(userMixes.map(m => m.id))
   const merged = [..._defaultMixesCache.filter(p => !existingIds.has(p.id)), ...userMixes]
@@ -1243,7 +1246,7 @@ ipcMain.handle('notes:read', (_e, dir) => {
 ipcMain.handle('notes:write', (_e, dir, content) => {
   if (!isKnownProject(dir) || typeof content !== 'string') return false
   if (content.length > 50000) return false
-  if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(content)) return false
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(content)) return false
   const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
   const tmp = p + '.tmp'
   fs.mkdirSync(path.dirname(p), { recursive: true })
