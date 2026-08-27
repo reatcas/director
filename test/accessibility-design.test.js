@@ -77,7 +77,10 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('Limpiar') || l.includes('terminal') || l.includes('desplazamiento') ||
       l.includes('bruto') || l.includes('historial') ||
       l.includes('Actualizar') || l.includes('análisis') ||
-      l.includes('Importar') || l.includes('mezclas') || l.includes('Consola')
+      l.includes('Importar') || l.includes('mezclas') || l.includes('Consola') ||
+      l.includes('Abrir') || l.includes('carpeta') || l.includes('Instalar') ||
+      l.includes('orquesta') || l.includes('Eliminar') || l.includes('JSON') ||
+      l.includes('Guardar') || l.includes('stand') || l.includes('personalizado')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })

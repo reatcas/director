@@ -728,7 +728,8 @@ function playOrchestra(dir, agent = 'claude') {
           if (nextItem) {
             persistLifecycleEvent(dir, 'directive', 'DIRECTOR', `Siguiente item indicado: ${nextItem}`)
             const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
-            let content = fs.existsSync(directivePath) ? fs.readFileSync(directivePath, 'utf8') : ''
+            const _dse = fs.existsSync(directivePath) ? fs.statSync(directivePath).size : 0
+            let content = _dse > 0 && _dse <= 512_000 ? fs.readFileSync(directivePath, 'utf8') : ''
             const nextIdx = content.indexOf('## NEXT ITEM')
             if (nextIdx !== -1) content = content.substring(0, nextIdx).trimEnd()
             content += `\n\n## NEXT ITEM\nEl proceso ha parado. Tu siguiente objetivo es:\n${nextItem}\n`
@@ -1144,7 +1145,9 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
 ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
   if (!isKnownProject(dir)) return null
   if (typeof id !== 'string' || id.length === 0 || id.length > 64) return null
-  const mixes = readJSON(path.join(dir, '.claude/saved-mixes.json'), [])
+  const p = path.join(dir, '.claude/saved-mixes.json')
+  let mixes = []
+  try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
   const mix = mixes.find(m => m.id === id)
   if (!mix) return null
   return JSON.stringify(mix, null, 2)
@@ -1319,7 +1322,8 @@ function persistLifecycleEvent(dir, type, label, message) {
     const logDir = path.join(dir, '.claude', 'logs')
     if (!_lifecycleDirReady.has(logDir)) { fs.mkdirSync(logDir, { recursive: true }); _lifecycleDirReady.add(logDir) }
     const file = path.join(logDir, 'lifecycle-events.json')
-    const events = readJSON(file, [])
+    let events = []
+    try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
     const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000
     const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
     pruned.push({ ts: new Date().toISOString(), type, label, message })

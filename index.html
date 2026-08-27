@@ -257,13 +257,13 @@
       </div>
     </div>
     <div id="transportActions">
-      <button id="openFolderBtn" class="tp-action" hidden>OPEN DIR</button>
-      <button id="installBtn" class="tp-action warn" hidden>INSTALL</button>
-      <button id="upgradeBtn" class="tp-action upgrade" hidden>UPDATE</button>
+      <button id="openFolderBtn" class="tp-action" hidden aria-label="Abrir carpeta del proyecto">OPEN DIR</button>
+      <button id="installBtn" class="tp-action warn" hidden aria-label="Instalar orquesta">INSTALL</button>
+      <button id="upgradeBtn" class="tp-action upgrade" hidden aria-label="Actualizar orquesta">UPDATE</button>
       <span id="upgradeVer" class="tp-path mono" style="display:none"></span>
       <span id="ppath" class="tp-path mono"></span>
       <button id="exportBtn" class="tp-action" hidden aria-label="Exportar sesión">EXPORT</button>
-      <button id="removeBtn" class="tp-action dim">REMOVE</button>
+      <button id="removeBtn" class="tp-action dim" aria-label="Eliminar proyecto">REMOVE</button>
     </div>
     <div id="transportUtils">
       <button id="mixerDrawerToggle" class="tp-btn" title="Open mixer console" aria-label="Abrir mixer">≡</button>
@@ -462,7 +462,7 @@
             <span class="rack-title" style="color:var(--txt)">SAVED MIXES</span>
             <div id="mixesImport">
               <input id="mixImportInput" type="text" placeholder="Paste JSON…" class="mix-import-field mono">
-              <button id="mixImportBtn" class="tp-action">IMPORT</button>
+              <button id="mixImportBtn" class="tp-action" aria-label="Importar mezcla desde JSON">IMPORT</button>
             </div>
           </div>
           <div id="smartMixBar" class="smart-mix-bar">
@@ -478,8 +478,8 @@
           <div id="mixerStrips" class="mixer-strips-v"></div>
           <div id="mixerFooter">
             <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:100px">
-            <button id="saveMixer" class="tp-action">SAVE</button>
-            <button id="addAtrilBtn" class="tp-action" title="Add custom stand">+ STAND</button>
+            <button id="saveMixer" class="tp-action" aria-label="Guardar mezcla">SAVE</button>
+            <button id="addAtrilBtn" class="tp-action" title="Add custom stand" aria-label="Agregar stand personalizado">+ STAND</button>
             <button id="exportMixesBtn" class="tp-action dim" title="Export all mixes to JSON" aria-label="Exportar mezclas">↥</button>
             <button id="importMixesBtn" class="tp-action dim" title="Import mixes library from JSON" aria-label="Importar mezclas">↧</button>
             <span id="mixerSaved" class="saved-msg" hidden>✓</span>
