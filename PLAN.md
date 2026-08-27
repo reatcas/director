@@ -1,30 +1,29 @@
-# Cycle 121 Plan — IMPROVEMENT MODE
+# Cycle 122 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 121
+## MIXER BUDGET — Cycle 122
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| security | 20 | 4 | 4/4 |
+| quality_tests | 35 | 4 | 4/4 |
 | backend | 5 | 1 | 1/1 |
 | frontend | 5 | 1 | 1/1 |
+| business_logic | 5 | 1 | 1/1 |
 | ux_accessibility | 5 | 1 | 1/1 |
-| data_db | 5 | 1 | 1/1 |
-| quality_tests | 35 | FROZEN (3rd: 118,119,120) | — |
-| performance | 10 | FROZEN (12th) | — |
+| security | 20 | FROZEN (3rd: 119,120,121) | — |
+| performance | 10 | FROZEN (13th) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-257 — will-navigate handler on win.webContents: block non-file:// URLs ✅
-2. [security] I-258 — global app.on('web-contents-created') will-navigate + deny popups ✅
-3. [security] I-259 — evict claude-usage cache on orchestra:play ✅
-4. [security] I-260 — evict claude-usage cache on orchestra:fine ✅
-5. [backend] I-261 — notes:read: stat.size > 512KB guard before readFileSync ✅
-6. [frontend] I-262 — aside#rack + main#stage landmark aria-labels (es) ✅
-7. [ux_accessibility] I-263 — dropzone: role=region + aria-label ✅
-8. [data_db] I-264 — mixer:saved:save: cap at 100 mixes per project ✅
+1. [backend] I-265 — metrics:compliance: stat.size > 1MB guard before reading ORCHESTRA_REPORT.md ✅
+2. [business_logic] I-266 — context-protocol computeDelta: skip state files > 2MB ✅
+3. [frontend] I-267 — raw log overlay buttons: Spanish aria-labels ✅
+4. [ux_accessibility] I-268 — procsRefresh: aria-label="Refrescar procesos" ✅
+5. [quality_tests] I-269 — test metrics:compliance size guard ✅
+6. [quality_tests] I-270 — test computeDelta 2MB file cap ✅
+7. [quality_tests] I-271 — test raw log button aria-labels ✅
+8. [quality_tests] I-272 — test procsRefresh aria-label ✅
 
 ## Stats
-- 3183 tests passing (was 3166 at cycle start)
-- +17 net tests added this cycle
-- Electron renderer now fully locked: will-navigate blocked, popups denied globally
-- notes:read protected from large file reads
-- mixer:saved capped at 100 entries
+- 3195 tests passing (was 3183 at cycle start)
+- +12 net tests added this cycle
+- context-protocol now skips oversized state files
+- metrics:compliance protected from large ORCHESTRA_REPORT.md
