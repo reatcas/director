@@ -1110,7 +1110,7 @@ ipcMain.handle('notes:read', (_e, dir) => {
 })
 
 ipcMain.handle('notes:write', (_e, dir, content) => {
-  if (!dir || typeof content !== 'string') return false
+  if (!isKnownProject(dir) || typeof content !== 'string') return false
   if (content.length > 50000) return false
   const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
   const tmp = p + '.tmp'
@@ -1217,7 +1217,7 @@ function persistLifecycleEvent(dir, type, label, message) {
 }
 
 ipcMain.handle('lifecycle:list', (_e, dir) => {
-  if (!dir) return []
+  if (!isKnownProject(dir)) return []
   return readJSON(path.join(dir, '.claude', 'logs', 'lifecycle-events.json'), [])
 })
 

@@ -231,6 +231,25 @@ describe('timeout protection on external commands', () => {
   })
 })
 
+describe('notes:write dir validation', () => {
+  it('notes:write uses isKnownProject before writing', () => {
+    const handler = srcs['main.js'].split("'notes:write'")[1]?.split('ipcMain.handle')[0] || ''
+    expect(handler).toContain('isKnownProject(dir)')
+  })
+
+  it('notes:write still enforces content length limit', () => {
+    const handler = srcs['main.js'].split("'notes:write'")[1]?.split('ipcMain.handle')[0] || ''
+    expect(handler).toContain('content.length > 50000')
+  })
+})
+
+describe('lifecycle:list dir validation', () => {
+  it('lifecycle:list uses isKnownProject before reading events', () => {
+    const handler = srcs['main.js'].split("'lifecycle:list'")[1]?.split("'lifecycle:add'")[0] || ''
+    expect(handler).toContain('isKnownProject(dir)')
+  })
+})
+
 describe('lifecycle:add input validation', () => {
   it('main.js defines isKnownProject helper', () => {
     expect(srcs['main.js']).toContain('function isKnownProject(dir)')
