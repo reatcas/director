@@ -115,8 +115,9 @@ describe('notes:write handler', () => {
 describe('export:session handler — structure', () => {
   const block = mainJs.split("'export:session'")[1]?.split('\n// ─')[0] || ''
 
-  it('returns { ok: false } for missing dir', () => {
-    expect(block).toContain('if (!dir) return { ok: false }')
+  it('returns { ok: false } for unknown dir', () => {
+    expect(block).toContain('isKnownProject(dir)')
+    expect(block).toContain('return { ok: false }')
   })
 
   it('assembles snapshot with exportedAt timestamp', () => {

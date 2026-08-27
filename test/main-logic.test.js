@@ -195,9 +195,9 @@ describe('F-17: mixer history IPC', () => {
     expect(block).toContain('readJSON')
   })
 
-  it('validates dir parameter', () => {
+  it('validates dir parameter via isKnownProject', () => {
     const block = mainJs.split("'mixer:history'")[1]?.split('ipcMain')[0] || ''
-    expect(block).toContain('if (!dir)')
+    expect(block).toContain('isKnownProject(dir)')
   })
 
   it('defaults to 50 entries when limit not specified', () => {

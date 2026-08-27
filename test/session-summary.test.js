@@ -67,8 +67,8 @@ describe('mixer:history handler structure', () => {
     expect(block).toContain('limit > 0')
   })
 
-  it('returns empty array for missing dir', () => {
-    expect(block).toContain('if (!dir) return []')
+  it('validates dir via isKnownProject before reading', () => {
+    expect(block).toContain('isKnownProject(dir)')
   })
 
   it('uses slice for limiting results', () => {

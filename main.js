@@ -1036,7 +1036,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
 })
 
 ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
-  if (!dir) return false
+  if (!isKnownProject(dir)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
   const mixes = readJSON(p, [])
   mixes.push({ id: Date.now().toString(36), name, ts: new Date().toISOString(), focus })
@@ -1045,7 +1045,7 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
 })
 
 ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
-  if (!dir) return false
+  if (!isKnownProject(dir)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
   const mixes = readJSON(p, []).filter(m => m.id !== id)
   writeJSON(p, mixes)
@@ -1053,7 +1053,7 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
 })
 
 ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const mixes = readJSON(path.join(dir, '.claude/saved-mixes.json'), [])
   const mix = mixes.find(m => m.id === id)
   if (!mix) return null
@@ -1062,7 +1062,7 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
 
 // ─── Mixer history (F-17) ───────────────────────────────────────────────────
 ipcMain.handle('mixer:history', (_e, dir, limit) => {
-  if (!dir) return []
+  if (!isKnownProject(dir)) return []
   const hist = readJSON(path.join(dir, '.claude/mixer-history.json'), [])
   const n = typeof limit === 'number' && limit > 0 ? limit : 50
   return hist.slice(-n)
@@ -1129,7 +1129,7 @@ ipcMain.handle('notes:write', (_e, dir, content) => {
 
 // ─── Session export (F-23) ────────────────────────────────────────────────────
 ipcMain.handle('export:session', async (_e, dir) => {
-  if (!dir) return { ok: false }
+  if (!isKnownProject(dir)) return { ok: false }
   const read = f => { try { return fs.readFileSync(path.join(dir, f), 'utf8') } catch { return '' } }
   const snapshot = {
     exportedAt: new Date().toISOString(),
