@@ -3143,6 +3143,7 @@ document.querySelector('.mixer-tabs')?.addEventListener('keydown', e => {
   switchTab(tabs[next].dataset.mtab)
 })
 
+let _knCurrentFile = null
 async function loadKnowledge(file, btnId) {
   if (!current) return
 
@@ -3153,14 +3154,19 @@ async function loadKnowledge(file, btnId) {
 
   const el = document.getElementById('knowledgeContent')
   if (el) el.textContent = 'Cargando…'
+  _knCurrentFile = file
   try {
     const content = await window.director.readFile(current, file)
+    if (_knCurrentFile !== file) return
     if (el) el.textContent = content != null ? content : `[Archivo no encontrado: ${file}]`
   } catch {
+    if (_knCurrentFile !== file) return
     if (el) el.textContent = `[Error al cargar: ${file}]`
   }
 }
 
+const _knContentEl = document.getElementById('knowledgeContent')
+if (_knContentEl) { _knContentEl.setAttribute('aria-live', 'polite'); _knContentEl.setAttribute('role', 'region'); _knContentEl.setAttribute('aria-label', 'Contenido de archivo de proyecto') }
 if (document.getElementById('knBtnRoadmap')) document.getElementById('knBtnRoadmap').onclick = () => loadKnowledge('ROADMAP.md', 'knBtnRoadmap')
 if (document.getElementById('knBtnReport')) document.getElementById('knBtnReport').onclick = () => loadKnowledge('.claude/ORCHESTRA_REPORT.md', 'knBtnReport')
 if (document.getElementById('knBtnDb')) document.getElementById('knBtnDb').onclick = () => loadKnowledge('.claude/DB_SCHEMA.md', 'knBtnDb')

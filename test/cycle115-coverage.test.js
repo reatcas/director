@@ -14,7 +14,7 @@ describe('repertoire:open isKnownProject guard (I-216)', () => {
   })
 
   it('still checks dir exists on filesystem', () => {
-    expect(block).toContain('fs.existsSync(dir)')
+    expect(block).toMatch(/fs\.statSync\(dir\)|_roDirExists/)
   })
 })
 

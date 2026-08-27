@@ -445,7 +445,8 @@ describe('snapshotMixer — mixer history recording', () => {
     expect(body).toContain('ts:')
     expect(body).toContain('toISOString()')
     expect(body).toContain('event')
-    expect(body).toContain('...cfg.focus')
+    expect(body).toMatch(/cfg\.focus/)
+
   })
 
   it('writes history via writeJSON', () => {

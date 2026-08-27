@@ -556,10 +556,10 @@ function playOrchestra(dir, agent = 'claude') {
   // Always sync protocol files (run.sh, CLAUDE.md, skills, etc.) before starting
   syncProtocol(dir)
   const alto = path.join(dir, '.claude/ALTO')
-  if (fs.existsSync(alto)) fs.unlinkSync(alto)
+  try { fs.unlinkSync(alto) } catch {}
   // Remove usage limit signal if present
   const usageSignal = path.join(dir, USAGE_LIMIT_SIGNAL)
-  if (fs.existsSync(usageSignal)) try { fs.unlinkSync(usageSignal) } catch {}
+  try { fs.unlinkSync(usageSignal) } catch {}
   // Ensure shared memory directory exists
   const sharedMem = path.join(require('os').homedir(), '.director-suite', 'shared-memory')
   fs.mkdirSync(sharedMem, { recursive: true })
@@ -787,7 +787,8 @@ function playOrchestra(dir, agent = 'claude') {
       } catch (err) {}
 
       const altoPath = path.join(dir, '.claude', 'ALTO')
-      if (!fs.existsSync(altoPath)) {
+      let _altoExists = false; try { fs.statSync(altoPath); _altoExists = true } catch {}
+      if (!_altoExists) {
         persistLifecycleEvent(dir, 'auto_resume', 'LOOP', 'Reiniciando orquesta automáticamente (infinite loop)')
         setTimeout(() => {
           if (!isRunning(dir)) {
@@ -857,7 +858,8 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
 })
 
 ipcMain.handle('repertoire:open', (_e, dir) => {
-  if (isKnownProject(dir) && fs.existsSync(dir)) {
+  let _roDirExists = false; try { fs.statSync(dir); _roDirExists = true } catch {}
+  if (isKnownProject(dir) && _roDirExists) {
     shell.openPath(dir)
     return true
   }
@@ -1150,7 +1152,7 @@ function snapshotMixer(dir, event) {
   if (!Array.isArray(hist)) hist = []
   hist = hist.filter(h => typeof h.ts === 'string' && h.ts >= cutoffISO)
   const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
-  const _ssFocus = { ...cfg.focus }
+  const _ssFocus = Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v)))
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
   const _sortedJson = o => JSON.stringify(Object.fromEntries(Object.keys(o).sort().map(k => [k, o[k]])))
   if (_ssLast && _ssLast.event === _ssEvent && _sortedJson(_ssLast.focus) === _sortedJson(_ssFocus)) return
@@ -1501,7 +1503,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter) => {
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
   if (!Array.isArray(events)) events = []
-  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && typeof e.label === 'string' && typeof e.message === 'string')
+  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string')
   if (_llType) events = events.filter(e => e.type === _llType)
   return { events: events.slice(-_llLimit), total: events.length }
 })
@@ -1666,7 +1668,7 @@ ipcMain.handle('metrics:roadmap-freshness', (_e, dir) => {
       if (err || !stdout.trim()) return resolve(metricsSet('freshness:' + dir, { exists: true, mtime, isStale: false }, _SLOW_METRICS_TTL))
       const lastCommitMs = parseInt(stdout.trim(), 10) * 1000
       const staleHours = Math.round((lastCommitMs - mtime) / 3_600_000)
-      resolve(metricsSet('freshness:' + dir, { exists: true, mtime, lastCommit: lastCommitMs, staleHours, isStale: staleHours > 24 && lastCommitMs > mtime }, _SLOW_METRICS_TTL))
+      resolve(metricsSet('freshness:' + dir, { exists: true, mtime, lastCommit: lastCommitMs, staleHours, isStale: Number.isFinite(staleHours) && staleHours > 24 && lastCommitMs > mtime }, _SLOW_METRICS_TTL))
     })
   })
 })
