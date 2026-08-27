@@ -1,27 +1,28 @@
-# Cycle 107 Plan — IMPROVEMENT MODE
+# Cycle 108 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 107
+## MIXER BUDGET — Cycle 108
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 4/4 |
 | security | 20 | 2 | 2/2 |
-| performance | 10 | 1 | 1/1 |
+| ux_accessibility | 5 | 1 | 1/1 |
 | backend | 5 | 1 | 1/1 |
-| ux_accessibility | 5 | FROZEN (3rd consecutive) | — |
+| performance | 10 | FROZEN (3rd consecutive) | — |
 | data_db | 5 | 0 | SKIP |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [quality_tests] I-136 — test blueprint:readiness cache (TTL hit, miss, invalidation on save) ✅
-2. [quality_tests] I-137 — test _metricsCache TTL behavior for metrics:resource + metrics:context ✅
-3. [quality_tests] I-138 — test orchestra:clearLog analysis file pruning + mixer-history cap ✅
-4. [quality_tests] I-139 — test blueprint:save data validation (non-object, array, oversized) ✅
-5. [security] I-140 — isKnownProject guard on orchestra:readIterLog (replace !dir) ✅
-6. [security] I-141 — mixer:saved:save name/focus validation (string, length ≤256, focus object) ✅
-7. [performance] I-142 — periodic _metricsCache eviction (30s interval, unref) ✅
-8. [backend] I-143 — isKnownProject guard on orchestra:install ✅
+1. [quality_tests] I-144 — test orchestra:readIterLog isKnownProject guard ✅
+2. [quality_tests] I-145 — test mixer:saved:save name/focus validation ✅
+3. [quality_tests] I-146 — test _metricsCache eviction (setInterval + unref + evict age) ✅
+4. [quality_tests] I-147 — test orchestra:install isKnownProject guard + return null ✅
+5. [security] I-148 — validate id param in mixer:saved:delete + mixer:saved:export ✅
+6. [security] I-149 — isKnownProject guard on orchestra:fine + orchestra:kill ✅
+7. [ux_accessibility] I-150 — Ctrl+P/./K keyboard shortcuts + aria-keyshortcuts on transport buttons ✅
+8. [backend] I-151 — validate agent param in orchestra:play against AI_DEFAULTS allowlist ✅
 
 ## Stats
-- 2919 tests passing (was 2898 at cycle start)
-- +21 net tests added this cycle (22 new, -1 dynamic from readIterLog guard upgrade)
-- orchestra:readIterLog, mixer:saved:save, orchestra:install now fully validated
+- 2939 tests passing (was 2919 at cycle start)
+- +20 net tests added this cycle
+- orchestra:fine, orchestra:kill, orchestra:play now fully validated with isKnownProject
+- mixer:saved:delete/export id param validated (string, ≤64 chars)

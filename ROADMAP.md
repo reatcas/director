@@ -176,3 +176,11 @@
 - [x] **I-141** mixer:saved:save name/focus validation — string type, length ≤256, focus object check.
 - [x] **I-142** Periodic _metricsCache eviction — setInterval 30s, unref() to not block exit.
 - [x] **I-143** isKnownProject guard on orchestra:install — prevent harness copy to arbitrary dirs.
+- [x] **I-144** Test orchestra:readIterLog — isKnownProject, path traversal, string checks.
+- [x] **I-145** Test mixer:saved:save — name/focus validation, 256 char limit, trim.
+- [x] **I-146** Test _metricsCache eviction — setInterval, unref, evict age constant.
+- [x] **I-147** Test orchestra:install — isKnownProject guard, null return, copyDir call.
+- [x] **I-148** validate id param in mixer:saved:delete + mixer:saved:export — string, length ≤64.
+- [x] **I-149** isKnownProject on orchestra:fine + orchestra:kill — prevent ALTO writes to arbitrary dirs.
+- [x] **I-150** Ctrl+P/./K keyboard shortcuts + aria-keyshortcuts on transport buttons.
+- [x] **I-151** Validate agent param in orchestra:play against AI_DEFAULTS allowlist + isKnownProject guard.
