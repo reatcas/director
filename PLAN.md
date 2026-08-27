@@ -1,27 +1,27 @@
-# Cycle 169 Plan — IMPROVEMENT MODE
+# Cycle 170 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 169 (security+backend BANNED — 3 consecutive each)
+## MIXER BUDGET — Cycle 170 (all bans cleared)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 5 | 5/5 |
+| quality_tests | 35 | 4 | 4/4 |
+| security | 20 | 2 | 2/2 |
+| backend | 5 | 1 | 1/1 |
 | frontend | 5 | 1 | 1/1 |
-| ux_accessibility | 5 | 1 | 1/1 |
-| business_logic | 5 | 1 | 1/1 |
-| security | 20 | BANNED | — |
-| backend | 5 | BANNED | — |
 | performance | 10 | FROZEN | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [frontend] I-508 — parseLogLine summary: remove double-escaping before addSummaryEntry (esc() handles it)
-2. [ux_accessibility] I-509 — Fix duplicate id="bpReadiness"; rename span to bpCompleteness; aria-live="polite" on div; wire bpUpdateCompleteness to update both
-3. [business_logic] I-510 — updateBurnRate: Math.max(0, delta) prevents negative burn history entries
-4-8. [quality_tests] cycle169-coverage.test.js — 5 tests
+1. [security] I-511 — parseComplianceLine: categories key sliced to 64 chars
+2. [security] I-512 — export:session: compliance array capped at 50 lines
+3. [backend] I-513 — orchestra:writeConfig: fix keepLogs (integer not boolean), mode (add perpetual), maxIterations (allow 0)
+4. [frontend] I-514 — showToast: add role=status, aria-live=polite, aria-atomic=true
+5-8. [quality_tests] cycle170-coverage.test.js — 6 tests
 
 ## Stats
-- 3603 tests at cycle start → 3609 passing (+6)
-- parseLogLine: removed redundant .replace(/</g) before addSummaryEntry — esc() already handles
-- bpCompleteness: duplicate id fixed; bpUpdateCompleteness wires both elements; bpReadiness aria-live=polite
-- updateBurnRate: Math.max(0, tokens-_prevBurnTokens) — no negative deltas in _burnHistory
+- 3609 tests at cycle start → 3615 passing (+6)
+- parseComplianceLine: pm[1].slice(0,64) — unbounded category key cap
+- export:session: .slice(-50) on COMPLIANCE lines
+- writeConfig: keepLogs=integer(0-500), mode+=perpetual, maxIterations>=0
+- showToast: role=status + aria-live=polite for screen reader announcements
 
-▸ ◼ Cycle 169 cerrado — COMPLIANCE frontend:1/1 ux_accessibility:1/1 business_logic:1/1 quality_tests:5/5 DRIFT:none TESTS:green
+▸ ◼ Cycle 170 cerrado — COMPLIANCE security:2/2 backend:1/1 frontend:1/1 quality_tests:4/4 DRIFT:none TESTS:green

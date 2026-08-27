@@ -325,6 +325,9 @@ function showToast(msg) {
   if (!el) {
     el = document.createElement('div')
     el.id = 'director-toast'
+    el.setAttribute('role', 'status')
+    el.setAttribute('aria-live', 'polite')
+    el.setAttribute('aria-atomic', 'true')
     el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222230;color:#aaa;border:1px solid #333;border-radius:5px;padding:7px 18px;font:11px var(--mono, monospace);z-index:9999;pointer-events:none;opacity:0;transition:opacity .2s'
     document.body.appendChild(el)
   }

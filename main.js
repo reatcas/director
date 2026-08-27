@@ -1164,8 +1164,8 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (cfg.model !== undefined && (typeof cfg.model !== 'string' || cfg.model.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.model))) return false
   if (cfg.nice !== undefined && (!Number.isInteger(cfg.nice) || cfg.nice < -20 || cfg.nice > 19)) return false
   if (cfg.claudeUsageBudget !== undefined && (typeof cfg.claudeUsageBudget !== 'number' || !Number.isFinite(cfg.claudeUsageBudget) || cfg.claudeUsageBudget < 0)) return false
-  if (cfg.mode !== undefined && (typeof cfg.mode !== 'string' || !['improvement', 'product', 'auto'].includes(cfg.mode))) return false
-  if (cfg.maxIterations !== undefined && (!Number.isInteger(cfg.maxIterations) || cfg.maxIterations < 1 || cfg.maxIterations > 10000)) return false
+  if (cfg.mode !== undefined && (typeof cfg.mode !== 'string' || !['improvement', 'product', 'auto', 'perpetual'].includes(cfg.mode))) return false
+  if (cfg.maxIterations !== undefined && (!Number.isInteger(cfg.maxIterations) || cfg.maxIterations < 0 || cfg.maxIterations > 10000)) return false
   if (cfg.caveman !== undefined && typeof cfg.caveman !== 'boolean') return false
   if (cfg.modelComplex !== undefined && (typeof cfg.modelComplex !== 'string' || cfg.modelComplex.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelComplex))) return false
   if (cfg.compactAt !== undefined && (typeof cfg.compactAt !== 'number' || !Number.isFinite(cfg.compactAt) || cfg.compactAt < 0 || cfg.compactAt > 100)) return false
@@ -1175,7 +1175,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (cfg.modelFast !== undefined && (typeof cfg.modelFast !== 'string' || cfg.modelFast.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelFast))) return false
   if (cfg.architectInterval !== undefined && (!Number.isInteger(cfg.architectInterval) || cfg.architectInterval < 1 || cfg.architectInterval > 1000)) return false
   if (cfg.autoSwitch !== undefined && typeof cfg.autoSwitch !== 'boolean') return false
-  if (cfg.keepLogs !== undefined && typeof cfg.keepLogs !== 'boolean') return false
+  if (cfg.keepLogs !== undefined && (!Number.isInteger(cfg.keepLogs) || cfg.keepLogs < 0 || cfg.keepLogs > 500)) return false
   if (cfg.maxHallucinationStreak !== undefined && (!Number.isInteger(cfg.maxHallucinationStreak) || cfg.maxHallucinationStreak < 1 || cfg.maxHallucinationStreak > 100)) return false
   const serialized = JSON.stringify(cfg)
   if (serialized.length > 65_536) return false
@@ -1347,7 +1347,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
     mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return d })(),
     mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object') : [] })(),
     claudeUsage: getClaudeUsage(dir),
-    compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')),
+    compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')).slice(-50),
     roadmap: read('ROADMAP.md'),
     plan: read('PLAN.md'),
     pending: read('PENDING.md')
@@ -1565,7 +1565,7 @@ function parseComplianceLine(line) {
     const pm = p.match(/([^:]+):(\d+)\/(\d+)/)
     if (!pm) continue
     const actual = parseInt(pm[2], 10), planned = parseInt(pm[3], 10)
-    categories[pm[1]] = { actual, planned }
+    categories[pm[1].slice(0, 64)] = { actual, planned }
     totalPlanned += planned
     totalActual += Math.min(actual, planned)
   }
