@@ -1,27 +1,27 @@
-# Cycle 184 Plan — IMPROVEMENT MODE
+# Cycle 185 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 184 (security+quality_tests BANNED)
+## MIXER BUDGET — Cycle 185 (backend+frontend BANNED)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 0 | BANNED (C181+C182+C183) |
-| security | 20 | 0 | BANNED (C181+C182+C183) |
-| performance | 10 | 3 | 0/3 |
-| backend | 5 | 1 | 0/1 |
-| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 0 | BANNED (C182+C183+C184) |
+| frontend | 5 | 0 | BANNED (C182+C183+C184) |
 | business_logic | 5 | 1 | 0/1 |
 | ux_accessibility | 5 | 1 | 0/1 |
-| data_db | 5 | 1 | 0/1 |
+| data_db | 5 | 0 | SKIP |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [performance] P-16 — getClaudeUsage: existsSync(USAGE_LIMIT_SIGNAL) → statSync try/catch (single syscall)
-2. [performance] P-17 — exit handler line 767: existsSync(roadmapPath)+statSync double-stat → single statSync
-3. [performance] P-18 — orchestra:upgrade: existsSync(srcPath)+existsSync(dstPath) → statSync/try-catch pattern
-4. [backend] I-550 — watchForResume: existsSync(signalFile) → statSync try/catch (ENOENT=signal gone=resume)
-5. [frontend] I-551 — loadBpReadiness: add aria-label for missing fields (accessible alt to title attribute)
-6. [business_logic] I-552 — parseComplianceLine: cap categories at 20 with break to prevent unbounded growth
-7. [ux_accessibility] A-07 — renderSparkline: set role="img" + aria-label with last score when visible
-8. [data_db] D-03 — persistLifecycleEvent: aggressive trim fallback (100 events) when serialized > 2MB, prevent event loss
+1. [security] S-13 — repertoire:readFile: add control-char guard + length cap ≤4096 on subpath
+2. [security] S-14 — blueprint:save sessions: validate `ended` field (string ≤64, no control chars) — mirrors started guard
+3. [performance] P-19 — exit handler: existsSync(usageSig) → statSync try/catch (single syscall)
+4. [business_logic] I-553 — snapshotMixer dedup: use sorted JSON comparison to prevent key-order false negatives
+5. [ux_accessibility] A-08 — loadProcs: add role="list" to #procsList + role="listitem" to proc-row divs
+6. [quality_tests] T-22 — test C185: S-13 subpath control-char + length cap + S-14 sessions ended field
+7. [quality_tests] T-23 — test C185: P-19 no existsSync in exit usageSig path
+8. [quality_tests] T-24 — test C185: I-553 sorted snapshotMixer dedup + A-08 proc-row role
 
 ## Stats
 - 3688 tests at cycle start

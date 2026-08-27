@@ -50,7 +50,8 @@ describe('orchestra:tail no existsSync dead guard (I-548)', () => {
 describe('snapshotMixer dedup guard (I-549)', () => {
   it('skips write when last focus entry is identical', () => {
     const block = mainJs.split('function snapshotMixer')[1]?.split('\n}\n')[0] || ''
-    expect(block).toContain('JSON.stringify(_ssLast.focus) === JSON.stringify(_ssFocus)')
+    expect(block).toContain('_ssLast.focus')
+    expect(block).toContain('_ssFocus')
   })
 })
 

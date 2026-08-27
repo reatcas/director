@@ -727,7 +727,8 @@ function playOrchestra(dir, agent = 'claude') {
     try { fs.unlinkSync(path.join(dir, '.claude/ORCHESTRA_PID')) } catch {}
     // Check if exited due to usage limit — start watching for resume
     const usageSig = path.join(dir, USAGE_LIMIT_SIGNAL)
-    if (fs.existsSync(usageSig)) {
+    let _useSigExists = false; try { fs.statSync(usageSig); _useSigExists = true } catch {}
+    if (_useSigExists) {
       const state = aiState()
       state[agent].credits = 0
       const nextAgent = nextAvailableAi(state, agent)
@@ -865,6 +866,7 @@ const _BLOCKED_FILE_EXT = new Set(['.env', '.key', '.pem', '.cert', '.p12', '.pf
 const _BLOCKED_FILE_NAME = new Set(['.env', 'id_rsa', 'id_ed25519', 'id_ecdsa', 'id_dsa', '.htpasswd'])
 ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
   if (!isKnownProject(dir) || typeof subpath !== 'string' || !subpath.trim()) return null
+  if (subpath.length > 4096 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(subpath)) return null
   const p = path.resolve(dir, subpath)
   if (!p.startsWith(dir + path.sep) && p !== dir) return null
   const base = path.basename(p)
@@ -1148,7 +1150,8 @@ function snapshotMixer(dir, event) {
   const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
   const _ssFocus = { ...cfg.focus }
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
-  if (_ssLast && _ssLast.event === _ssEvent && JSON.stringify(_ssLast.focus) === JSON.stringify(_ssFocus)) return
+  const _sortedJson = o => JSON.stringify(Object.fromEntries(Object.keys(o).sort().map(k => [k, o[k]])))
+  if (_ssLast && _ssLast.event === _ssEvent && _sortedJson(_ssLast.focus) === _sortedJson(_ssFocus)) return
   hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: _ssFocus })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
   const _mhSer = JSON.stringify(hist)
@@ -1851,6 +1854,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.label !== undefined && (typeof s.label !== 'string' || s.label.length > 128 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.label)))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.duration !== undefined && (typeof s.duration !== 'number' || !Number.isFinite(s.duration) || s.duration < 0))) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.commits !== undefined && (!Number.isInteger(s.commits) || s.commits < 0))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.ended !== undefined && (typeof s.ended !== 'string' || s.ended.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.ended)))) return false
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false
   const p = blueprintFile(dir)

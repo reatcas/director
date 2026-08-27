@@ -2629,6 +2629,7 @@ async function loadProcs() {
   if (!list) return
   const procs = await window.director.systemProcs()
   list.innerHTML = ''
+  list.setAttribute('role', 'list')
   if (!procs || procs.length === 0) {
     list.innerHTML = '<div style="padding:24px;color:var(--dim);font:11px var(--mono);text-align:center">No active Claude processes</div>'
     if (countEl) countEl.textContent = '0 processes'
@@ -2649,6 +2650,7 @@ async function loadProcs() {
     const s = PROC_TYPE_STYLE[p.type] || PROC_TYPE_STYLE.claude
     const row = document.createElement('div')
     row.className = 'proc-row'
+    row.setAttribute('role', 'listitem')
     row.innerHTML = `
       <span class="proc-type" style="color:${s.color};border-color:${s.color}40;background:${s.color}12">${s.label}</span>
       <span class="proc-pid mono">${esc(String(p.pid))}</span>
