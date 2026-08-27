@@ -1,28 +1,29 @@
-# Cycle 118 Plan — IMPROVEMENT MODE
+# Cycle 119 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 118
+## MIXER BUDGET — Cycle 119
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 5 | 5/5 |
-| backend | 5 | 1 | 1/1 |
-| frontend | 5 | 1 | 1/1 |
-| business_logic | 5 | 1 | 1/1 |
-| security | 20 | FROZEN (3rd consecutive) | — |
-| performance | 10 | FROZEN (9th consecutive) | — |
+| quality_tests | 35 | 4 | 4/4 |
+| security | 20 | 2 | 2/2 |
+| ux_accessibility | 5 | 1 | 1/1 |
+| data_db | 5 | 1 | 1/1 |
+| backend | 5 | FROZEN (3rd consecutive) | — |
+| frontend | 5 | FROZEN (3rd consecutive) | — |
+| performance | 10 | FROZEN (10th consecutive) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [quality_tests] I-235 — test ai:auth-status + ai:login type guards ✅
-2. [quality_tests] I-236 — test nextAvailableAi robustness ✅
-3. [quality_tests] I-237 — test snapshotMixer age pruning ✅
-4. [quality_tests] I-238 — test export:session serialization order ✅
-5. [quality_tests] I-239 — test metrics:session-summary completeness ✅
-6. [backend] I-232 — metrics:resource + metrics:context: if (hit !== null) cache check ✅
-7. [frontend] I-233 — themeToggle/settingsBtn titles translated to Spanish ✅
-8. [business_logic] I-234 — parseComplianceLine: typeof + includes guard before regex ✅
+1. [quality_tests] I-244 — test alerts:config array rejection ✅
+2. [quality_tests] I-245 — test blueprint:generate-brief 512KB cap ✅
+3. [quality_tests] I-246 — test parseComplianceLine input guard ✅
+4. [quality_tests] I-247 — test stopMetricsSampling cache eviction ✅
+5. [security] I-240 — blueprint:generate-brief caps output at 512KB ✅
+6. [security] I-241 — alerts:config rejects Array.isArray(cfg) ✅
+7. [ux_accessibility] I-242 — nodeGraphSection role=img, canvas aria-hidden, divider role=separator ✅
+8. [data_db] I-243 — stopMetricsSampling evicts _metricsCache for stopped dir ✅
 
 ## Stats
-- 3136 tests passing (was 3121 at cycle start)
-- +15 net tests added this cycle
-- All metrics cache miss checks now use !== null (correct for falsy values)
-- parseComplianceLine no longer throws on non-string input
+- 3152 tests passing (was 3136 at cycle start)
+- +16 net tests added this cycle
+- alerts:config now correctly rejects array input (was typeof-only)
+- stopMetricsSampling now cleans up metricsCache on orchestra stop
