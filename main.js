@@ -999,6 +999,7 @@ function aiState() {
     }
     if (!dirty && JSON.stringify(state[id]) !== prev) dirty = true
   }
+  if (typeof state.selected !== 'string' || !Object.keys(AI_DEFAULTS).includes(state.selected)) state.selected = null
   if (dirty) { const _aisDirtySer = JSON.stringify(state); if (_aisDirtySer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisDirtySer)); invalidateAiStateCache() }; return state }
   _aiStateCache = state
   _aiStateCacheTs = now
@@ -1443,7 +1444,7 @@ ipcMain.handle('metrics:session-summary', () => {
     } catch {}
   }
   const aiCredits = aiState()
-  const creditsRemaining = Object.values(aiCredits).filter(v => typeof v === 'object' && v !== null && 'credits' in v).reduce((sum, ai) => sum + (ai.credits || 0), 0)
+  const creditsRemaining = Math.max(0, Object.values(aiCredits).filter(v => typeof v === 'object' && v !== null && 'credits' in v).reduce((sum, ai) => sum + (ai.credits || 0), 0))
   return metricsSet('session-summary', { active, idle, total: projects.length, totalTokens, worstCompliance, creditsRemaining }, _SLOW_METRICS_TTL)
 })
 
@@ -1602,7 +1603,7 @@ function persistLifecycleEvent(dir, type, label, message) {
     let events = []
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
     const cutoffISO = _lcCutoff()
-    const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO)
+    const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO && typeof e.type === 'string' && typeof e.label === 'string' && typeof e.message === 'string')
     const _evType = typeof type === 'string' && _LC_TYPES.has(type) ? type : 'unknown'
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
     const _evMsgRaw = typeof message === 'string' ? message : String(message)
@@ -1647,6 +1648,7 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
   if (!_LC_TYPES.has(type)) return false
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(label) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(message)) return false
   persistLifecycleEvent(dir, type, label, message)
+  for (const k of _metricsCache.keys()) { if (k.startsWith('lc:' + dir + ':')) _metricsCache.delete(k) }
   return true
 })
 
@@ -1741,7 +1743,7 @@ ipcMain.handle('metrics:claude-usage', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const hit = metricsGet('claude-usage:' + dir)
   if (hit !== null) return hit
-  return metricsSet('claude-usage:' + dir, getClaudeUsage(dir))
+  return metricsSet('claude-usage:' + dir, getClaudeUsage(dir), _SLOW_METRICS_TTL)
 })
 
 // ─── Compliance Metrics ───────────────────────────────────────────────────────
@@ -1758,7 +1760,7 @@ function parseComplianceLine(line) {
     if (Object.keys(categories).length >= 20) break
     const pm = p.match(/([^:]+):(\d+)\/(\d+)/)
     if (!pm) continue
-    const actual = parseInt(pm[2], 10), planned = parseInt(pm[3], 10)
+    const actual = Math.min(Math.max(0, parseInt(pm[2], 10)), 9999), planned = Math.min(Math.max(0, parseInt(pm[3], 10)), 9999)
     categories[pm[1].slice(0, 64)] = { actual, planned }
     totalPlanned += planned
     totalActual += Math.min(actual, planned)
