@@ -234,7 +234,8 @@ function watchForResume(dir) {
   const signalFile = path.join(dir, USAGE_LIMIT_SIGNAL)
   // poll every 5 minutes (run.sh handles the smart wait now)
   const iv = setInterval(() => {
-    if (!fs.existsSync(signalFile)) {
+    let _wrSig = false; try { fs.statSync(signalFile); _wrSig = true } catch {}
+    if (!_wrSig) {
       // Usage has reset — auto-resume
       clearInterval(iv)
       resumeTimers.delete(dir)
@@ -395,7 +396,8 @@ function copyDir(src, dst) {
 const usageTracker = new Map() // dir → { iterations, tokensEstimated, startedAt, lastCheck }
 
 function getClaudeUsage(dir) {
-  const usageLimited = fs.existsSync(path.join(dir, USAGE_LIMIT_SIGNAL))
+  let usageLimited = false
+  try { fs.statSync(path.join(dir, USAGE_LIMIT_SIGNAL)); usageLimited = true } catch {}
   if (usageLimited) return { percent: 100, status: 'exhausted', iterations: 0, detail: 'Límite alcanzado' }
 
   const logDir = path.join(dir, '.claude/logs')
@@ -764,7 +766,8 @@ function playOrchestra(dir, agent = 'claude') {
       persistLifecycleEvent(dir, 'exit', 'FIN', `Interpretación finalizada (código ${code})`)
       try {
         const roadmapPath = path.join(dir, 'ROADMAP.md')
-        if (fs.existsSync(roadmapPath) && fs.statSync(roadmapPath).size <= 1_048_576) {
+        let _rmStat = null; try { _rmStat = fs.statSync(roadmapPath) } catch {}
+        if (_rmStat && _rmStat.size <= 1_048_576) {
           const lines = fs.readFileSync(roadmapPath, 'utf8').split('\n')
           const nextItem = lines.find(l => l.trim().startsWith('- [ ]'))
           if (nextItem) {
@@ -1476,7 +1479,11 @@ function persistLifecycleEvent(dir, type, label, message) {
     const _evMsg = typeof message === 'string' ? message.slice(0, 4096) : String(message).slice(0, 4096)
     pruned.push({ ts: new Date().toISOString(), type: _evType, label: _evLabel, message: _evMsg })
     if (pruned.length > 500) pruned.splice(0, pruned.length - 500)
-    const _lcSer = JSON.stringify(pruned)
+    let _lcSer = JSON.stringify(pruned)
+    if (_lcSer.length > 2_097_152) {
+      pruned.splice(0, pruned.length - 100)
+      _lcSer = JSON.stringify(pruned)
+    }
     if (_lcSer.length <= 2_097_152) writeJSON(file, pruned)
   } catch {}
 }
@@ -1605,6 +1612,7 @@ function parseComplianceLine(line) {
   let totalPlanned = 0, totalActual = 0
   const categories = {}
   for (const p of pairs) {
+    if (Object.keys(categories).length >= 20) break
     const pm = p.match(/([^:]+):(\d+)\/(\d+)/)
     if (!pm) continue
     const actual = parseInt(pm[2], 10), planned = parseInt(pm[3], 10)
@@ -1695,9 +1703,10 @@ ipcMain.handle('orchestra:upgrade', (_e, dir) => {
   const upgraded = [], errors = []
   for (const f of UPGRADE_FILES) {
     const srcPath = path.join(src, f), dstPath = path.join(dir, f)
-    if (!fs.existsSync(srcPath)) continue
+    let _upSrcSt = null; try { _upSrcSt = fs.statSync(srcPath) } catch {}
+    if (!_upSrcSt) continue
     try {
-      if (fs.existsSync(dstPath)) fs.copyFileSync(dstPath, dstPath + '.bak')
+      try { fs.copyFileSync(dstPath, dstPath + '.bak') } catch {}
       fs.mkdirSync(path.dirname(dstPath), { recursive: true })
       fs.copyFileSync(srcPath, dstPath)
       if (f === 'run.sh') try { fs.chmodSync(dstPath, 0o755) } catch {}

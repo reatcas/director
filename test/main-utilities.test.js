@@ -462,7 +462,8 @@ describe('watchForResume — auto-resume on usage reset', () => {
   })
 
   it('checks if USAGE_LIMIT file was removed', () => {
-    expect(body).toContain('existsSync(signalFile)')
+    expect(body).toContain('signalFile')
+    expect(body).toContain('_wrSig')
   })
 
   it('clears interval on resume', () => {

@@ -8,11 +8,11 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
 
 describe('ROADMAP.md exit handler size guard (I-305)', () => {
   it('exit handler guards ROADMAP.md size before reading', () => {
-    expect(mainJs).toContain("statSync(roadmapPath).size <= 1_048_576")
+    expect(mainJs).toContain("_rmStat.size <= 1_048_576")
   })
 
-  it('checks existsSync AND size in same condition', () => {
-    expect(mainJs).toContain("fs.existsSync(roadmapPath) && fs.statSync(roadmapPath).size <= 1_048_576")
+  it('checks size via statSync in exit handler', () => {
+    expect(mainJs).toContain("_rmStat && _rmStat.size <= 1_048_576")
   })
 })
 

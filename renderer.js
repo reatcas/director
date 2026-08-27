@@ -2438,6 +2438,8 @@ function renderSparkline(svgEl, scores) {
   const lastScore = scores[scores.length - 1]
   const color = lastScore >= 90 ? '#40c840' : lastScore >= 70 ? '#ddba00' : '#e03030'
   svgEl.innerHTML = `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
+  svgEl.setAttribute('role', 'img')
+  svgEl.setAttribute('aria-label', `Gráfico de tendencia — último valor: ${lastScore}%`)
   svgEl.style.display = ''
 }
 
@@ -2900,7 +2902,13 @@ async function loadBpReadiness() {
   const color = r.ready ? '#40c840' : pct >= 50 ? '#ddba00' : '#e03030'
   const parts = [`${r.answeredFields} campos`, `${r.modules} módulos`, `${r.sessions} sesiones`]
   el.innerHTML = `<span style="color:${color}">● ${pct}%</span> <span style="color:var(--dim)">${parts.join(' · ')}</span>`
-  if (!r.ready && r.missing.length) el.title = 'Faltan: ' + r.missing.join(', ')
+  if (!r.ready && r.missing.length) {
+    const _bpMissingText = 'Faltan: ' + r.missing.slice(0, 10).join(', ')
+    el.title = _bpMissingText
+    el.setAttribute('aria-label', `Blueprint ${pct}% completo — ${_bpMissingText}`)
+  } else {
+    el.setAttribute('aria-label', `Blueprint ${pct}% completo`)
+  }
   el.style.display = ''
 }
 

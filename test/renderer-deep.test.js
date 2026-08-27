@@ -536,7 +536,7 @@ describe('loadBpReadiness — readiness indicator (F-12)', () => {
 
   it('shows missing fields in tooltip', () => {
     expect(body).toContain('Faltan:')
-    expect(body).toContain('r.missing.join')
+    expect(body).toContain('r.missing')
   })
 })
 
