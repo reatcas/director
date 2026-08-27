@@ -1,28 +1,28 @@
-# Cycle 109 Plan — IMPROVEMENT MODE
+# Cycle 110 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 109
+## MIXER BUDGET — Cycle 110
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 4/4 |
-| performance | 10 | 1 | 1/1 |
-| backend | 5 | 1 | 1/1 |
+| security | 20 | 4 | 4/4 |
+| performance | 10 | 2 | 2/2 |
 | ux_accessibility | 5 | 1 | 1/1 |
 | data_db | 5 | 1 | 1/1 |
-| security | 20 | FROZEN (3rd consecutive) | — |
+| quality_tests | 35 | FROZEN (3rd consecutive) | — |
+| backend | 5 | FROZEN (3rd consecutive) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [quality_tests] I-152 — test orchestra:fine/kill isKnownProject guards ✅
-2. [quality_tests] I-153 — test orchestra:play agent allowlist + isKnownProject ✅
-3. [quality_tests] I-154 — test mixer:saved:delete/export id validation ✅
-4. [quality_tests] I-155 — test aria-keyshortcuts on transport buttons ✅
-5. [performance] I-156 — 30s TTL cache for metrics:roadmap-freshness + metrics:compliance ✅
-6. [backend] I-157 — lifecycle:list returns {events,total} capped at 200 ✅
-7. [ux_accessibility] I-158 — role=status + aria-label on metrics strip cells ✅
-8. [data_db] I-159 — prune lifecycle-events.json entries >90 days on clearLog ✅
+1. [security] I-160 — validate cfg in orchestra:writeConfig (plain object + 64KB size limit) ✅
+2. [security] I-161 — validate id in ai:select against AI_DEFAULTS allowlist ✅
+3. [security] I-162 — validate cfg.focus weights in orchestra:writeConfig (numeric 0-100) ✅
+4. [security] I-163 — security tests for I-160/I-161/I-162 validations ✅
+5. [performance] I-164 — cache atriles:list response ✅
+6. [performance] I-165 — memoize orchestraSrc() result ✅
+7. [ux_accessibility] I-166 — role=tablist + aria-label + aria-selected on mixer tab buttons ✅
+8. [data_db] I-167 — evict metrics + readiness cache on repertoire:remove ✅
 
 ## Stats
-- 2962 tests passing (was 2939 at cycle start)
-- +23 net tests added this cycle
-- orchestra:fine/kill/play coverage complete
-- metrics:compliance + roadmap-freshness now cached 30s (was hitting disk+git every poll)
+- 2974 tests passing (was 2962 at cycle start)
+- +12 net tests added this cycle
+- orchestra:writeConfig now validates type + size + focus weight ranges
+- ai:select uses AI_DEFAULTS allowlist (consistent with orchestra:play)

@@ -192,3 +192,11 @@
 - [x] **I-157** lifecycle:list returns {events, total} capped at 200 + renderer adapts gracefully.
 - [x] **I-158** role=status + aria-label on metrics strip cells — screen readers now describe each metric.
 - [x] **I-159** Prune lifecycle-events.json entries >90 days old on orchestra:clearLog.
+- [x] **I-160** Validate cfg in orchestra:writeConfig — plain object, no arrays, 64KB size limit.
+- [x] **I-161** Validate id in ai:select against AI_DEFAULTS allowlist — string type + known key.
+- [x] **I-162** Validate cfg.focus weights in orchestra:writeConfig — numeric, 0-100 per weight.
+- [x] **I-163** Security tests for writeConfig/ai:select validations (12 tests in ipc-config-security.test.js).
+- [x] **I-164** Cache atriles:list response — invalidated on atriles:save.
+- [x] **I-165** Memoize orchestraSrc() — computed once, reused for every install/upgrade/hotReload.
+- [x] **I-166** role=tablist + aria-label + aria-selected on mixer tab buttons.
+- [x] **I-167** Evict metrics + readiness cache on repertoire:remove — no stale data after project removal.
