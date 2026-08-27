@@ -683,7 +683,7 @@ function playOrchestra(dir, agent = 'claude') {
       const state = aiState()
       state[agent].credits = 0
       const nextAgent = nextAvailableAi(state, agent)
-      writeJSON(aiStateFile(), state)
+      writeJSON(aiStateFile(), state); invalidateAiStateCache()
       if (nextAgent) {
         try { fs.unlinkSync(usageSig) } catch {}
         persistLifecycleEvent(dir, 'usage_limit', 'SWITCH', `${state[agent].label} sin créditos — cambiando a ${state[nextAgent].label}`)
@@ -833,7 +833,13 @@ function nextReset() {
   if (time <= new Date()) time.setDate(time.getDate() + 1)
   return time.toISOString()
 }
+let _aiStateCache = null
+let _aiStateCacheTs = 0
+const _AI_STATE_TTL = 5_000
+function invalidateAiStateCache() { _aiStateCache = null; _aiStateCacheTs = 0 }
 function aiState() {
+  const now = Date.now()
+  if (_aiStateCache && now - _aiStateCacheTs < _AI_STATE_TTL) return _aiStateCache
   const state = readJSON(aiStateFile(), {})
   let dirty = false
   for (const [id, defaults] of Object.entries(AI_DEFAULTS)) {
@@ -850,7 +856,9 @@ function aiState() {
     }
     if (!dirty && JSON.stringify(state[id]) !== prev) dirty = true
   }
-  if (dirty) writeJSON(aiStateFile(), state)
+  if (dirty) { writeJSON(aiStateFile(), state); invalidateAiStateCache(); return state }
+  _aiStateCache = state
+  _aiStateCacheTs = now
   return state
 }
 ipcMain.handle('ai:credits', () => aiState())
@@ -860,6 +868,7 @@ ipcMain.handle('ai:select', (_e, id) => {
   if (!state[id]) return { ok: false, error: 'Unknown AI' }
   state.selected = id
   writeJSON(aiStateFile(), state)
+  invalidateAiStateCache()
   return { ok: true }
 })
 
@@ -926,7 +935,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   if (!state[agent]) return { ok: false, err: 'Select an AI developer first' }
   state.selected = agent
   state[agent].credits = Math.max(0, state[agent].credits - 1)
-  writeJSON(aiStateFile(), state)
+  writeJSON(aiStateFile(), state); invalidateAiStateCache()
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
   return playOrchestra(dir, agent)
 })
