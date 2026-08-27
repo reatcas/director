@@ -1247,9 +1247,9 @@ ipcMain.handle('export:session', async (_e, dir) => {
     projectPath: dir,
     orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim() || 'unknown',
     runStarted: read('.claude/RUN_STARTED').trim() || null,
-    lifecycle: readJSON(path.join(dir, '.claude/logs/lifecycle-events.json'), []),
+    lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; return d })(),
     mixerConfig: readJSON(path.join(dir, '.claude/orchestra.json'), {}),
-    mixerHistory: readJSON(path.join(dir, '.claude/mixer-history.json'), []),
+    mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; return d })(),
     claudeUsage: getClaudeUsage(dir),
     compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')),
     roadmap: read('ROADMAP.md'),
@@ -1375,7 +1375,9 @@ ipcMain.handle('metrics:resource', (_e, dir) => {
   const live = scheduler.getMetrics(dir)
   if (live && live.allocation) return metricsSet('resource:' + dir, live)
   // Compute allocation from current mixer weights on demand
-  const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
+  const _cfgPath = path.join(dir, '.claude/orchestra.json')
+  let cfg = {}
+  try { if (fs.statSync(_cfgPath).size <= 512_000) cfg = readJSON(_cfgPath, {}) } catch {}
   if (cfg.focus) {
     const alloc = scheduler.computeAllocation(dir, cfg.focus)
     return metricsSet('resource:' + dir, { allocation: alloc, baseline: null, lastSample: null, efficiency: null, sampleCount: 0 })
@@ -1419,7 +1421,9 @@ ipcMain.handle('metrics:coordination', () => {
 
 ipcMain.handle('metrics:snapshot', (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
+  const _snapPath = path.join(dir, '.claude/orchestra.json')
+  let cfg = {}
+  try { if (fs.statSync(_snapPath).size <= 512_000) cfg = readJSON(_snapPath, {}) } catch {}
   return contextProto.computeDelta(dir, cfg.focus || {})
 })
 
@@ -1621,12 +1625,17 @@ const blueprintFile = (dir) => path.join(dir, '.claude', 'blueprint.json')
 
 ipcMain.handle('blueprint:load', (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  return readJSON(blueprintFile(dir), null)
+  const bpPath = blueprintFile(dir)
+  try { if (fs.statSync(bpPath).size > 512_000) return null } catch {}
+  return readJSON(bpPath, null)
 })
 
 ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (!isKnownProject(dir)) return false
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false
+  if (data.answers && typeof data.answers === 'object') {
+    if (Object.values(data.answers).some(v => typeof v === 'string' && v.length > 2000)) return false
+  }
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false
   const p = blueprintFile(dir)
@@ -1638,7 +1647,9 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
 
 ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  const bp = readJSON(blueprintFile(dir), null)
+  const bpPath = blueprintFile(dir)
+  let bp = null
+  try { if (fs.statSync(bpPath).size <= 512_000) bp = readJSON(bpPath, null) } catch {}
   if (!bp || !bp.answers) return null
 
   const a = bp.answers
@@ -1778,7 +1789,9 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
   const now = Date.now()
   const cached = _readinessCache.get(dir)
   if (cached && now - cached.ts < 5_000) return cached.val
-  const bp = readJSON(blueprintFile(dir), null)
+  const bpPath = blueprintFile(dir)
+  let bp = null
+  try { if (fs.statSync(bpPath).size <= 512_000) bp = readJSON(bpPath, null) } catch {}
   if (!bp || !bp.answers) return { ready: false, missing: ['blueprint'], hasBlueprint: false }
 
   const a = bp.answers

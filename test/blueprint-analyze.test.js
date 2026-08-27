@@ -41,7 +41,7 @@ describe('orchestra:analyze handler', () => {
 describe('blueprint:load handler', () => {
   it('uses readJSON with null fallback', () => {
     const block = mainJs.split("'blueprint:load'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('readJSON(blueprintFile(dir), null)')
+    expect(block).toContain('readJSON(bpPath, null)')
   })
 
   it('validates dir parameter', () => {

@@ -65,9 +65,9 @@
         <div class="settings-row">
           <span class="settings-key">Theme</span>
           <div class="settings-toggle-group" id="themeGroup">
-            <button class="stg-btn" data-theme="dark">DARK</button>
-            <button class="stg-btn on" data-theme="auto">AUTO</button>
-            <button class="stg-btn" data-theme="light">LIGHT</button>
+            <button class="stg-btn" data-theme="dark" aria-label="Seleccionar tema oscuro">DARK</button>
+            <button class="stg-btn on" data-theme="auto" aria-label="Seleccionar tema automático">AUTO</button>
+            <button class="stg-btn" data-theme="light" aria-label="Seleccionar tema claro">LIGHT</button>
           </div>
         </div>
       </div>
@@ -234,7 +234,7 @@
           <select id="modelSelect" aria-label="AI model" style="margin-left:5px;">
           </select>
         </div>
-        <button id="aiLoginBtn" class="tp-btn" title="Login to AI provider" style="font-size:8px;width:auto;padding:0 6px;">LOGIN</button>
+        <button id="aiLoginBtn" class="tp-btn" title="Login to AI provider" style="font-size:8px;width:auto;padding:0 6px;" aria-label="Login al proveedor AI">LOGIN</button>
         <span id="aiAuthDot" class="ai-auth-dot" title="Not connected"></span>
       </div>
       <span id="aiCreditStatus" class="ai-credit-status">Select an AI to start</span>
@@ -496,20 +496,20 @@
             <div id="bpMessages" class="bp-messages"></div>
             <div class="bp-input-area">
               <input id="bpInput" type="text" class="bp-input mono" placeholder="Type your answer…" autocomplete="off">
-              <button id="bpSend" class="bp-send">→</button>
-              <button id="bpSkip" class="bp-skip" title="Skip question">SKIP</button>
+              <button id="bpSend" class="bp-send" aria-label="Guardar respuesta de blueprint">→</button>
+              <button id="bpSkip" class="bp-skip" title="Skip question" aria-label="Sin respuesta — omitir pregunta">SKIP</button>
             </div>
           </div>
           <div id="bpModules" class="bp-modules">
             <div class="bp-modules-header">
               <span class="rack-title" style="color:var(--txt)">MODULES</span>
-              <button id="bpAddModule" class="ms-copy">+ MODULE</button>
+              <button id="bpAddModule" class="ms-copy" aria-label="Agregar módulo al blueprint">+ MODULE</button>
             </div>
             <div id="bpModuleList" class="bp-module-list"></div>
           </div>
           <div style="padding:6px 10px;display:flex;gap:4px">
-            <button id="bpNewSession" class="tp-action">+ SESSION</button>
-            <button id="bpGenerate" class="tp-action upgrade" disabled>GENERATE BRIEF</button>
+            <button id="bpNewSession" class="tp-action" aria-label="Agregar nueva sesión al blueprint">+ SESSION</button>
+            <button id="bpGenerate" class="tp-action upgrade" disabled aria-label="Exportar brief generado">GENERATE BRIEF</button>
             <span id="bpReadiness" class="section-badge mono" style="margin-left:auto"></span>
           </div>
         </div>
@@ -517,14 +517,14 @@
         <!-- KNOWLEDGE tab content -->
         <div id="knowledgeTab" class="mixer-tab-pane kn-pane">
           <div class="bp-phases" style="display:flex; gap:10px; padding:10px; flex-wrap:wrap">
-            <button id="knBtnRoadmap" class="tp-action kn-btn on">ROADMAP.md</button>
-            <button id="knBtnReport" class="tp-action kn-btn">REPORT.md</button>
-            <button id="knBtnDb" class="tp-action kn-btn">DB_SCHEMA.md</button>
-            <button id="knBtnPlan" class="tp-action kn-btn">PLAN.md</button>
-            <button id="knBtnDecisions" class="tp-action kn-btn">DECISIONS.md</button>
-            <button id="knBtnPending" class="tp-action kn-btn">PENDING.md</button>
-            <button id="knBtnLearnings" class="tp-action kn-btn">LEARNINGS.md</button>
-            <button id="knBtnBlueprint" class="tp-action kn-btn">BLUEPRINT.md</button>
+            <button id="knBtnRoadmap" class="tp-action kn-btn on" aria-label="Panel de conocimiento: ROADMAP">ROADMAP.md</button>
+            <button id="knBtnReport" class="tp-action kn-btn" aria-label="Panel de conocimiento: REPORT">REPORT.md</button>
+            <button id="knBtnDb" class="tp-action kn-btn" aria-label="Panel de conocimiento: DB schema">DB_SCHEMA.md</button>
+            <button id="knBtnPlan" class="tp-action kn-btn" aria-label="Panel de conocimiento: PLAN">PLAN.md</button>
+            <button id="knBtnDecisions" class="tp-action kn-btn" aria-label="Panel de conocimiento: DECISIONS">DECISIONS.md</button>
+            <button id="knBtnPending" class="tp-action kn-btn" aria-label="Panel de conocimiento: PENDING">PENDING.md</button>
+            <button id="knBtnLearnings" class="tp-action kn-btn" aria-label="Panel de conocimiento: LEARNINGS">LEARNINGS.md</button>
+            <button id="knBtnBlueprint" class="tp-action kn-btn" aria-label="Panel de conocimiento: BLUEPRINT">BLUEPRINT.md</button>
           </div>
           <div style="flex:1; overflow-y:auto; padding:10px;">
             <pre id="knowledgeContent" class="mono" style="font-size:11px; white-space:pre-wrap; color:var(--txt)"></pre>
