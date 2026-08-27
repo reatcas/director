@@ -1,26 +1,31 @@
-# Cycle 105 Plan — IMPROVEMENT MODE
+# Cycle 106 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 105
+## MIXER BUDGET — Cycle 106
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 3 | 0/3 |
-| backend | 10 | 2 | 0/2 |
-| performance | 10 | 1 | 0/1 |
-| ux_accessibility | 5 | 1 | 0/1 |
-| security | 20 | FROZEN (3rd consecutive) | — |
+| quality_tests | 35 | FROZEN (3rd consecutive) | — |
+| backend | 5 | FROZEN (3rd consecutive) | — |
 | frontend | 5 | FROZEN | — |
-Total: 7 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
+| security | 20 | 4 | 4/4 |
+| performance | 10 | 2 | 2/2 |
+| ux_accessibility | 5 | 1 | 1/1 |
+| data_db | 5 | 1 | 1/1 |
+Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [performance] I-121 — replace readJSON(store()) with cachedProjects() in read-only paths ✅
-2. [backend] I-122 — add isKnownProject to mixer:write, orchestra:writeConfig, clearLog, analyze ✅
-3. [quality_tests] I-123 — test orchestra:analyze handler structure ✅
-4. [quality_tests] I-124 — test alerts:config/read + mixer:read/write/writeConfig handlers ✅
-5. [quality_tests] I-125 — test metrics:resource/context/snapshot/allocation handlers ✅
-6. [backend] I-126 — add isKnownProject to remaining metrics + tail handlers ✅
-7. [ux_accessibility] I-127 — aria-label + aria-valuetext on mixer sliders ✅
+1. [security] I-128 — isKnownProject guard on mixer:saved:list + orchestra:upgrade ✅
+2. [security] I-129 — isKnownProject guard on blueprint:load/save/generate-brief/readiness (4 handlers) ✅
+3. [security] I-130 — blueprint:save data validation (type + size limit) ✅
+4. [security] I-131 — security test coverage for blueprint handlers + orchestra:upgrade ✅
+5. [performance] I-132 — cache blueprint:readiness result (5s TTL per dir) ✅
+6. [performance] I-133 — server-side 2s result cache for metrics:resource + metrics:context ✅
+7. [ux_accessibility] I-134 — aria-live region for log panel + new-commit announcements ✅
+8. [data_db] I-135 — prune analysis-*.txt on clearLog (keep last 5) + cap mixer-history at 100 ✅
 
 ## Stats
-- 2895 tests passing (was 2827 at cycle start)
-- +68 tests added this cycle
-- 14 more IPC handlers secured with isKnownProject
+- 2898 tests passing (was 2895 at cycle start)
+- +3 tests added this cycle
+- 6 more IPC handlers secured with isKnownProject (blueprint×4, mixer:saved:list, orchestra:upgrade)
+- blueprint:save data validated (type + 512KB limit)
+- blueprint:readiness cached 5s TTL
+- metrics:resource + metrics:context cached 2s TTL

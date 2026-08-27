@@ -160,3 +160,11 @@
 - [x] **I-125** Test metrics:resource/context/snapshot/allocation handlers — 38 tests in metrics-handlers.test.js.
 - [x] **I-126** isKnownProject guard to orchestra:tail + 8 metrics handlers — complete dir validation sweep.
 - [x] **I-127** aria-label + aria-valuetext on mixer category sliders — screen readers now announce category and percentage.
+- [x] **I-128** isKnownProject guard on mixer:saved:list + orchestra:upgrade — 2 more handlers secured.
+- [x] **I-129** isKnownProject guard on blueprint:load/save/generate-brief/readiness — all 4 blueprint handlers secured.
+- [x] **I-130** blueprint:save data validation — type check, no arrays, 512KB size limit.
+- [x] **I-131** Security test coverage for blueprint + orchestra:upgrade — 9 new tests in security-regression.test.js.
+- [x] **I-132** Cache blueprint:readiness result — 5s TTL per dir, invalidate on blueprint:save.
+- [x] **I-133** 2s result cache for metrics:resource + metrics:context — reduce repeated polling overhead.
+- [x] **I-134** aria-live log panel + assertive live region for commit announcements.
+- [x] **I-135** Prune analysis-*.txt on clearLog (keep last 5) + cap mixer-history at 100 entries.
