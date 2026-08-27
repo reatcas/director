@@ -174,7 +174,7 @@ ipcMain.handle('alerts:config', (_e, cfg) => {
 ipcMain.handle('alerts:read', () => ({ ..._alertConfig }))
 
 // ─── JSON helpers ─────────────────────────────────────────────────────────────
-const readJSON  = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return fb } }
+const readJSON  = (p, fb) => { try { const _r = JSON.parse(fs.readFileSync(p, 'utf8')); return _r !== null && _r !== undefined ? _r : fb } catch { return fb } }
 const writeJSON = (p, o) => {
   fs.mkdirSync(path.dirname(p), { recursive: true });
   const tmp = p + '.tmp'
@@ -1074,15 +1074,18 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   if (typeof agent !== 'string' || !Object.keys(AI_DEFAULTS).includes(agent)) return { ok: false, err: 'Select an AI developer first' }
   const state = aiState()
   if (!state[agent]) return { ok: false, err: 'Select an AI developer first' }
-  state.selected = agent
-  state[agent].credits = Math.max(0, state[agent].credits - 1)
-  const _aisPlaySer = JSON.stringify(state)
-  if (_aisPlaySer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisPlaySer)); invalidateAiStateCache() }
   _metricsCache.delete('claude-usage:' + dir)
   _piStaticCache.delete(dir)
   _invalidateIsRunning(dir)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
-  return playOrchestra(dir, agent)
+  const _playResult = playOrchestra(dir, agent)
+  if (_playResult.ok) {
+    state.selected = agent
+    state[agent].credits = Math.max(0, state[agent].credits - 1)
+    const _aisPlaySer = JSON.stringify(state)
+    if (_aisPlaySer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisPlaySer)); invalidateAiStateCache() }
+  }
+  return _playResult
 })
 
 ipcMain.handle('orchestra:fine', (_e, dir) => {
@@ -1351,7 +1354,8 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
   const p = path.join(dir, '.claude/saved-mixes.json')
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
-  mixes = mixes.filter(m => m.id !== id)
+  if (!Array.isArray(mixes)) mixes = []
+  mixes = mixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.id === 'string' && m.id !== id)
   const _msdSer = JSON.stringify(mixes)
   if (_msdSer.length <= 512_000) writeJSON(p, JSON.parse(_msdSer))
   return true
@@ -1417,7 +1421,7 @@ ipcMain.handle('metrics:session-summary', () => {
   }
   const aiCredits = aiState()
   const creditsRemaining = Object.values(aiCredits).filter(v => typeof v === 'object' && v !== null && 'credits' in v).reduce((sum, ai) => sum + (ai.credits || 0), 0)
-  return metricsSet('session-summary', { active, idle, total: projects.length, totalTokens, worstCompliance, creditsRemaining })
+  return metricsSet('session-summary', { active, idle, total: projects.length, totalTokens, worstCompliance, creditsRemaining }, _SLOW_METRICS_TTL)
 })
 
 // ─── Read iteration log summary ──────────────────────────────────────────────
@@ -1445,7 +1449,7 @@ ipcMain.handle('notes:read', (_e, dir) => {
   const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
   try {
     const st = fs.statSync(p)
-    if (st.size > 512_000) return ''
+    if (st.size > 102_400) return ''
     return fs.readFileSync(p, 'utf8')
   } catch { return '' }
 })

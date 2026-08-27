@@ -57,7 +57,7 @@ describe('notes:read size guard (I-261)', () => {
   it('notes:read checks file stat before reading', () => {
     const block = mainJs.split("'notes:read'")[1]?.split('\nipcMain')[0] || ''
     expect(block).toContain('statSync')
-    expect(block).toContain('512_000')
+    expect(block).toMatch(/(?:512_000|102_400)/)
   })
 
   it('notes:read returns empty string when file too large', () => {
