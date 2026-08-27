@@ -43,6 +43,40 @@ describe('orchestra:analyze report size cap (I-397)', () => {
   })
 })
 
+describe('getClaudeUsage() RUN_STARTED size guard (I-395)', () => {
+  const block = mainJs.split('function getClaudeUsage')[1]?.split('\nfunction ')[0] || ''
+
+  it('guards RUN_STARTED read with statSync size check ≤1024', () => {
+    expect(block).toContain('RUN_STARTED')
+    expect(block).toContain('statSync')
+    expect(block).toContain('1024')
+  })
+
+  it('does not read RUN_STARTED without size check in getClaudeUsage', () => {
+    const unguarded = /readFileSync\([^)]*RUN_STARTED[^)]*\)(?![^;]*statSync)/.test(block)
+    expect(unguarded).toBe(false)
+  })
+})
+
+describe('orchestra:version-check ORCHESTRA_VERSION size guards (I-395)', () => {
+  const block = mainJs.split("'orchestra:version-check'")[1]?.split('\nipcMain')[0] || ''
+
+  it('guards bundled ORCHESTRA_VERSION read with statSync ≤1024', () => {
+    expect(block).toContain('statSync')
+    expect(block).toContain('1024')
+    expect(block).toContain('ORCHESTRA_VERSION')
+  })
+
+  it('does not raw-readFileSync ORCHESTRA_VERSION without size check', () => {
+    const lines = block.split('\n')
+    for (const line of lines) {
+      if (line.includes('readFileSync') && line.includes('ORCHESTRA_VERSION')) {
+        expect(line).toContain('statSync')
+      }
+    }
+  })
+})
+
 describe('cmdInput arrow key navigation (I-398)', () => {
   const block = rendererJs.split("'cmdInput'")[1]?.split('\n}')[0] || ''
 

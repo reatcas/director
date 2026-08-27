@@ -385,7 +385,7 @@ function getClaudeUsage(dir) {
 
   const logDir = path.join(dir, '.claude/logs')
   let runStarted = 0
-  try { runStarted = new Date(fs.readFileSync(path.join(dir, '.claude/RUN_STARTED'), 'utf8').trim()).getTime() } catch {}
+  try { const _rsp = path.join(dir, '.claude/RUN_STARTED'); if (fs.statSync(_rsp).size <= 1024) runStarted = new Date(fs.readFileSync(_rsp, 'utf8').trim()).getTime() } catch {}
 
   const cached = usageTracker.get(dir)
   const now = Date.now()
@@ -1576,8 +1576,8 @@ const UPGRADE_FILES = [
 
 ipcMain.handle('orchestra:version-check', (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  const bundled = (() => { try { return fs.readFileSync(path.join(orchestraSrc(), '.claude/ORCHESTRA_VERSION'), 'utf8').trim() } catch { return null } })()
-  const project = (() => { try { return fs.readFileSync(path.join(dir, '.claude/ORCHESTRA_VERSION'), 'utf8').trim() } catch { return null } })()
+  const bundled = (() => { try { const p = path.join(orchestraSrc(), '.claude/ORCHESTRA_VERSION'); return fs.statSync(p).size <= 1024 ? fs.readFileSync(p, 'utf8').trim() : null } catch { return null } })()
+  const project = (() => { try { const p = path.join(dir, '.claude/ORCHESTRA_VERSION'); return fs.statSync(p).size <= 1024 ? fs.readFileSync(p, 'utf8').trim() : null } catch { return null } })()
   return { bundled, project, needsUpgrade: !!(bundled && project && bundled !== project) }
 })
 
