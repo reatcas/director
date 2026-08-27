@@ -1194,6 +1194,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     try { if (fs.statSync(coordFile).size <= 1_048_576) coordHist = readJSON(coordFile, []) } catch {}
     if (Array.isArray(coordHist) && coordHist.length > 100) { const _coTrimSer = JSON.stringify(coordHist.slice(-100)); if (_coTrimSer.length <= 1_048_576) writeJSON(coordFile, JSON.parse(_coTrimSer)) }
   } catch {}
+  _metricsCache.delete('snapshot:' + dir)
+  _metricsCache.delete('context:' + dir)
 })
 
 ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
@@ -1321,7 +1323,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   let userMixes = []
   try { if (fs.statSync(p).size <= 512_000) userMixes = readJSON(p, []) } catch {}
   if (!Array.isArray(userMixes)) userMixes = []
-  userMixes = userMixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object')
+  userMixes = userMixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object' && Object.values(m.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
   if (!_defaultMixesCache) {
     const _dmPath = path.join(orchestraSrc(), '.claude/default-mixes.json')
     _defaultMixesCache = []
@@ -1620,7 +1622,8 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   const _llUnfilteredTotal = events.length
   if (_llBefore) events = events.filter(e => e.ts < _llBefore)
   if (_llType) events = events.filter(e => e.type === _llType)
-  return { events: events.slice(-_llLimit), total: events.length, unfilteredTotal: _llUnfilteredTotal }
+  const _llEvents = events.slice(-_llLimit).map(e => Buffer.byteLength(e.message, 'utf8') > 4096 ? { ...e, message: Buffer.from(e.message, 'utf8').slice(0, 4096).toString('utf8') } : e)
+  return { events: _llEvents, total: events.length, unfilteredTotal: _llUnfilteredTotal }
 })
 
 const _LC_TYPES = new Set(['play', 'fine', 'kill', 'commit', 'exit', 'usage_limit', 'directive', 'auto_resume', 'error', 'note', 'cycle_close', 'feature'])
@@ -1701,7 +1704,9 @@ ipcMain.handle('metrics:context', (_e, dir) => {
 })
 
 ipcMain.handle('metrics:coordination', () => {
-  return coordinator.getStatus()
+  const _coHit = metricsGet('coordination')
+  if (_coHit !== null) return _coHit
+  return metricsSet('coordination', coordinator.getStatus())
 })
 
 ipcMain.handle('metrics:snapshot', (_e, dir) => {
@@ -1845,6 +1850,7 @@ ipcMain.handle('orchestra:upgrade', (_e, dir) => {
   for (const f of upgraded) {
     try { fs.unlinkSync(path.join(dir, f) + '.bak') } catch {}
   }
+  _metricsCache.delete('version-check:' + dir)
   return { ok: errors.length === 0, upgraded, errors }
 })
 
