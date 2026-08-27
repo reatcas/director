@@ -36,8 +36,9 @@ describe('lifecycle:list size guard (I-282)', () => {
     expect(block).toContain('let events = []')
   })
 
-  it('still returns last 200 events', () => {
-    expect(block).toContain('events.slice(-200)')
+  it('still returns last 200 events (via _llLimit default)', () => {
+    expect(block).toContain('events.slice(-_llLimit)')
+    expect(block).toContain('200')
   })
 })
 

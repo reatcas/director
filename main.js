@@ -209,7 +209,8 @@ function isRunning(dir) {
   if (procs.has(dir)) return true
   const pidFile = path.join(dir, '.claude/ORCHESTRA_PID')
   if (!fs.existsSync(pidFile)) return false
-  const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10)
+  let pid = 0
+  try { const _irStat = fs.statSync(pidFile); if (_irStat.size <= 64) pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10) } catch {}
   if (!pid || !pidAlive(pid)) { try { fs.unlinkSync(pidFile) } catch {}; return false }
   return true
 }
@@ -364,7 +365,7 @@ function copyDir(src, dst) {
     const s = path.join(src, e.name), d = path.join(dst, e.name)
     if (e.isDirectory()) copyDir(s, d)
     else if (!fs.existsSync(d) || !['CLAUDE.md', 'settings.json'].includes(e.name)) fs.copyFileSync(s, d)
-    else if (e.name === 'CLAUDE.md') fs.appendFileSync(d, '\n\n' + fs.readFileSync(s, 'utf8'))
+    else if (e.name === 'CLAUDE.md') { try { const _cdStat = fs.statSync(s); if (_cdStat.size <= 1_048_576) fs.appendFileSync(d, '\n\n' + fs.readFileSync(s, 'utf8')) } catch {} }
     else if (e.name === 'settings.json') {
       let a = {}, b = {}
       try { if (fs.statSync(d).size <= 512_000) a = readJSON(d, {}) } catch {}
@@ -1392,12 +1393,13 @@ function persistLifecycleEvent(dir, type, label, message) {
   } catch {}
 }
 
-ipcMain.handle('lifecycle:list', (_e, dir) => {
+ipcMain.handle('lifecycle:list', (_e, dir, limit) => {
   if (!isKnownProject(dir)) return []
+  const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : 200
   const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
-  return { events: events.slice(-200), total: events.length }
+  return { events: events.slice(-_llLimit), total: events.length }
 })
 
 ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
