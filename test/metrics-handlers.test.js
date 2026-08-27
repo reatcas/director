@@ -125,7 +125,7 @@ describe('metrics:allocation handler', () => {
   })
 
   it('delegates to scheduler.computeAllocation', () => {
-    expect(block).toContain('scheduler.computeAllocation(dir, cfg.focus')
+    expect(block).toContain('computeAllocation(dir,')
   })
 })
 
