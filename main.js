@@ -310,10 +310,10 @@ function findLogo(dir) {
   } catch {}
   // 3. Check directories named logo/icon/brand/img/images
   try {
-    for (const entry of fs.readdirSync(dir)) {
-      const ep = path.join(dir, entry)
-      if (!fs.statSync(ep).isDirectory()) continue
-      if (/^(logo|icon|brand|img|images|static)s?$/i.test(entry)) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue
+      if (/^(logo|icon|brand|img|images|static)s?$/i.test(entry.name)) {
+        const ep = path.join(dir, entry.name)
         const found = scanDirForImage(ep)
         if (found) return found
       }
@@ -1249,7 +1249,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   let userMixes = []
   try { if (fs.statSync(p).size <= 512_000) userMixes = readJSON(p, []) } catch {}
   if (!Array.isArray(userMixes)) userMixes = []
-  userMixes = userMixes.filter(m => m && typeof m === 'object' && !Array.isArray(m))
+  userMixes = userMixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object')
   if (!_defaultMixesCache) {
     const _dmPath = path.join(orchestraSrc(), '.claude/default-mixes.json')
     _defaultMixesCache = []
@@ -1432,7 +1432,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
   if (!isKnownProject(dir)) return Promise.resolve({ report: 'No project selected', file: null })
   return new Promise(resolve => {
     const read = f => { try { const p = path.join(dir, f); if (fs.statSync(p).size > 1_048_576) return ''; return fs.readFileSync(p, 'utf8') } catch { return '' } }
-    const started = read('.claude/RUN_STARTED').trim()
+    const started = read('.claude/RUN_STARTED').trim().slice(0, 64)
     execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000 }, (gitErr, gitOut) => {
       const commits = gitErr ? [] : (gitOut || '').trim().split('\n').filter(Boolean)
       const cat = {}
@@ -1520,8 +1520,9 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter) => {
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
   if (!Array.isArray(events)) events = []
   events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string')
+  const _llUnfilteredTotal = events.length
   if (_llType) events = events.filter(e => e.type === _llType)
-  return { events: events.slice(-_llLimit), total: events.length }
+  return { events: events.slice(-_llLimit), total: events.length, unfilteredTotal: _llUnfilteredTotal }
 })
 
 ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
@@ -1579,7 +1580,7 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   if (hist.length > 0) {
     const last = hist[hist.length - 1]
     let totalProcessed = 0, totalSaved = 0
-    for (const m of hist) { totalProcessed += m.totalTokens || 0; totalSaved += m.totalTokensSaved || 0 }
+    for (const m of hist) { totalProcessed += (Number.isFinite(m.totalTokens) ? m.totalTokens : 0); totalSaved += (Number.isFinite(m.totalTokensSaved) ? m.totalTokensSaved : 0) }
     return metricsSet('context:' + dir, {
       lastDelta: { metrics: last },
       aggregated: {

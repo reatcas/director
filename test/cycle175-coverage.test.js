@@ -27,7 +27,7 @@ describe('mixer:saved:list Array.isArray guard (S-02)', () => {
   })
 
   it('filters out non-object items from userMixes', () => {
-    expect(block).toContain('userMixes.filter(m => m && typeof m === \'object\' && !Array.isArray(m))')
+    expect(block).toContain("m && typeof m === 'object' && !Array.isArray(m)")
   })
 })
 
