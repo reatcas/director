@@ -50,9 +50,8 @@ window.mixerGraph = (() => {
 
   // ── Node properties ───────────────────────────────────────────────────────
   function nodeVal(node) {
-    if (node.id === HUB_ID) return 30
-    const w = node.weight || 0
-    return w <= 0 ? 1 : Math.max(2, w * 1.5)
+    if (node.id === HUB_ID) return 18
+    return 4  // constant — weight shown via color, not size (large nodeVal breaks d3 force)
   }
   function nodeColor(node) {
     if (node.id === HUB_ID) return HUB_COLOR
