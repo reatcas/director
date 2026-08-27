@@ -153,3 +153,10 @@
 - [x] **I-118** Test isKnownProject cache — invalidation on add/remove, cachedProjects() lazy load.
 - [x] **I-119** Restore focus-visible ring on outline:none elements — #aiSelect, .chat-field, .bp-input.
 - [x] **I-120** isKnownProject guard to export:session, mixer:history, mixer:saved:* — 5 handlers secured.
+- [x] **I-121** Replace readJSON(store()) with cachedProjects() in read-only paths — eliminate disk I/O on image loads, project list refresh, hot-reload.
+- [x] **I-122** isKnownProject guard to mixer:write, orchestra:writeConfig, clearLog, analyze — prevent writes to arbitrary paths.
+- [x] **I-123** Test orchestra:analyze handler — git command, timeout, categorization, analysis file write.
+- [x] **I-124** Test alerts:config/read + mixer:read/write/writeConfig handlers — 42 tests in handler-coverage.test.js.
+- [x] **I-125** Test metrics:resource/context/snapshot/allocation handlers — 38 tests in metrics-handlers.test.js.
+- [x] **I-126** isKnownProject guard to orchestra:tail + 8 metrics handlers — complete dir validation sweep.
+- [x] **I-127** aria-label + aria-valuetext on mixer category sliders — screen readers now announce category and percentage.
