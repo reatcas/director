@@ -3,10 +3,10 @@
 ## MIXER BUDGET — Cycle 203 (performance BANNED: appears in C200+C201+C202)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
-| ux_accessibility | 5 | 1 | 0/1 |
-| data_db | 5 | 1 | 0/1 |
+| quality_tests | 35 | 4 | 4/4 |
+| security | 20 | 2 | 2/2 |
+| ux_accessibility | 5 | 1 | 1/1 |
+| data_db | 5 | 1 | 1/1 |
 | performance | 10 | 0 | BANNED (C200+C201+C202) |
 | backend | 5 | 0 | SKIP |
 | frontend | 5 | 0 | SKIP |
