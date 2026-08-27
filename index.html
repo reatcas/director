@@ -447,11 +447,11 @@
           <span class="mixer-drawer-title">MIX CONSOLE</span>
           <button id="mixerDrawerClose" class="tp-btn" aria-label="Cerrar mixer">✕</button>
         </div>
-        <div class="mixer-tabs">
-          <button class="mixer-tab on" data-mtab="mixTab">MIX</button>
-          <button class="mixer-tab" data-mtab="bpTab">BLUEPRINT</button>
-          <button class="mixer-tab" data-mtab="knowledgeTab">KNOWLEDGE</button>
-          <button class="mixer-tab" data-mtab="notesTab">NOTES</button>
+        <div class="mixer-tabs" role="tablist" aria-label="Paneles del mezclador">
+          <button class="mixer-tab on" data-mtab="mixTab" role="tab" aria-selected="true" aria-controls="mixTab" aria-label="Mezcla de categorías">MIX</button>
+          <button class="mixer-tab" data-mtab="bpTab" role="tab" aria-selected="false" aria-controls="bpTab" aria-label="Blueprint del proyecto">BLUEPRINT</button>
+          <button class="mixer-tab" data-mtab="knowledgeTab" role="tab" aria-selected="false" aria-controls="knowledgeTab" aria-label="Base de conocimiento">KNOWLEDGE</button>
+          <button class="mixer-tab" data-mtab="notesTab" role="tab" aria-selected="false" aria-controls="notesTab" aria-label="Notas del operador">NOTES</button>
         </div>
 
         <!-- MIX tab content -->
