@@ -275,17 +275,17 @@
 
   <div id="workspace">
     <!-- CHANNEL RACK -->
-    <aside id="rack">
+    <aside id="rack" aria-label="Panel de repertorio">
       <div id="rackHead">
         <span class="rack-title">REPERTOIRE</span>
         <button id="addBtn" class="rack-add" aria-label="Agregar proyecto">+</button>
       </div>
-      <div id="dropzone">Drop folder here</div>
+      <div id="dropzone" role="region" aria-label="Zona de soltar proyecto">Drop folder here</div>
       <ul id="projects" role="list" aria-label="Repertorio de proyectos"></ul>
     </aside>
 
     <!-- MAIN STAGE — split layout v6 -->
-    <main id="stage">
+    <main id="stage" aria-label="Escenario principal">
       <!-- Empty state (no project selected) -->
       <div id="emptyState" class="empty-state on">
         <div class="empty-visual">

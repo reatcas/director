@@ -953,6 +953,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   state.selected = agent
   state[agent].credits = Math.max(0, state[agent].credits - 1)
   writeJSON(aiStateFile(), state); invalidateAiStateCache()
+  _metricsCache.delete('claude-usage:' + dir)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
   return playOrchestra(dir, agent)
 })
@@ -961,6 +962,7 @@ ipcMain.handle('orchestra:fine', (_e, dir) => {
   if (!isKnownProject(dir)) return { ok: false }
   snapshotMixer(dir, 'fine')
   fs.writeFileSync(path.join(dir, '.claude/ALTO'), '')
+  _metricsCache.delete('claude-usage:' + dir)
   stopWatchingResume(dir)
   persistLifecycleEvent(dir, 'fine', 'FINE', 'Cerrando último compás')
   // Safety net: if the process is still alive after 90s, escalate to group kill
@@ -1110,6 +1112,7 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
   const mixes = readJSON(p, [])
+  if (mixes.length >= 100) return false
   mixes.push({ id: Date.now().toString(36), name: name.trim(), ts: new Date().toISOString(), focus })
   writeJSON(p, mixes)
   return true
@@ -1189,7 +1192,11 @@ ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
 ipcMain.handle('notes:read', (_e, dir) => {
   if (!isKnownProject(dir)) return ''
   const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
-  try { return fs.readFileSync(p, 'utf8') } catch { return '' }
+  try {
+    const st = fs.statSync(p)
+    if (st.size > 512_000) return ''
+    return fs.readFileSync(p, 'utf8')
+  } catch { return '' }
 })
 
 ipcMain.handle('notes:write', (_e, dir, content) => {
@@ -1803,6 +1810,13 @@ app.whenReady().then(() => {
   })
   win.loadFile('index.html')
 
+  // Block external navigation — renderer must stay on local index.html
+  win.webContents.on('will-navigate', (e, url) => {
+    if (!url.startsWith('file://')) e.preventDefault()
+  })
+  // Block new windows from renderer
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+
   // Start hot-reload watcher for protocol files
   startHotReloadWatcher()
 
@@ -1833,6 +1847,12 @@ app.whenReady().then(() => {
     }
   }
 })
+// ─── Renderer security: block new windows and external navigation globally ───
+app.on('web-contents-created', (_e, wc) => {
+  wc.on('will-navigate', (evt, url) => { if (!url.startsWith('file://')) evt.preventDefault() })
+  wc.setWindowOpenHandler(() => ({ action: 'deny' }))
+})
+
 // ─── Graceful shutdown: stop all orchestras when Director closes ─────────────
 app.on('before-quit', () => {
   // Stop tracked processes — kill entire process group (bash + claude)

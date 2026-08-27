@@ -171,7 +171,7 @@ describe('index.html — workspace layout', () => {
   })
 
   it('defines #rack aside for project list', () => {
-    expect(html).toContain('<aside id="rack">')
+    expect(html).toContain('id="rack"')
   })
 
   it('defines #dropzone for drag-and-drop', () => {
@@ -183,7 +183,7 @@ describe('index.html — workspace layout', () => {
   })
 
   it('defines #stage main element', () => {
-    expect(html).toContain('<main id="stage">')
+    expect(html).toContain('id="stage"')
   })
 
   it('defines #splitLayout', () => {
