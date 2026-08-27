@@ -1235,23 +1235,34 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
 })
 
 // ─── Telemetry / Metrics IPC ──────────────────────────────────────────────────
+const _metricsCache = new Map()
+const _METRICS_TTL = 2_000
+function metricsGet(key) {
+  const c = _metricsCache.get(key); return c && Date.now() - c.ts < _METRICS_TTL ? c.val : null
+}
+function metricsSet(key, val) { _metricsCache.set(key, { ts: Date.now(), val }); return val }
+
 ipcMain.handle('metrics:resource', (_e, dir) => {
   if (!isKnownProject(dir)) return null
+  const hit = metricsGet('resource:' + dir)
+  if (hit) return hit
   const live = scheduler.getMetrics(dir)
-  if (live && live.allocation) return live
+  if (live && live.allocation) return metricsSet('resource:' + dir, live)
   // Compute allocation from current mixer weights on demand
   const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
   if (cfg.focus) {
     const alloc = scheduler.computeAllocation(dir, cfg.focus)
-    return { allocation: alloc, baseline: null, lastSample: null, efficiency: null, sampleCount: 0 }
+    return metricsSet('resource:' + dir, { allocation: alloc, baseline: null, lastSample: null, efficiency: null, sampleCount: 0 })
   }
   return live
 })
 
 ipcMain.handle('metrics:context', (_e, dir) => {
   if (!isKnownProject(dir)) return null
+  const hit = metricsGet('context:' + dir)
+  if (hit) return hit
   const live = contextProto.getMetrics(dir)
-  if (live && live.lastDelta) return live
+  if (live && live.lastDelta) return metricsSet('context:' + dir, live)
   // Read persisted telemetry if no live data
   const file = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
   const hist = readJSON(file, [])
@@ -1259,7 +1270,7 @@ ipcMain.handle('metrics:context', (_e, dir) => {
     const last = hist[hist.length - 1]
     let totalProcessed = 0, totalSaved = 0
     for (const m of hist) { totalProcessed += m.totalTokens || 0; totalSaved += m.totalTokensSaved || 0 }
-    return {
+    return metricsSet('context:' + dir, {
       lastDelta: { metrics: last },
       aggregated: {
         cycles: hist.length,
@@ -1269,7 +1280,7 @@ ipcMain.handle('metrics:context', (_e, dir) => {
         avgSavedPerCycle: hist.length > 0 ? Math.floor(totalSaved/hist.length) : 0
       },
       historySize: hist.length
-    }
+    })
   }
   return live
 })
