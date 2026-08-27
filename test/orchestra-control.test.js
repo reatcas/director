@@ -46,8 +46,8 @@ describe('orchestra:clearLog handler', () => {
 describe('orchestra:writeConfig handler', () => {
   const block = mainJs.split("'orchestra:writeConfig'")[1]?.split('\nipcMain')[0] || ''
 
-  it('validates dir parameter', () => {
-    expect(block).toContain('if (!dir)')
+  it('validates dir via isKnownProject', () => {
+    expect(block).toContain('isKnownProject(dir)')
   })
 
   it('uses writeJSON for atomic writes', () => {

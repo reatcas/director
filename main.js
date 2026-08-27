@@ -972,7 +972,7 @@ ipcMain.handle('orchestra:hotReload', (_e) => {
 })
 
 ipcMain.handle('orchestra:clearLog', (_e, dir) => {
-  if (!dir) return
+  if (!isKnownProject(dir)) return
   const stdoutLog = path.join(dir, '.claude/logs/orchestra-stdout.log')
   const masterLog = path.join(dir, '.claude/logs/orchestra.log')
   try { if (fs.existsSync(stdoutLog)) fs.writeFileSync(stdoutLog, '') } catch {}
@@ -1004,7 +1004,7 @@ ipcMain.handle('mixer:read',  (_e, dir) => {
   return readJSON(path.join(dir, '.claude/orchestra.json'), null)
 })
 ipcMain.handle('mixer:write', (_e, dir, focus) => {
-  if (!dir) return false
+  if (!isKnownProject(dir)) return false
   const p = path.join(dir, '.claude/orchestra.json')
   const cfg = readJSON(p, { version: '2.0.0' })
   cfg.focus = focus
@@ -1014,7 +1014,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
 })
 
 ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
-  if (!dir) return false
+  if (!isKnownProject(dir)) return false
   const p = path.join(dir, '.claude/orchestra.json')
   writeJSON(p, cfg)
   return true
@@ -1156,7 +1156,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
 
 // ─── Analysis ─────────────────────────────────────────────────────────────────
 ipcMain.handle('orchestra:analyze', (_e, dir) => {
-  if (!dir) return Promise.resolve({ report: 'No project selected', file: null })
+  if (!isKnownProject(dir)) return Promise.resolve({ report: 'No project selected', file: null })
   return new Promise(resolve => {
     const read = f => { try { return fs.readFileSync(path.join(dir, f), 'utf8') } catch { return '' } }
     const started = read('.claude/RUN_STARTED').trim()
