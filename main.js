@@ -1159,6 +1159,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
   const _allowedKeys = new Set(['version', 'focus', 'agent', 'model', 'claudeUsageBudget', 'nice'])
   if (!Object.keys(cfg).every(k => _allowedKeys.has(k))) return false
+  if (cfg.version !== undefined && (typeof cfg.version !== 'string' || cfg.version.length > 64)) return false
   if (cfg.agent !== undefined && !Object.keys(AI_DEFAULTS).includes(cfg.agent)) return false
   if (cfg.model !== undefined && (typeof cfg.model !== 'string' || cfg.model.length > 256)) return false
   if (cfg.nice !== undefined && (!Number.isInteger(cfg.nice) || cfg.nice < -20 || cfg.nice > 19)) return false

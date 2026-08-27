@@ -1,21 +1,21 @@
-# Cycle 165 Plan — IMPROVEMENT MODE
+# Cycle 166 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 165 (security/backend/frontend BANNED — 3+ consecutive)
+## MIXER BUDGET — Cycle 166 (C165 broke streaks — all categories reset)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 6 | 0/6 |
-| ux_accessibility | 5 | 1 | 0/1 |
-| business_logic | 5 | 1 | 0/1 |
-| security | 20 | BANNED | — |
-| backend | 5 | BANNED | — |
-| frontend | 5 | BANNED | — |
+| quality_tests | 35 | 4 | 0/4 |
+| security | 20 | 2 | 0/2 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
 | performance | 10 | FROZEN | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [ux_accessibility] I-490 — #splitDividerV: tabindex + aria-valuenow/min/max + Arrow key keyboard support
-2. [business_logic] I-491 — rebalanceMixer: cap intermediate shares to prevent rounding overshoot (total > 100)
-3-8. [quality_tests] cycle165-coverage.test.js — 6 tests
+1. [security] I-492 — bpGenerateBrief: esc(result.briefPath) in bpAddMessage call
+2. [security] I-493 — fetchIterSummary: remove redundant manual escaping; use ' · ' separator
+3. [backend] I-494 — orchestra:writeConfig: validate cfg.version (string ≤64 chars)
+4. [frontend] I-495 — renderBpModules: bp-mod-del aria-label="Eliminar módulo"
+5-8. [quality_tests] cycle166-coverage.test.js — 4 tests
 
 ## Stats
-- 3580 tests at cycle start → target 3586 (+6)
+- 3586 tests at cycle start → target 3590 (+4)

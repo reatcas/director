@@ -496,9 +496,8 @@ describe('fetchIterSummary — iter log content display', () => {
     expect(body).toContain('meaningful.slice(-3)')
   })
 
-  it('HTML-escapes angle brackets', () => {
-    expect(body).toContain("replace(/</g, '&lt;')")
-    expect(body).toContain("replace(/>/g, '&gt;')")
+  it('joins lines with middle dot separator', () => {
+    expect(body).toContain("join(' · ')")
   })
 
   it('wraps in try-catch', () => {

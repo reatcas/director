@@ -1783,9 +1783,7 @@ async function fetchIterSummary(logPath) {
     if (meaningful.length === 0) return
 
     // Show last meaningful lines as summary
-    const summary = meaningful.slice(-3).map(l =>
-      l.trim().replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    ).join('<br>')
+    const summary = meaningful.slice(-3).map(l => l.trim()).join(' · ')
     addSummaryEntry(summary)
   } catch {}
 }
@@ -2921,7 +2919,7 @@ async function bpGenerateBrief() {
   bpAddMessage('agent', 'Generating brief and ROADMAP from your answers…', 'bp-generating')
   const result = await window.director.blueprintGenerate(current)
   if (result) {
-    bpAddMessage('agent', `Brief generated at <code>${result.briefPath}</code>. The orchestra will use this file as primary context in Cycle 0.`, 'bp-complete')
+    bpAddMessage('agent', `Brief generated at <code>${esc(result.briefPath)}</code>. The orchestra will use this file as primary context in Cycle 0.`, 'bp-complete')
     showToast('Blueprint generated — ready to interpret')
   }
 }
@@ -2942,7 +2940,7 @@ function renderBpModules() {
     card.innerHTML = `
       <div class="bp-mod-header">
         <input class="bp-mod-name mono" value="${esc(mod.name || '')}" placeholder="Module name" data-i="${i}" data-field="name">
-        <button class="bp-mod-del" data-i="${i}" title="Delete">✕</button>
+        <button class="bp-mod-del" data-i="${i}" aria-label="Eliminar módulo">✕</button>
       </div>
       <textarea class="bp-mod-desc mono" rows="2" placeholder="Description — what it does, responsibilities…" data-i="${i}" data-field="description">${esc(mod.description || '')}</textarea>
       <input class="bp-mod-features mono" value="${esc((mod.features || []).join(', '))}" placeholder="Features: feat1, feat2, feat3…" data-i="${i}" data-field="features">
