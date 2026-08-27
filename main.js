@@ -762,6 +762,7 @@ function playOrchestra(dir, agent = 'claude') {
     }
     snapshotMixer(dir, 'exit')
     procs.delete(dir)
+    _invalidateIsRunning(dir)
     pollGitCommits(dir)
     stopTailing(dir)
     stopMetricsSampling(dir)
@@ -1260,6 +1261,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   if (_mwSer.length <= 512_000) writeJSON(p, JSON.parse(_mwSer))
   coordinator.invalidateConflictCache()
   _metricsCache.delete('allocation:' + dir)
+  _metricsCache.delete('resource:' + dir)
   _invalidateOrchJson(dir)
   return true
 })
@@ -1297,6 +1299,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   const p = path.join(dir, '.claude/orchestra.json')
   writeJSON(p, JSON.parse(serialized))
   _invalidateOrchJson(dir)
+  if (cfg.focus) { _metricsCache.delete('allocation:' + dir); _metricsCache.delete('resource:' + dir) }
   return true
 })
 
@@ -1315,7 +1318,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
     try { if (fs.statSync(_dmPath).size <= 512_000) _defaultMixesCache = readJSON(_dmPath, []) } catch {}
   }
   const existingIds = new Set(userMixes.map(m => m.id))
-  const validDefaults = _defaultMixesCache.filter(p => p && typeof p === 'object' && typeof p.id === 'string')
+  const validDefaults = _defaultMixesCache.filter(p => p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^[0-9a-z_\-]+$/.test(p.id) && p.id.length <= 64 && typeof p.name === 'string' && p.name.length > 0 && p.name.length <= 256 && p.focus && typeof p.focus === 'object' && !Array.isArray(p.focus))
   const merged = [...validDefaults.filter(p => !existingIds.has(p.id)), ...userMixes]
   return merged.slice(0, 200)
 })
@@ -1466,7 +1469,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
     projectPath: dir,
     orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim() || 'unknown',
     runStarted: read('.claude/RUN_STARTED').trim() || null,
-    lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object') : [] })(),
+    lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string') : [] })(),
     mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return d })(),
     mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object') : [] })(),
     claudeUsage: getClaudeUsage(dir),
