@@ -798,10 +798,12 @@ ipcMain.handle('repertoire:open', (_e, dir) => {
 })
 
 ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
-  if (!dir || typeof subpath !== 'string' || !subpath.trim()) return null
+  if (!isKnownProject(dir) || typeof subpath !== 'string' || !subpath.trim()) return null
   const p = path.resolve(dir, subpath)
   if (!p.startsWith(dir + path.sep) && p !== dir) return null
   try {
+    const stat = fs.statSync(p)
+    if (stat.size > 2_097_152) return null
     return fs.readFileSync(p, 'utf8')
   } catch {
     return null
@@ -825,10 +827,11 @@ const AI_DEFAULTS = {
 }
 function nextAvailableAi(state, currentAgent) {
   const providers = Object.keys(AI_DEFAULTS)
-  const start = Math.max(0, providers.indexOf(currentAgent))
-  for (let offset = 1; offset < providers.length; offset++) {
-    const candidate = providers[(start + offset) % providers.length]
-    if (state[candidate].credits > 0) return candidate
+  const idx = providers.indexOf(currentAgent)
+  const start = idx >= 0 ? idx : -1
+  for (let offset = 1; offset <= providers.length; offset++) {
+    const candidate = providers[(start + offset + providers.length) % providers.length]
+    if (state[candidate] && state[candidate].credits > 0) return candidate
   }
   return null
 }
@@ -885,6 +888,7 @@ function runCmd(cmd, args, timeout = 5000) {
 }
 
 ipcMain.handle('ai:auth-status', (_e, id) => {
+  if (typeof id !== 'string' || !Object.keys(AI_DEFAULTS).includes(id)) return { loggedIn: false }
   try {
     if (id === 'claude') {
       const out = runCmd('claude', ['auth', 'status'])
@@ -911,6 +915,7 @@ ipcMain.handle('ai:auth-status', (_e, id) => {
 })
 
 ipcMain.handle('ai:login', (_e, id) => {
+  if (typeof id !== 'string' || !Object.keys(AI_DEFAULTS).includes(id)) return { ok: false, msg: 'Unknown provider' }
   try {
     if (id === 'claude') {
       execFile('claude', ['auth', 'login'], { timeout: 120000 })
@@ -1035,7 +1040,8 @@ function snapshotMixer(dir, event) {
   const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), null)
   if (!cfg || !cfg.focus) return
   const histFile = path.join(dir, '.claude/mixer-history.json')
-  const hist = readJSON(histFile, [])
+  const cutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000
+  const hist = readJSON(histFile, []).filter(h => new Date(h.ts).getTime() >= cutoffMs)
   hist.push({ ts: new Date().toISOString(), event, focus: { ...cfg.focus } })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
   writeJSON(histFile, hist)
