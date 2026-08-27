@@ -109,7 +109,7 @@ body {
 .monitor-status, .metrics-strip, #mixerFooter,
 #mixesHeader, .mix-card, .strip, .strip-h, .analysis-bar,
 .section-header { user-select: none }
-#app { display: flex; flex-direction: row; height: 100vh; position: relative }
+#app { display: flex; flex-direction: column; height: 100vh; position: relative }
 
 /* ── Particle canvas overlay ──────────────────────────────────────────────── */
 #particleCanvasWrap {
@@ -579,17 +579,18 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 #splitLayout,
 .split-layout {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex: 1;
   min-height: 0;
   overflow: hidden;
   position: relative;
 }
 
-/* ── Node graph section (top half) ────────────────────────────────────────── */
+/* ── Node graph section (left half) ───────────────────────────────────────── */
 #nodeGraphSection {
   flex: 0 0 50%;
-  min-height: 120px;
+  min-width: 200px;
+  min-height: 0;
   position: relative;
   background: radial-gradient(ellipse at 50% 40%, #0a0a28 0%, #05051a 45%, #020208 100%);
   overflow: hidden;
@@ -619,21 +620,21 @@ body.light #nodeGraphSection {
 
 /* ── Vertical drag divider ─────────────────────────────────────────────────── */
 .split-divider-v {
-  height: 4px;
-  min-height: 4px;
+  width: 4px;
+  min-width: 4px;
   flex-shrink: 0;
   background: var(--line);
-  cursor: ns-resize;
+  cursor: ew-resize;
   position: relative;
   transition: background .15s;
 }
 .split-divider-v::after {
   content: '';
   position: absolute;
-  left: 20%;
-  right: 20%;
-  top: 1px;
-  height: 1px;
+  top: 20%;
+  bottom: 20%;
+  left: 1px;
+  width: 1px;
   background: rgba(0,255,238,0.12);
   box-shadow: 0 0 4px rgba(0,255,238,0.08);
   border-radius: 1px;

@@ -3292,13 +3292,15 @@ document.addEventListener('keydown', (e) => {
 // Vertical split divider drag — resizes node graph vs console sections
 ;(function initSplitDivider() {
   const divider = $('#splitDividerV')
-  const top = $('#nodeGraphSection')
-  const bottom = $('#consoleSection')
-  if (!divider || !top || !bottom) return
-  const saved = parseFloat(localStorage.getItem('director:splitVPct'))
+  const left = $('#nodeGraphSection')
+  const right = $('#consoleSection')
+  if (!divider || !left || !right) return
+  // Clear any stale vertical saved value
+  localStorage.removeItem('director:splitVPct')
+  const saved = parseFloat(localStorage.getItem('director:splitHPct'))
   if (saved > 15 && saved < 80) {
-    top.style.flex = 'none'
-    top.style.height = saved + '%'
+    left.style.flex = 'none'
+    left.style.width = saved + '%'
   }
   let dragging = false
   divider.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault() })
@@ -3306,17 +3308,17 @@ document.addEventListener('keydown', (e) => {
     if (!dragging) return
     const parent = divider.parentElement
     const rect = parent.getBoundingClientRect()
-    const pct = ((e.clientY - rect.top) / rect.height) * 100
+    const pct = ((e.clientX - rect.left) / rect.width) * 100
     if (pct > 15 && pct < 80) {
-      top.style.flex = 'none'
-      top.style.height = pct + '%'
+      left.style.flex = 'none'
+      left.style.width = pct + '%'
       if (window.mixerGraph && mixerGraphInited) window.mixerGraph.resize()
     }
   })
   document.addEventListener('mouseup', () => {
     if (dragging) {
-      const h = parseFloat(top.style.height)
-      if (h) localStorage.setItem('director:splitVPct', h.toFixed(1))
+      const w = parseFloat(left.style.width)
+      if (w) localStorage.setItem('director:splitHPct', w.toFixed(1))
     }
     dragging = false
   })
