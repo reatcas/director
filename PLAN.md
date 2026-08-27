@@ -1,28 +1,29 @@
-# Cycle 123 Plan — IMPROVEMENT MODE
+# Cycle 124 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 123
+## MIXER BUDGET — Cycle 124
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 4/4 |
 | security | 20 | 2 | 2/2 |
-| backend | 5 | 1 | 1/1 |
-| ux_accessibility | 5 | 1 | 1/1 |
-| frontend | 5 | FROZEN (3rd: 120,121,122) | — |
-| performance | 10 | FROZEN (14th) | — |
+| frontend | 5 | 1 | 1/1 |
+| business_logic | 5 | 1 | 1/1 |
+| backend | 5 | FROZEN (3rd: 121,122,123) | — |
+| ux_accessibility | 5 | FROZEN (3rd: 121,122,123) | — |
+| performance | 10 | FROZEN (15th) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-273 — orchestra:analyze read() helper: stat.size > 1MB guard ✅
-2. [security] I-274 — context-protocol _persist: stat.size guard before JSON.parse ✅
-3. [backend] I-275 — metrics:context: stat.size guard before readJSON ✅
-4. [ux_accessibility] I-276 — featureStrip: role=status + aria-label + aria-live ✅
-5. [quality_tests] I-277 — test orchestra:analyze read helper size guard ✅
-6. [quality_tests] I-278 — test context-protocol _persist size guard ✅
-7. [quality_tests] I-279 — test metrics:context size guard ✅
-8. [quality_tests] I-280 — test featureStrip accessibility ✅
+1. [security] I-281 — repertoire:add: validate droppedPath is string when provided ✅
+2. [security] I-282 — lifecycle:list: stat.size > 2MB guard before readJSON ✅
+3. [frontend] I-283 — usageBanner: role=alert + aria-live=assertive + aria-label ✅
+4. [business_logic] I-284 — resource-scheduler persistTelemetry: size guard 1MB ✅
+5. [quality_tests] I-285 — test repertoire:add type guard ✅
+6. [quality_tests] I-286 — test lifecycle:list size guard ✅
+7. [quality_tests] I-287 — test usageBanner alert role ✅
+8. [quality_tests] I-288 — test resource-scheduler size guard ✅
 
 ## Stats
-- 3206 tests passing (was 3195 at cycle start)
+- 3217 tests passing (was 3206 at cycle start)
 - +11 net tests added this cycle
-- orchestra:analyze now safe against oversized state files
-- context-protocol telemetry reads are bounded at 1MB
+- All telemetry JSON reads now guarded by size checks
+- lifecycle:list protected against oversized event files
