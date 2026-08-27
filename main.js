@@ -229,7 +229,7 @@ function cachedProjects() {
   let _rpData = []
   try { if (fs.statSync(_rpPath).size <= 512_000) _rpData = readJSON(_rpPath, []) } catch {}
   if (!Array.isArray(_rpData)) _rpData = []
-  _rpData = _rpData.filter(p => p && typeof p.path === 'string')
+  _rpData = _rpData.filter(p => p && typeof p.path === 'string' && (!p.name || typeof p.name === 'string') && (!p.id || typeof p.id === 'string') && (!p.name || p.name.length <= 256) && (!p.id || p.id.length <= 64))
   _projectsCache = _rpData
   return _projectsCache
 }
@@ -1129,7 +1129,7 @@ ipcMain.handle('orchestra:kill', (_e, dir) => {
     const pidFile = path.join(dir, '.claude/ORCHESTRA_PID')
     try {
       const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10)
-      if (pid) killProcessGroup(pid)
+      if (Number.isInteger(pid) && pid >= 2 && pid <= 4_194_304 && pid !== process.pid) killProcessGroup(pid)
     } catch {}
   }
   _metricsCache.delete('claude-usage:' + dir)
@@ -1624,7 +1624,10 @@ function persistLifecycleEvent(dir, type, label, message) {
       pruned.splice(0, pruned.length - 100)
       _lcSer = JSON.stringify(pruned)
     }
-    if (_lcSer.length <= 2_097_152) writeJSON(file, pruned)
+    if (_lcSer.length <= 2_097_152) {
+      writeJSON(file, pruned)
+      for (const k of _metricsCache.keys()) { if (k.startsWith('lc:' + dir + ':')) _metricsCache.delete(k) }
+    }
   } catch {}
 }
 

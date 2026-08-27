@@ -490,6 +490,7 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 #sessionSummary .ss-live { color: var(--fl-green) }
 #sessionSummary .ss-idle { color: var(--dim2) }
 #sessionSummary .ss-warn { color: var(--fl-red, #e03030) }
+#sessionSummary:focus-visible { outline: 2px solid var(--fl-accent, #7c6af7); outline-offset: 2px }
 
 /* ══════════════════════════════════════════
    MAIN STAGE
