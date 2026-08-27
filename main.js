@@ -1227,21 +1227,23 @@ ipcMain.handle('metrics:session-summary', () => {
   let active = 0, idle = 0, totalTokens = 0, worstCompliance = null
   for (const p of projects) {
     if (!p.path) continue
-    if (isRunning(p.path)) active++; else idle++
     try {
-      const ctx = contextProto.getMetrics(p.path)
-      if (ctx && ctx.aggregated) totalTokens += ctx.aggregated.totalTokensProcessed || 0
-    } catch {}
-    try {
-      const reportPath = path.join(p.path, 'ORCHESTRA_REPORT.md')
-      if (fs.statSync(reportPath).size > 1_048_576) continue
-      const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
-      if (lines.length) {
-        const last = parseComplianceLine(lines[lines.length - 1])
-        if (last && (worstCompliance === null || last.score < worstCompliance.score)) {
-          worstCompliance = { dir: p.path, name: p.name, ...last }
+      if (isRunning(p.path)) active++; else idle++
+      try {
+        const ctx = contextProto.getMetrics(p.path)
+        if (ctx && ctx.aggregated) totalTokens += ctx.aggregated.totalTokensProcessed || 0
+      } catch {}
+      try {
+        const reportPath = path.join(p.path, 'ORCHESTRA_REPORT.md')
+        if (fs.statSync(reportPath).size > 1_048_576) continue
+        const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
+        if (lines.length) {
+          const last = parseComplianceLine(lines[lines.length - 1])
+          if (last && (worstCompliance === null || last.score < worstCompliance.score)) {
+            worstCompliance = { dir: p.path, name: p.name, ...last }
+          }
         }
-      }
+      } catch {}
     } catch {}
   }
   const aiCredits = aiState()
@@ -1878,7 +1880,7 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
     completeness: bp.completeness || 0,
     sessions: (bp.sessions || []).length,
     modules: (bp.modules || []).length,
-    answeredFields: Object.keys(a).filter(k => a[k] && a[k].trim()).length
+    answeredFields: Object.keys(a).filter(k => typeof a[k] === 'string' && a[k].trim()).length
   }
   _readinessCache.set(dir, { ts: now, val })
   return val

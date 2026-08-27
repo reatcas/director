@@ -318,7 +318,7 @@ class CoordinationProtocol {
       fs.mkdirSync(telDir, { recursive: true })
       const file = path.join(telDir, 'coordination-metrics.json')
       let hist = []
-      try { hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
+      try { if (fs.statSync(file).size <= 1_048_576) hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
       hist.push({
         timestamp:      new Date().toISOString(),
         instances:      this.instances.size,
