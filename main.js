@@ -343,7 +343,7 @@ function projectInfo(dir) {
   const has = f => fs.existsSync(path.join(dir, f))
   const installed = has('run.sh') && has('.claude/commands/loop.md')
   const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
-  const version = installed ? (fs.existsSync(vf) ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : '1.x') : null
+  const version = installed ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : null
   const _piPath = path.join(dir, '.claude/orchestra.json')
   let mixer = null
   try { if (fs.statSync(_piPath).size <= 512_000) mixer = readJSON(_piPath, null) } catch {}
@@ -355,7 +355,7 @@ function projectInfo(dir) {
   
   const startFile = path.join(dir, '.claude/RUN_STARTED')
   let runStarted = null
-  if (running && fs.existsSync(startFile)) {
+  if (running) {
     try {
       const _sfStat = fs.statSync(startFile)
       if (_sfStat.size <= 1024) {
@@ -1628,7 +1628,7 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
     const lastMtime = _complianceMtimeCache.get(dir)
     if (hit !== null && lastMtime === st.mtimeMs) return hit
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
-    if (!lines.length) return null
+    if (!lines.length) return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL)
     const recent = lines.slice(-10)
     const scores = recent.map(l => parseComplianceLine(l)).filter(Boolean).map(c => c.score).filter(s => s !== null)
     const last = parseComplianceLine(recent[recent.length - 1])
@@ -1814,7 +1814,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false
   if (data.answers && typeof data.answers === 'object') {
     if (Object.keys(data.answers).length > 200) return false
-    if (Object.keys(data.answers).some(k => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(k))) return false
+    if (Object.keys(data.answers).some(k => k.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(k))) return false
     const _bsAnswerVals = Object.values(data.answers)
     if (_bsAnswerVals.some(v => v !== null && typeof v === 'object')) return false
     if (_bsAnswerVals.some(v => typeof v === 'string' && v.length > 2000)) return false
@@ -1822,7 +1822,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   }
   if (data.modules && Array.isArray(data.modules)) {
     if (data.modules.length > 100) return false
-    if (data.modules.some(m => !m || typeof m !== 'object' || typeof m.name !== 'string' || m.name.length > 256)) return false
+    if (data.modules.some(m => !m || typeof m !== 'object' || typeof m.name !== 'string' || m.name.length > 256 || Object.keys(m).length > 20)) return false
     if (data.modules.some(m => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(m.name))) return false
     if (data.modules.some(m => m.description !== undefined && (typeof m.description !== 'string' || m.description.length > 2000))) return false
     if (data.modules.some(m => m.description !== undefined && typeof m.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(m.description))) return false

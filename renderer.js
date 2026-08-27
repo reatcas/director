@@ -2930,7 +2930,7 @@ async function loadLifecycleTimeline() {
 
   el.innerHTML = recent.map(ev => {
     const d = new Date(ev.ts)
-    const ts = d.toLocaleTimeString('es', { hour12: false }) + ' ' + d.toLocaleDateString('es', { day: '2-digit', month: 'short' })
+    const ts = isNaN(d.getTime()) ? ev.ts.slice(0, 16) : d.toLocaleTimeString('es', { hour12: false }) + ' ' + d.toLocaleDateString('es', { day: '2-digit', month: 'short' })
     const icon = LC_ICONS[ev.type] || '·'
     return `<div class="lc-event" role="listitem" data-type="${esc(ev.type)}"><span class="lc-ts">${esc(ts)}</span><span class="lc-icon" aria-hidden="true">${icon}</span><span class="lc-label">${esc(ev.label)}</span><span class="lc-msg" title="${esc(ev.message)}">${esc(ev.message)}</span></div>`
   }).join('')
