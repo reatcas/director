@@ -110,8 +110,8 @@ function pollGitCommits(dir) {
         persistLifecycleEvent(dir, 'commit', 'COMMIT', c)
       }
     } else {
-      const lastTime = gitLastCommitTime.get(dir) || Date.now()
-      if (!gitLastCommitTime.has(dir)) gitLastCommitTime.set(dir, lastTime)
+      if (!gitLastCommitTime.has(dir)) gitLastCommitTime.set(dir, Date.now())
+      const lastTime = gitLastCommitTime.get(dir)
       if (Date.now() - lastTime > 20 * 60 * 1000) {
         const mins = Math.floor((Date.now() - lastTime) / 60000)
         sendAlert('stall', 'Estancamiento', `${path.basename(dir)} — ${mins}min sin commits`)
@@ -136,6 +136,7 @@ function stopGitWatcher(dir) {
   const iv = gitWatchers.get(dir)
   if (iv) { clearInterval(iv); gitWatchers.delete(dir) }
   gitLastHash.delete(dir)
+  gitLastCommitTime.delete(dir)
 }
 
 // ─── Desktop notification alerts ─────────────────────────────────────────────
@@ -1427,8 +1428,8 @@ function persistLifecycleEvent(dir, type, label, message) {
     const file = path.join(logDir, 'lifecycle-events.json')
     let events = []
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
-    const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000
-    const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
+    const cutoffISO = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO)
     const _evType = typeof type === 'string' ? type.slice(0, 64) : 'unknown'
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
     const _evMsg = typeof message === 'string' ? message.slice(0, 4096) : String(message).slice(0, 4096)
@@ -1575,14 +1576,16 @@ function parseComplianceLine(line) {
 }
 
 const _SLOW_METRICS_TTL = 30_000
+const _complianceMtimeCache = new Map()
 ipcMain.handle('metrics:compliance', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const hit = metricsGet('compliance:' + dir)
-  if (hit !== null) return hit
   const reportPath = path.join(dir, 'ORCHESTRA_REPORT.md')
   try {
     const st = fs.statSync(reportPath)
     if (st.size > 1_048_576) return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL)
+    const lastMtime = _complianceMtimeCache.get(dir)
+    if (hit !== null && lastMtime === st.mtimeMs) return hit
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
     if (!lines.length) return null
     const recent = lines.slice(-10)
@@ -1590,6 +1593,7 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
     const last = parseComplianceLine(recent[recent.length - 1])
     const _rawAvg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
     const avg = Number.isFinite(_rawAvg) ? _rawAvg : null
+    _complianceMtimeCache.set(dir, st.mtimeMs)
     return metricsSet('compliance:' + dir, { last, avgScore: avg, cycles: scores.length, history: scores }, _SLOW_METRICS_TTL)
   } catch { return null }
 })

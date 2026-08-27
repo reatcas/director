@@ -121,13 +121,17 @@ const COLOR_PALETTE = [
 ]
 
 let customAtriles = []
+let _sectionsCache = null
+let _sectionsCacheKey = ''
 
 async function loadCustomAtriles() {
   customAtriles = await window.director.atrilesList() || []
+  _sectionsCache = null
 }
 
 function getAllSections() {
-  // Merge built-in SECTIONS with custom atriles
+  const key = JSON.stringify(customAtriles)
+  if (_sectionsCache && key === _sectionsCacheKey) return _sectionsCache
   const all = [...SECTIONS]
   for (const a of customAtriles) {
     if (!all.find(s => s[0] === a.id)) {
@@ -136,6 +140,8 @@ function getAllSections() {
       all.push([a.id, a.name, a.color, svg, a.description || ''])
     }
   }
+  _sectionsCache = all
+  _sectionsCacheKey = key
   return all
 }
 
@@ -776,12 +782,17 @@ function renderCommitBreakdown(report) {
 }
 
 async function runAnalysis() {
-  if ($('#analysisOut')) $('#analysisOut').value = 'Componiendo la crítica…'
+  const btn = $('#refreshAnalysis')
+  const out = $('#analysisOut')
+  if (out) { out.value = 'Componiendo la crítica…'; out.setAttribute('aria-busy', 'true') }
+  if (btn) btn.disabled = true
   if ($('#analysisFile')) $('#analysisFile').textContent = ''
   if ($('#commitBreakdown')) $('#commitBreakdown').style.display = 'none'
   const res = await window.director.analyze(current)
+  if (out) out.setAttribute('aria-busy', 'false')
+  if (btn) btn.disabled = false
   if (res) {
-    if ($('#analysisOut')) $('#analysisOut').value = res.report
+    if (out) out.value = res.report
     if ($('#analysisFile')) $('#analysisFile').textContent = res.file
     renderCommitBreakdown(res.report)
   }
@@ -2653,7 +2664,7 @@ if ($('#procsRefresh')) $('#procsRefresh').onclick = loadProcs
 
 loadProcs()
 setInterval(() => {
-  if (document.visibilityState === 'hidden') return
+  if (document.visibilityState === 'hidden' || !current) return
   loadProcs()
 }, 5000)
 
@@ -3188,7 +3199,12 @@ if ($('#themeGroup')) {
 applyTheme(getStoredTheme())
 
 // Settings modal
-if ($('#settingsBtn')) $('#settingsBtn').onclick = () => { $('#settingsModal').hidden = false; loadSettings() }
+if ($('#settingsBtn')) $('#settingsBtn').onclick = () => {
+  const _sm = $('#settingsModal'); if (!_sm) return
+  $('#settingsModal').hidden = false; loadSettings()
+  const _sf = _sm.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+  if (_sf) _sf.focus()
+}
 if ($('#closeSettings')) $('#closeSettings').onclick = () => { $('#settingsModal').hidden = true }
 if ($('#settingsModal')) $('#settingsModal').onclick = e => { if (e.target === $('#settingsModal')) $('#settingsModal').hidden = true }
 if ($('#settingsModal')) $('#settingsModal').addEventListener('keydown', e => {
@@ -3252,7 +3268,12 @@ document.querySelectorAll('#settingsModal input, #settingsModal select').forEach
 })
 
 // About & settings buttons
-if ($('#aboutBtn')) $('#aboutBtn').onclick = () => { $('#aboutModal').hidden = false }
+if ($('#aboutBtn')) $('#aboutBtn').onclick = () => {
+  const m = $('#aboutModal'); if (!m) return
+  m.hidden = false
+  const f = m.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+  if (f) f.focus()
+}
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 // On boot, auto-detect running projects and restore state
