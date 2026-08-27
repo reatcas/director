@@ -1397,12 +1397,14 @@ function persistLifecycleEvent(dir, type, label, message) {
   } catch {}
 }
 
-ipcMain.handle('lifecycle:list', (_e, dir, limit) => {
+ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter) => {
   if (!isKnownProject(dir)) return []
   const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : 200
+  const _llType = typeof typeFilter === 'string' && /^[\w\-]+$/.test(typeFilter) ? typeFilter : null
   const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
+  if (_llType) events = events.filter(e => e.type === _llType)
   return { events: events.slice(-_llLimit), total: events.length }
 })
 
@@ -1609,6 +1611,10 @@ ipcMain.handle('orchestra:upgrade', (_e, dir) => {
       if (f === 'run.sh') try { fs.chmodSync(dstPath, 0o755) } catch {}
       upgraded.push(f)
     } catch (e) { errors.push(`${f}: ${e.message}`) }
+  }
+  // Clean up stale .bak files — keep only the newest per upgraded file
+  for (const f of upgraded) {
+    try { fs.unlinkSync(path.join(dir, f) + '.bak') } catch {}
   }
   return { ok: errors.length === 0, upgraded, errors }
 })
@@ -1861,7 +1867,7 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
       }
     }
     roadmapLines.push('', '## P1 — Post-MVP', '(to be defined after P0)')
-    try { fs.writeFileSync(roadmapPath, roadmapLines.join('\n')) } catch {}
+    try { const _rmSer = roadmapLines.join('\n'); fs.writeFileSync(roadmapPath, _rmSer.length > 512_000 ? _rmSer.slice(0, 512_000) : _rmSer) } catch {}
   }
 
   return { brief, briefPath, roadmapGenerated: !fs.existsSync(roadmapPath) }

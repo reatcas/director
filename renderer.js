@@ -3244,6 +3244,19 @@ if ($('#closeAbout')) $('#closeAbout').onclick = () => { $('#aboutModal').hidden
 if ($('#aboutModal')) $('#aboutModal').onclick = (e) => {
   if (e.target === $('#aboutModal')) $('#aboutModal').hidden = true
 }
+if ($('#aboutModal')) $('#aboutModal').addEventListener('keydown', e => {
+  const modal = $('#aboutModal')
+  if (!modal || modal.hidden) return
+  if (e.key === 'Escape') { modal.hidden = true; return }
+  if (e.key === 'Tab') {
+    const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    if (!focusable.length) return
+    e.preventDefault()
+    const idx = focusable.indexOf(document.activeElement)
+    const next = e.shiftKey ? (idx - 1 + focusable.length) % focusable.length : (idx + 1) % focusable.length
+    focusable[next].focus()
+  }
+})
 
 // ─── Keyboard shortcuts (F-24) ──────────────────────────────────────────────
 if ($('#closeShortcuts')) $('#closeShortcuts').onclick = () => { $('#shortcutsModal').hidden = true }
