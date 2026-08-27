@@ -169,7 +169,9 @@ const readJSON  = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8'
 const writeJSON = (p, o) => {
   fs.mkdirSync(path.dirname(p), { recursive: true });
   const tmp = p + '.tmp'
-  fs.writeFileSync(tmp, JSON.stringify(o, null, 2))
+  const _wjSerial = JSON.stringify(o, null, 2)
+  if (_wjSerial.length > 67_108_864) throw new Error('writeJSON: payload exceeds 64MB cap')
+  fs.writeFileSync(tmp, _wjSerial)
   fs.renameSync(tmp, p)
 }
 
@@ -1382,7 +1384,9 @@ function persistLifecycleEvent(dir, type, label, message) {
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
     const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000
     const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
-    pruned.push({ ts: new Date().toISOString(), type, label, message })
+    const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
+    const _evMsg = typeof message === 'string' ? message.slice(0, 4096) : String(message).slice(0, 4096)
+    pruned.push({ ts: new Date().toISOString(), type, label: _evLabel, message: _evMsg })
     if (pruned.length > 500) pruned.splice(0, pruned.length - 500)
     writeJSON(file, pruned)
   } catch {}

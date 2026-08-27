@@ -3224,14 +3224,18 @@ if ($('#closeShortcuts')) $('#closeShortcuts').onclick = () => { $('#shortcutsMo
 if ($('#shortcutsModal')) $('#shortcutsModal').onclick = e => { if (e.target === $('#shortcutsModal')) $('#shortcutsModal').hidden = true }
 if ($('#cmdPalette')) $('#cmdPalette').onclick = e => { if (e.target === $('#cmdPalette')) closeCmdPalette() }
 
+let _cmdPrevFocus = null
+
 function closeCmdPalette() {
   if ($('#cmdPalette')) $('#cmdPalette').hidden = true
   if ($('#cmdInput')) $('#cmdInput').value = ''
   if ($('#cmdResults')) $('#cmdResults').innerHTML = ''
+  if (_cmdPrevFocus && typeof _cmdPrevFocus.focus === 'function') { _cmdPrevFocus.focus(); _cmdPrevFocus = null }
 }
 
 async function openCmdPalette() {
   if (!$('#cmdPalette')) return
+  _cmdPrevFocus = document.activeElement
   $('#cmdPalette').hidden = false
   const inp = $('#cmdInput')
   if (inp) { inp.value = ''; inp.focus() }
