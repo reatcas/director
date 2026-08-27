@@ -157,8 +157,9 @@ describe('orchestra:tail handler', () => {
     expect(block).toContain('orchestra.log')
   })
 
-  it('returns last 400 lines', () => {
-    expect(block).toContain('slice(-400)')
+  it('returns last N lines via _tailLines (default 400)', () => {
+    expect(block).toContain('slice(-_tailLines)')
+    expect(block).toContain('400')
   })
 
   it('returns empty string for missing log', () => {

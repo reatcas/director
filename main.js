@@ -1084,14 +1084,15 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   } catch {}
 })
 
-ipcMain.handle('orchestra:tail', (_e, dir) => {
+ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
   if (!isKnownProject(dir)) return ''
+  const _tailLines = Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400
   const masterLog = path.join(dir, '.claude/logs/orchestra.log')
   const log = masterLog
   if (!fs.existsSync(log)) return ''
   try { if (fs.statSync(log).size > 10_485_760) return '' } catch { return '' }
   const s = fs.readFileSync(log, 'utf8')
-  return s.split('\n').slice(-400).join('\n')
+  return s.split('\n').slice(-_tailLines).join('\n')
 })
 
 // ─── Mixer snapshot ───────────────────────────────────────────────────────────

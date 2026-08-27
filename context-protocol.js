@@ -364,8 +364,8 @@ class ContextProtocol {
       hist.push(metrics)
       if (hist.length > 300) hist.splice(0, hist.length - 300)
       const tmp = file + '.tmp'
-      fs.writeFileSync(tmp, JSON.stringify(hist))
-      fs.renameSync(tmp, file)
+      const _cpSer = JSON.stringify(hist)
+      if (_cpSer.length <= 1_048_576) { fs.writeFileSync(tmp, _cpSer); fs.renameSync(tmp, file) }
     } catch {}
   }
 

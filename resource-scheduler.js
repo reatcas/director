@@ -299,8 +299,8 @@ class ResourceScheduler {
       hist.push(eff)
       if (hist.length > 500) hist.splice(0, hist.length - 500)
       const tmp = file + '.tmp'
-      fs.writeFileSync(tmp, JSON.stringify(hist))
-      fs.renameSync(tmp, file)
+      const _rsSer = JSON.stringify(hist)
+      if (_rsSer.length <= 1_048_576) { fs.writeFileSync(tmp, _rsSer); fs.renameSync(tmp, file) }
     } catch {}
   }
 
