@@ -117,8 +117,8 @@ describe('main.js invariants', () => {
 
 describe('IPC handler invariants', () => {
   it('validates dir parameter in metrics handlers', () => {
-    expect(mainJs).toMatch(/metrics:context.*if \(!dir\) return null/s)
-    expect(mainJs).toMatch(/metrics:claude-usage.*if \(!dir\) return null/s)
+    expect(mainJs).toMatch(/metrics:context.*isKnownProject\(dir\)/s)
+    expect(mainJs).toMatch(/metrics:claude-usage.*isKnownProject\(dir\)/s)
   })
 
   it('uses readJSON with fallback for all JSON reads', () => {

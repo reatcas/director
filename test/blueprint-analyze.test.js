@@ -9,7 +9,7 @@ describe('orchestra:analyze handler', () => {
   const block = mainJs.split("'orchestra:analyze'")[1]?.split('\nipcMain')[0] || ''
 
   it('validates dir parameter', () => {
-    expect(block).toContain('if (!dir)')
+    expect(block).toContain('isKnownProject(dir)')
   })
 
   it('reads RUN_STARTED file for time range', () => {
@@ -46,7 +46,7 @@ describe('blueprint:load handler', () => {
 
   it('validates dir parameter', () => {
     const block = mainJs.split("'blueprint:load'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('if (!dir)')
+    expect(block).toContain('isKnownProject(dir)')
   })
 })
 
@@ -54,7 +54,7 @@ describe('blueprint:save handler', () => {
   const block = mainJs.split("'blueprint:save'")[1]?.split('\nipcMain')[0] || ''
 
   it('validates dir parameter', () => {
-    expect(block).toContain('if (!dir)')
+    expect(block).toContain('isKnownProject(dir)')
   })
 
   it('creates directory recursively', () => {
@@ -71,7 +71,7 @@ describe('blueprint:readiness handler', () => {
   const block = mainJs.split("'blueprint:readiness'")[1]?.split('\nipcMain')[0] || ''
 
   it('validates dir parameter', () => {
-    expect(block).toContain('if (!dir)')
+    expect(block).toContain('isKnownProject(dir)')
   })
 
   it('checks for required blueprint fields', () => {

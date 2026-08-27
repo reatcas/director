@@ -1463,12 +1463,12 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
 const blueprintFile = (dir) => path.join(dir, '.claude', 'blueprint.json')
 
 ipcMain.handle('blueprint:load', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   return readJSON(blueprintFile(dir), null)
 })
 
 ipcMain.handle('blueprint:save', (_e, dir, data) => {
-  if (!dir) return false
+  if (!isKnownProject(dir)) return false
   const p = blueprintFile(dir)
   fs.mkdirSync(path.dirname(p), { recursive: true })
   writeJSON(p, data)
@@ -1476,7 +1476,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
 })
 
 ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
-  if (!dir) return null
+  if (!isKnownProject(dir)) return null
   const bp = readJSON(blueprintFile(dir), null)
   if (!bp || !bp.answers) return null
 
@@ -1612,7 +1612,7 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
 })
 
 ipcMain.handle('blueprint:readiness', (_e, dir) => {
-  if (!dir) return { ready: false, missing: ['project'] }
+  if (!isKnownProject(dir)) return { ready: false, missing: ['project'] }
   const bp = readJSON(blueprintFile(dir), null)
   if (!bp || !bp.answers) return { ready: false, missing: ['blueprint'], hasBlueprint: false }
 
