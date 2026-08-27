@@ -1395,8 +1395,9 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         read('.claude/mixer-history.json') || '(no history)'
       ].join('\n')
       const outFile = path.join(dir, '.claude', `analysis-${Date.now()}.txt`)
-      try { fs.writeFileSync(outFile, report.length > 4_194_304 ? report.slice(0, 4_194_304) : report) } catch {}
-      resolve({ report, file: outFile })
+      const _reportCapped = report.length > 4_194_304 ? report.slice(0, 4_194_304) : report
+      try { fs.writeFileSync(outFile, _reportCapped) } catch {}
+      resolve({ report: _reportCapped, file: outFile })
     })
   })
 })
@@ -1720,7 +1721,9 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
     a && typeof a === 'object' &&
     typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 &&
     typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 &&
-    (a.description === undefined || a.description === null || (typeof a.description === 'string' && a.description.length <= 1024))
+    (a.description === undefined || a.description === null || (typeof a.description === 'string' && a.description.length <= 1024)) &&
+    (a.id === undefined || (typeof a.id === 'string' && a.id.length <= 64 && /^[\w\-]+$/.test(a.id))) &&
+    (a.icon === undefined || (typeof a.icon === 'string' && a.icon.length <= 64))
   )
   if (!valid) return false
   if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false

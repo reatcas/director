@@ -1,6 +1,6 @@
-# Cycle 163 Plan — IMPROVEMENT MODE
+# Cycle 164 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 163 (performance FROZEN; security allowed after C162 break)
+## MIXER BUDGET — Cycle 164 (performance FROZEN; backend/frontend 2-streak allowed)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 0/4 |
@@ -11,11 +11,11 @@
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-482 — proc-row innerHTML: esc() on p.pid, p.cpu, p.mem, p.time
-2. [security] I-483 — project list li.innerHTML: esc(p.version) prevents XSS via crafted package.json
-3. [backend] I-484 — metrics:compliance: filter null scores before avg; Number.isFinite guard on avg
-4. [frontend] I-485 — proc-kill-btn: aria-label instead of title for screen reader accessibility
-5-8. [quality_tests] cycle163-coverage.test.js — 4 tests
+1. [security] I-486 — buildStrips: esc(label) in strip-h-label innerHTML (customAtriles name XSS)
+2. [security] I-487 — atriles:save: validate id (alphanumeric+dash ≤64) and icon (string ≤64) fields
+3. [backend] I-488 — orchestra:analyze: cap report in resolve at 4MB (matching file write cap)
+4. [frontend] I-489 — mix-card buttons: aria-label in Spanish for screen readers
+5-8. [quality_tests] cycle164-coverage.test.js — 4 tests
 
 ## Stats
-- 3568 tests at cycle start → target 3572 (+4)
+- 3574 tests at cycle start → target 3578 (+4)

@@ -826,7 +826,7 @@ async function loadMixer() {
     strip.dataset.key = k
     strip.innerHTML = `
   <div class="strip-h-icon">${svg}</div>
-  <div class="strip-h-label">${label}</div>
+  <div class="strip-h-label">${esc(label)}</div>
   <div class="strip-bar-h">
     <div class="strip-bar-fill-h" style="width:${v}%"></div>
     <input type="range" min="0" max="100" value="${v}" data-k="${k}" aria-label="${esc(label)} peso" aria-valuetext="${v}%">
@@ -1223,9 +1223,9 @@ async function loadMixes() {
         <div class="mix-card-meta">${date}</div>
       </div>
       <div class="mix-card-actions">
-        <button class="mix-btn load" title="Load">▶</button>
-        <button class="mix-btn share" title="Copy JSON">⎘</button>
-        <button class="mix-btn del" title="Delete">✕</button>
+        <button class="mix-btn load" aria-label="Cargar mezcla">▶</button>
+        <button class="mix-btn share" aria-label="Copiar JSON">⎘</button>
+        <button class="mix-btn del" aria-label="Eliminar mezcla">✕</button>
       </div>`
 
     card.querySelector('.load').onclick = async e => {

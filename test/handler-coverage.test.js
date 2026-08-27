@@ -187,8 +187,8 @@ describe('orchestra:analyze handler', () => {
     expect(block).toContain('try { fs.writeFileSync')
   })
 
-  it('resolves with { report, file } object', () => {
-    expect(block).toContain('resolve({ report, file: outFile })')
+  it('resolves with capped report and file', () => {
+    expect(block).toContain('resolve({ report: _reportCapped, file: outFile })')
   })
 
   it('includes mixer-history in report', () => {
