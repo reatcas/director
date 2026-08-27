@@ -2791,7 +2791,7 @@ function bpAskCurrent() {
   const existing = bpState.answers[q.key]
   let prompt = `<span class="bp-q-phase" style="color:${phase?.color || '#888'}">[${phase?.name || ''}]</span> ${q.q}`
   if (q.hint) prompt += `<br><span class="bp-q-hint">${q.hint}</span>`
-  if (existing) prompt += `<br><span class="bp-q-prev">Previous answer: ${existing}</span>`
+  if (existing) prompt += `<br><span class="bp-q-prev">Previous answer: ${esc(existing)}</span>`
   bpAddMessage('agent', prompt)
   renderBpPhases()
   const inp = $('#bpInput')

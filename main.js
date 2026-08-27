@@ -421,7 +421,7 @@ function getClaudeUsage(dir) {
   const _guPath = path.join(dir, '.claude/orchestra.json')
   let cfg = {}
   try { if (fs.statSync(_guPath).size <= 512_000) cfg = readJSON(_guPath, {}) } catch {}
-  const dailyBudget = cfg.claudeUsageBudget || 1_000_000
+  const dailyBudget = (typeof cfg.claudeUsageBudget === 'number' && Number.isFinite(cfg.claudeUsageBudget) && cfg.claudeUsageBudget > 0) ? cfg.claudeUsageBudget : 1_000_000
 
   const percent = Math.min(99, Math.round((tokensEstimated / dailyBudget) * 100))
   const status = percent >= 90 ? 'critical' : percent >= 70 ? 'high' : percent >= 40 ? 'mid' : 'normal'
@@ -720,7 +720,8 @@ function playOrchestra(dir, agent = 'claude') {
       const state = aiState()
       state[agent].credits = 0
       const nextAgent = nextAvailableAi(state, agent)
-      writeJSON(aiStateFile(), state); invalidateAiStateCache()
+      const _aisUsageSer = JSON.stringify(state)
+      if (_aisUsageSer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisUsageSer)); invalidateAiStateCache() }
       if (nextAgent) {
         try { fs.unlinkSync(usageSig) } catch {}
         persistLifecycleEvent(dir, 'usage_limit', 'SWITCH', `${state[agent].label} sin créditos — cambiando a ${state[nextAgent].label}`)
@@ -920,7 +921,7 @@ function aiState() {
     }
     if (!dirty && JSON.stringify(state[id]) !== prev) dirty = true
   }
-  if (dirty) { writeJSON(aiStateFile(), state); invalidateAiStateCache(); return state }
+  if (dirty) { const _aisDirtySer = JSON.stringify(state); if (_aisDirtySer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisDirtySer)); invalidateAiStateCache() }; return state }
   _aiStateCache = state
   _aiStateCacheTs = now
   return state

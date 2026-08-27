@@ -1,6 +1,6 @@
-# Cycle 160 Plan — IMPROVEMENT MODE
+# Cycle 161 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 160
+## MIXER BUDGET — Cycle 161
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 0/4 |
@@ -14,11 +14,11 @@
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-471 — ai:select + orchestra:play: _aiSSer 256KB cap on aiState writes
-2. [security] I-472 — mixer:write + agent-switch cfg: _mwSer/_asCfgSer 512KB caps
-3. [backend] I-473 — lifecycle:list: require e.ts + e.label string in event filter
-4. [frontend] I-474 — #cmdInput: aria-autocomplete=list + aria-controls=cmdResults
-5-8. [quality_tests] cycle160-coverage.test.js — 4 tests
+1. [security] I-475 — aiState dirty writes (lines 723+923): _aisUsageSer/_aisDirtySer cap
+2. [security] I-476 — bpAskCurrent: esc(existing) to prevent stored XSS in blueprint chat
+3. [backend] I-477 — getClaudeUsage: Number.isFinite guard on dailyBudget
+4. [frontend] I-478 — #analysisOut aria-label+aria-readonly; #commitBreakdown aria-label
+5-8. [quality_tests] cycle161-coverage.test.js — 4 tests
 
 ## Stats
-- 3544 tests at cycle start
+- 3553 tests at cycle start
