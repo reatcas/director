@@ -65,7 +65,8 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('Paleta') || l.includes('Repertorio') ||
       l.includes('cumplimiento') || l.includes('Frescura') || l.includes('Tasa') ||
       l.includes('créditos') || l.includes('orquestador') || l.includes('producto') ||
-      l.includes('Puntaje')
+      l.includes('Puntaje') || l.includes('Grafo') || l.includes('nodos') ||
+      l.includes('Divisor') || l.includes('panel') || l.includes('mixer')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })

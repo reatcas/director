@@ -154,7 +154,7 @@ function sendAlert(type, title, body) {
 }
 
 ipcMain.handle('alerts:config', (_e, cfg) => {
-  if (cfg && typeof cfg === 'object') {
+  if (cfg && typeof cfg === 'object' && !Array.isArray(cfg)) {
     if (typeof cfg.stall === 'boolean') _alertConfig.stall = cfg.stall
     if (typeof cfg.alto === 'boolean') _alertConfig.alto = cfg.alto
     if (typeof cfg.usageLimit === 'boolean') _alertConfig.usageLimit = cfg.usageLimit
@@ -433,6 +433,7 @@ function startMetricsSampling(dir) {
 function stopMetricsSampling(dir) {
   const iv = metricsSamplers.get(dir)
   if (iv) { clearInterval(iv); metricsSamplers.delete(dir) }
+  for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir)) _metricsCache.delete(key) }
 }
 
 // ─── Sync protocol files before play ─────────────────────────────────────────
@@ -1690,7 +1691,7 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
   }
 
   // Write the brief to the project
-  const brief = lines.join('\n')
+  const brief = lines.join('\n').slice(0, 512_000)
   const briefPath = path.join(dir, '.claude', 'BLUEPRINT.md')
   try {
     fs.writeFileSync(briefPath, brief)
