@@ -3196,14 +3196,30 @@ async function loadNotes() {
   const area = $('#notesArea')
   if (!area) return
   area.value = await window.director.notesRead(current) || ''
+  _notesUpdateCount()
 }
 
+function _notesUpdateCount() {
+  const area = $('#notesArea'), counter = $('#notesCharCount')
+  if (!area || !counter) return
+  const len = area.value.length
+  counter.textContent = `${len}/50000`
+  counter.style.color = len > 45000 ? 'var(--warn, #f5a623)' : 'var(--muted)'
+}
 let _notesSaveTimer = null
 if ($('#notesArea')) {
+  _notesUpdateCount()
   $('#notesArea').addEventListener('input', () => {
+    _notesUpdateCount()
     clearTimeout(_notesSaveTimer)
     _notesSaveTimer = setTimeout(async () => {
-      if (current) await window.director.notesWrite(current, $('#notesArea').value)
+      if (!current) return
+      const ok = await window.director.notesWrite(current, $('#notesArea').value)
+      const counter = $('#notesCharCount')
+      if (counter) {
+        if (ok === false) { counter.textContent = 'Error al guardar'; counter.style.color = 'var(--danger, #e74c3c)' }
+        else _notesUpdateCount()
+      }
     }, 1000)
   })
 }

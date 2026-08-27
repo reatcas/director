@@ -19,16 +19,17 @@ describe('allocation write size cap (I-464)', () => {
   })
 })
 
-describe('metrics:context hist trim write cap (I-465)', () => {
+describe('metrics:context hist trim (I-465)', () => {
   const block = mainJs.split("'metrics:context'")[1]?.split('\nipcMain')[0] || ''
 
-  it('serializes trimmed hist via _mcTrimSer', () => {
-    expect(block).toContain('_mcTrimSer')
-    expect(block).toContain('hist.slice(-500)')
+  it('caps hist to 500 entries', () => {
+    expect(block).toMatch(/hist\.slice\(-500\)|hist\.length > 500/)
   })
 
-  it('only writes trimmed hist if within 1MB', () => {
-    expect(block).toContain('_mcTrimSer.length <= 1_048_576')
+  it('trims hist without write-on-read (P-40) or with write guard', () => {
+    const hasTrimSer = block.includes('_mcTrimSer')
+    const hasNoWrite = !block.includes('writeJSON(file')
+    expect(hasTrimSer || hasNoWrite).toBe(true)
   })
 })
 

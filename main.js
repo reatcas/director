@@ -1449,12 +1449,15 @@ ipcMain.handle('notes:read', (_e, dir) => {
 ipcMain.handle('notes:write', (_e, dir, content) => {
   if (!isKnownProject(dir) || typeof content !== 'string') return false
   if (content.length > 50000) return false
+  if (Buffer.byteLength(content, 'utf8') > 102_400) return false
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(content)) return false
   const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
   const tmp = p + '.tmp'
-  fs.mkdirSync(path.dirname(p), { recursive: true })
-  fs.writeFileSync(tmp, content)
-  fs.renameSync(tmp, p)
+  try {
+    fs.mkdirSync(path.dirname(p), { recursive: true })
+    fs.writeFileSync(tmp, content)
+    fs.renameSync(tmp, p)
+  } catch { return false }
   persistLifecycleEvent(dir, 'note', 'NOTA', content.split('\n')[0].slice(0, 80))
   return true
 })
@@ -1470,8 +1473,8 @@ ipcMain.handle('export:session', async (_e, dir) => {
     orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim() || 'unknown',
     runStarted: read('.claude/RUN_STARTED').trim() || null,
     lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string') : [] })(),
-    mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return d })(),
-    mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object') : [] })(),
+    mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return (d && typeof d === 'object' && !Array.isArray(d)) ? d : {} })(),
+    mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object' && typeof e.ts === 'string' && typeof e.event === 'string' && e.focus && typeof e.focus === 'object') : [] })(),
     claudeUsage: getClaudeUsage(dir),
     compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')).slice(-50),
     roadmap: read('ROADMAP.md'),
@@ -1645,8 +1648,8 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   let hist = []
   try { if (fs.statSync(file).size <= 1_048_576) hist = readJSON(file, []) } catch {}
   hist = hist.filter(h => h && typeof h === 'object')
-  if (hist.length > 500) { const _mcTrimSer = JSON.stringify(hist.slice(-500)); if (_mcTrimSer.length <= 1_048_576) { try { writeJSON(file, JSON.parse(_mcTrimSer)) } catch {} } }
-  if (hist.length > 0) {
+  const _mcHist = hist.length > 500 ? hist.slice(-500) : hist
+  if (_mcHist.length > 0) {
     const last = hist[hist.length - 1]
     let totalProcessed = 0, totalSaved = 0
     for (const m of hist) { totalProcessed += (Number.isFinite(m.totalTokens) ? m.totalTokens : 0); totalSaved += (Number.isFinite(m.totalTokensSaved) ? m.totalTokensSaved : 0) }

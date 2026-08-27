@@ -533,8 +533,9 @@
 
         <!-- NOTES tab content (F-25) -->
         <div id="notesTab" class="mixer-tab-pane" style="display:flex;flex-direction:column;height:100%" role="tabpanel" aria-labelledby="tab-notesTab">
-          <div style="padding:10px 10px 4px">
+          <div style="padding:10px 10px 4px;display:flex;align-items:center;justify-content:space-between">
             <span class="settings-label">NOTAS DEL OPERADOR</span>
+            <span id="notesCharCount" style="font-size:10px;color:var(--muted);font-family:monospace" aria-live="polite"></span>
           </div>
           <textarea id="notesArea" class="mono" placeholder="Escribe notas sobre esta sesión…" aria-label="Notas del operador para esta sesión" maxlength="50000" style="flex:1;margin:0 10px 10px;padding:8px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:4px;font-size:11px;resize:none"></textarea>
         </div>
