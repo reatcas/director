@@ -71,7 +71,8 @@ describe('aiState helper', () => {
   })
 
   it('uses readJSON for safe loading', () => {
-    expect(mainJs).toContain('readJSON(aiStateFile()')
+    expect(mainJs).toContain('aiStateFile()')
+    expect(mainJs).toContain('readJSON(')
   })
 })
 

@@ -359,7 +359,9 @@ function copyDir(src, dst) {
     else if (!fs.existsSync(d) || !['CLAUDE.md', 'settings.json'].includes(e.name)) fs.copyFileSync(s, d)
     else if (e.name === 'CLAUDE.md') fs.appendFileSync(d, '\n\n' + fs.readFileSync(s, 'utf8'))
     else if (e.name === 'settings.json') {
-      const a = readJSON(d, {}), b = readJSON(s, {})
+      let a = {}, b = {}
+      try { if (fs.statSync(d).size <= 512_000) a = readJSON(d, {}) } catch {}
+      try { if (fs.statSync(s).size <= 512_000) b = readJSON(s, {}) } catch {}
       a.hooks = a.hooks || {}
       for (const k of Object.keys(b.hooks || {})) a.hooks[k] = [...(a.hooks[k] || []), ...b.hooks[k]]
       writeJSON(d, a)
@@ -883,7 +885,9 @@ function invalidateAiStateCache() { _aiStateCache = null; _aiStateCacheTs = 0 }
 function aiState() {
   const now = Date.now()
   if (_aiStateCache && now - _aiStateCacheTs < _AI_STATE_TTL) return _aiStateCache
-  const state = readJSON(aiStateFile(), {})
+  const _asPath = aiStateFile()
+  let state = {}
+  try { if (fs.statSync(_asPath).size <= 512_000) state = readJSON(_asPath, {}) } catch {}
   let dirty = false
   for (const [id, defaults] of Object.entries(AI_DEFAULTS)) {
     const existingReset = state[id]?.resetAt
@@ -1660,7 +1664,7 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
     typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096
   )
   if (!valid) return false
-  if (atriles.some(a => /\x00/.test(a.name) || /\x00/.test(a.path))) return false
+  if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false
   writeJSON(customAtrilesFile(), atriles)
   _atrilesCache = atriles
   return true

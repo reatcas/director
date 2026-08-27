@@ -1,23 +1,24 @@
-# Cycle 138 Plan — IMPROVEMENT MODE
+# Cycle 139 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 138
+## MIXER BUDGET — Cycle 139
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 5 | 0/5 |
+| quality_tests | 35 | 4 | 0/4 |
+| security | 20 | 2 | 0/2 |
 | backend | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
-| business_logic | 5 | 1 | 0/1 |
-| security | 20 | FROZEN (5th: 133,134,135,136,137) | — |
 | performance | 10 | FROZEN (29th) | — |
-| ux_accessibility | 5 | SKIP (proportional, next cycle) | — |
-| data_db | 5 | SKIP (proportional, next cycle) | — |
+| business_logic | 5 | SKIP (proportional) | — |
+| ux_accessibility | 5 | SKIP (proportional) | — |
+| data_db | 5 | SKIP (proportional) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [backend] I-372 — cachedProjects()/repertoire:add/remove: size guard for repertoire.json (readJSON without statSync guard)
-2. [frontend] I-373 — renderer.js: toggle aria-expanded on allocToggle + compressionToggle; add missing mixerHistoryToggle handler
-3. [business_logic] I-374 — mixer:saved:delete: ID format validation (base36 alphanumeric, /^[0-9a-z]+$/)
-4-8. [quality_tests] cycle138-coverage.test.js — 5 units covering I-372/I-373/I-374
+1. [security] I-380 — aiState(): add statSync 512KB guard for ai-credits.json read
+2. [security] I-381 — atriles:save: expand NUL check to full control char range [\x00-\x08\x0B\x0C\x0E-\x1F\x7F]
+3. [backend] I-382 — copyDir: add size guard before settings.json readJSON merge
+4. [frontend] I-383 — allocInspector/compressionPanel/mixerHistoryPanel: add role="region" + aria-label
+5-8. [quality_tests] cycle139-coverage.test.js — 4 units
 
 ## Stats
-- 3385 tests passing (cycle 137 close)
+- 3396 tests passing (cycle 138 close)

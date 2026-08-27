@@ -343,7 +343,8 @@ describe('aiState — credit management with auto-reset', () => {
   })
 
   it('reads state from aiStateFile via readJSON', () => {
-    expect(body).toContain('readJSON(aiStateFile()')
+    expect(body).toContain('aiStateFile()')
+    expect(body).toContain('readJSON(')
   })
 
   it('iterates all AI_DEFAULTS entries', () => {
