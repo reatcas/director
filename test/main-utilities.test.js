@@ -424,7 +424,7 @@ describe('snapshotMixer — mixer history recording', () => {
   })
 
   it('guards against null dir', () => {
-    expect(body).toContain('if (!dir) return')
+    expect(body).toContain('if (!dir || !isKnownProject(dir)) return')
   })
 
   it('reads orchestra.json for current config', () => {

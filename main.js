@@ -375,6 +375,7 @@ function cachedFindLogo(dir) {
   const now = Date.now()
   const hit = _logoCache.get(dir)
   if (hit && now - hit.ts < 30_000) return hit.logo
+  if (!fs.existsSync(dir)) { _logoCache.set(dir, { logo: null, ts: now }); return null }
   const logo = findLogo(dir)
   _logoCache.set(dir, { logo, ts: now })
   return logo
@@ -1234,7 +1235,7 @@ function _smCutoff() {
   return _smCutoffISO
 }
 function snapshotMixer(dir, event) {
-  if (!dir) return
+  if (!dir || !isKnownProject(dir)) return
   const cfg = readOrchJson(dir, null)
   if (!cfg || !cfg.focus) return
   const histFile = path.join(dir, '.claude/mixer-history.json')
@@ -1668,14 +1669,25 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
 const _metricsCache = new Map()
 const _METRICS_TTL = 2_000
 const _METRICS_EVICT_AGE = 30_000
+const _METRICS_KEY_MAX = 256
+const _METRICS_CACHE_MAX = 500
+const _METRICS_CACHE_TRIM = 400
 function metricsGet(key) {
+  if (typeof key !== 'string' || key.length > _METRICS_KEY_MAX) return null
   const c = _metricsCache.get(key); return c && Date.now() - c.ts < (c.ttl ?? _METRICS_TTL) ? c.val : null
 }
-function metricsSet(key, val, ttl = _METRICS_TTL) { _metricsCache.set(key, { ts: Date.now(), val, ttl: (Number.isFinite(ttl) && ttl > 0) ? ttl : _METRICS_TTL }); return val }
+function metricsSet(key, val, ttl = _METRICS_TTL) {
+  if (typeof key !== 'string' || key.length > _METRICS_KEY_MAX) return val
+  _metricsCache.set(key, { ts: Date.now(), val, ttl: (Number.isFinite(ttl) && ttl > 0) ? ttl : _METRICS_TTL }); return val
+}
 setInterval(() => {
   const now = Date.now()
   const cutoff = now - _METRICS_EVICT_AGE
   for (const [k, v] of _metricsCache) { if (v.ts < cutoff) _metricsCache.delete(k) }
+  if (_metricsCache.size > _METRICS_CACHE_MAX) {
+    const sorted = [..._metricsCache.entries()].sort((a, b) => a[1].ts - b[1].ts)
+    for (let i = 0; i < sorted.length - _METRICS_CACHE_TRIM; i++) _metricsCache.delete(sorted[i][0])
+  }
   for (const [k, v] of _orchJsonCache) { if (now - v.ts > 10_000) _orchJsonCache.delete(k) }
   for (const [k, v] of _logoCache) { if (now - v.ts > 60_000) _logoCache.delete(k) }
   for (const [k, v] of _piStaticCache) { if (now - v.ts > 30_000) _piStaticCache.delete(k) }
