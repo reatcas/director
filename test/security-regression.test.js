@@ -305,3 +305,60 @@ describe('IPC channel naming conventions', () => {
     }
   })
 })
+
+describe('blueprint handler security', () => {
+  const mainJs = srcs['main.js']
+
+  it('blueprint:load uses isKnownProject guard', () => {
+    const block = mainJs.split("'blueprint:load'")[1]?.split('\nipcMain')[0] || ''
+    expect(block).toContain('isKnownProject(dir)')
+  })
+
+  it('blueprint:save uses isKnownProject guard', () => {
+    const block = mainJs.split("'blueprint:save'")[1]?.split('\nipcMain')[0] || ''
+    expect(block).toContain('isKnownProject(dir)')
+  })
+
+  it('blueprint:save rejects non-object data', () => {
+    const block = mainJs.split("'blueprint:save'")[1]?.split('\nipcMain')[0] || ''
+    expect(block).toContain('typeof data !== \'object\'')
+    expect(block).toContain('Array.isArray(data)')
+  })
+
+  it('blueprint:save enforces size limit', () => {
+    const block = mainJs.split("'blueprint:save'")[1]?.split('\nipcMain')[0] || ''
+    expect(block).toContain('512_000')
+  })
+
+  it('blueprint:generate-brief uses isKnownProject guard', () => {
+    const block = mainJs.split("'blueprint:generate-brief'")[1]?.split('\nipcMain')[0] || ''
+    expect(block).toContain('isKnownProject(dir)')
+  })
+
+  it('blueprint:readiness uses isKnownProject guard', () => {
+    const block = mainJs.split("'blueprint:readiness'")[1]?.split('\nipcMain')[0] || ''
+    expect(block).toContain('isKnownProject(dir)')
+  })
+})
+
+describe('orchestra:upgrade security', () => {
+  const mainJs = srcs['main.js']
+
+  it('orchestra:upgrade uses isKnownProject guard', () => {
+    const block = mainJs.split("'orchestra:upgrade'")[1]?.split('\nipcMain')[0] || ''
+    expect(block).toContain('isKnownProject(dir)')
+  })
+
+  it('mixer:saved:list uses isKnownProject guard', () => {
+    const block = mainJs.split("'mixer:saved:list'")[1]?.split('\nipcMain')[0] || ''
+    expect(block).toContain('isKnownProject(dir)')
+  })
+
+  it('all blueprint + upgrade handlers have isKnownProject', () => {
+    const handlers = ['blueprint:load', 'blueprint:save', 'blueprint:generate-brief', 'blueprint:readiness', 'orchestra:upgrade', 'mixer:saved:list']
+    for (const h of handlers) {
+      const block = mainJs.split(`'${h}'`)[1]?.split('\nipcMain')[0] || ''
+      expect(block, `${h} missing isKnownProject`).toContain('isKnownProject(dir)')
+    }
+  })
+})
