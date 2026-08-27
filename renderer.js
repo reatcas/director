@@ -3479,7 +3479,7 @@ document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.key === 'p') { e.preventDefault(); const b = $('#playBtn'); if (b && current) b.click(); return }
   if (e.ctrlKey && e.key === '.') { e.preventDefault(); const b = $('#fineBtn'); if (b && current) b.click(); return }
   if (e.ctrlKey && e.key === 'k') { e.preventDefault(); const b = $('#killBtn'); if (b && current) b.click(); return }
-  if (e.key === '?') { if ($('#shortcutsModal')) $('#shortcutsModal').hidden = false; return }
+  if (e.key === '?') { const _scm = $('#shortcutsModal'); if (_scm) { _scm.hidden = false; requestAnimationFrame(() => { const _scf = _scm.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'); if (_scf) _scf.focus() }) }; return }
   if (e.key === ' ') { e.preventDefault(); const b = $('#playBtn'); if (b && current) b.click(); return }
   if (e.key === 'k' || e.key === 'K') { const b = $('#killBtn'); if (b && current) b.click(); return }
   if (e.key === 'e' || e.key === 'E') { const b = $('#exportBtn'); if (b && current) b.click(); return }

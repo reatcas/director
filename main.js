@@ -871,6 +871,8 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir)) _metricsCache.delete(key) }
   usageTracker.delete(dir)
   _readinessCache.delete(dir)
+  _orchJsonCache.delete(dir)
+  _logoCache.delete(dir)
   _complianceMtimeCache.delete(dir)
   _worstComplianceCache.delete(dir)
   // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
@@ -1531,7 +1533,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   if (!isKnownProject(dir)) return []
   const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : 200
   const _llType = typeof typeFilter === 'string' && /^[\w\-]+$/.test(typeFilter) ? typeFilter : null
-  const _llBefore = typeof before === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : null
+  const _llBefore = typeof before === 'string' && before.length <= 64 && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : null
   const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
@@ -1564,8 +1566,11 @@ function metricsGet(key) {
 }
 function metricsSet(key, val, ttl = _METRICS_TTL) { _metricsCache.set(key, { ts: Date.now(), val, ttl }); return val }
 setInterval(() => {
-  const cutoff = Date.now() - _METRICS_EVICT_AGE
+  const now = Date.now()
+  const cutoff = now - _METRICS_EVICT_AGE
   for (const [k, v] of _metricsCache) { if (v.ts < cutoff) _metricsCache.delete(k) }
+  for (const [k, v] of _orchJsonCache) { if (now - v.ts > 10_000) _orchJsonCache.delete(k) }
+  for (const [k, v] of _logoCache) { if (now - v.ts > 60_000) _logoCache.delete(k) }
 }, _METRICS_EVICT_AGE).unref()
 
 ipcMain.handle('metrics:resource', (_e, dir) => {
@@ -1835,6 +1840,7 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
     (a.color === undefined || (typeof a.color === 'string' && a.color.length <= 64 && /^[a-zA-Z0-9#(),. %]+$/.test(a.color)))
   )
   if (!valid) return false
+  if (atriles.some(a => !path.isAbsolute(a.path))) return false
   if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false
   if (atriles.some(a => typeof a.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.description))) return false
   if (atriles.some(a => typeof a.icon === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.icon))) return false
