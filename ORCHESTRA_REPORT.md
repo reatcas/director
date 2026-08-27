@@ -18,3 +18,8 @@
 ▸ ◼ Cycle 115 cerrado — COMPLIANCE quality_tests:4/4 security:2/2 data_db:1/1 business_logic:1/1 DRIFT:none TESTS:green
 - 3089 tests (was 3072) +17 net
 - SECURITY: repertoire:readFile was unguarded — fixed; ai:auth/login allowlist; nextAvailableAi bug fixed
+
+## Cycle 116 — 2026-08-27T02:03:43Z
+▸ ◼ Cycle 116 cerrado — COMPLIANCE quality_tests:4/4 security:2/2 backend:1/1 frontend:1/1 DRIFT:none TESTS:green
+- 3104 tests (was 3089) +15 net
+- SECURITY: repertoire:open was unguarded; lifecycle:add null byte protection; modal role=dialog
