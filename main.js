@@ -989,6 +989,8 @@ function aiState() {
     state[id] = { ...defaults, ...state[id], resetAt: newReset }
     state[id].models = defaults.models
     state[id].defaultModel = defaults.defaultModel
+    if (!Number.isFinite(state[id].credits) || state[id].credits < 0) state[id].credits = defaults.credits
+    state[id].credits = Math.min(100, state[id].credits)
     if (state[id].resetAt && new Date(state[id].resetAt) <= new Date()) {
       state[id].credits = 100
       state[id].resetAt = nextReset()
@@ -1076,6 +1078,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   const state = aiState()
   if (!state[agent]) return { ok: false, err: 'Select an AI developer first' }
   _metricsCache.delete('claude-usage:' + dir)
+  _metricsCache.delete('version-check:' + dir)
   _piStaticCache.delete(dir)
   _invalidateIsRunning(dir)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
@@ -1619,7 +1622,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
   if (!Array.isArray(events)) events = []
-  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string')
+  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string')
   const _llUnfilteredTotal = events.length
   if (_llBefore) events = events.filter(e => e.ts < _llBefore)
   if (_llType) events = events.filter(e => e.type === _llType)

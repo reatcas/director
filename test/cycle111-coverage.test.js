@@ -32,7 +32,7 @@ describe('aiState cache (I-176)', () => {
   })
 
   it('aiState() stores result in cache on miss', () => {
-    const block = mainJs.split('function aiState()')[1]?.split('\n').slice(0, 25).join('\n') || ''
+    const block = mainJs.split('function aiState()')[1]?.split('\nipcMain')[0] || ''
     expect(block).toContain('_aiStateCache = state')
     expect(block).toContain('_aiStateCacheTs = now')
   })

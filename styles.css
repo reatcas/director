@@ -488,6 +488,7 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 #sessionSummary .ss-item { display: flex; align-items: center; gap: 3px }
 #sessionSummary .ss-val { color: var(--txt); font-weight: 600 }
 #sessionSummary .ss-live { color: var(--fl-green) }
+#sessionSummary .ss-idle { color: var(--dim2) }
 
 /* ══════════════════════════════════════════
    MAIN STAGE
