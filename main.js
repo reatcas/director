@@ -586,6 +586,7 @@ function hotReloadAllProjects(changedFile) {
     if (!p.path) continue
     syncProtocol(p.path)
     _metricsCache.delete('version-check:' + p.path)
+    for (const k of _metricsCache.keys()) { if (k.startsWith('lc:' + p.path + ':')) _metricsCache.delete(k) }
     // Signal running sessions to restart so they pick up the new run.sh
     if (changedFile === 'run.sh' && isRunning(p.path)) {
       try {
@@ -1000,7 +1001,7 @@ function aiState() {
     if (!dirty && JSON.stringify(state[id]) !== prev) dirty = true
   }
   if (typeof state.selected !== 'string' || !Object.keys(AI_DEFAULTS).includes(state.selected)) state.selected = null
-  if (dirty) { const _aisDirtySer = JSON.stringify(state); if (_aisDirtySer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisDirtySer)); invalidateAiStateCache() }; return state }
+  if (dirty) { const _aisDirtySer = JSON.stringify(state); if (_aisDirtySer.length <= 262_144) writeJSON(aiStateFile(), JSON.parse(_aisDirtySer)); invalidateAiStateCache(); return state }
   _aiStateCache = state
   _aiStateCacheTs = now
   return state
@@ -1242,7 +1243,7 @@ function snapshotMixer(dir, event) {
   try { if (fs.statSync(histFile).size <= 512_000) hist = readJSON(histFile, []) } catch {}
   if (!Array.isArray(hist)) hist = []
   hist = hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && h.ts >= cutoffISO && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
-  const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
+  const _ssEvent = typeof event === 'string' ? event.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) : 'unknown'
   const _ssFocus = Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
   if (Object.keys(_ssFocus).length === 0) return
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
@@ -1283,6 +1284,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   _metricsCache.delete('allocation:' + dir)
   _metricsCache.delete('resource:' + dir)
   _metricsCache.delete('snapshot:' + dir)
+  for (const k of _metricsCache.keys()) { if (k.startsWith('mixer-hist:' + dir + ':')) _metricsCache.delete(k) }
   _invalidateOrchJson(dir)
   return true
 })
@@ -1666,7 +1668,7 @@ const _METRICS_EVICT_AGE = 30_000
 function metricsGet(key) {
   const c = _metricsCache.get(key); return c && Date.now() - c.ts < (c.ttl ?? _METRICS_TTL) ? c.val : null
 }
-function metricsSet(key, val, ttl = _METRICS_TTL) { _metricsCache.set(key, { ts: Date.now(), val, ttl }); return val }
+function metricsSet(key, val, ttl = _METRICS_TTL) { _metricsCache.set(key, { ts: Date.now(), val, ttl: (Number.isFinite(ttl) && ttl > 0) ? ttl : _METRICS_TTL }); return val }
 setInterval(() => {
   const now = Date.now()
   const cutoff = now - _METRICS_EVICT_AGE

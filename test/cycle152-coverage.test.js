@@ -53,7 +53,8 @@ describe('snapshotMixer event cap and write size cap (I-436+I-437)', () => {
 
   it('caps event via _ssEvent at 64 chars', () => {
     expect(block).toContain('_ssEvent')
-    expect(block).toContain('event.slice(0, 64)')
+    expect(block).toMatch(/event\.replace|event\.slice/)
+    expect(block).toContain('.slice(0, 64)')
   })
 
   it('guards mixer-history write via _mhSer at 512KB', () => {
