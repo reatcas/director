@@ -1515,7 +1515,11 @@ ipcMain.handle('atriles:list', () => {
 
 ipcMain.handle('atriles:save', (_e, atriles) => {
   if (!Array.isArray(atriles) || atriles.length > 200) return false
-  const valid = atriles.every(a => a && typeof a === 'object' && typeof a.name === 'string' && typeof a.path === 'string')
+  const valid = atriles.every(a =>
+    a && typeof a === 'object' &&
+    typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 &&
+    typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096
+  )
   if (!valid) return false
   writeJSON(customAtrilesFile(), atriles)
   _atrilesCache = atriles
