@@ -409,6 +409,7 @@ async function refresh() {
   for (const p of projects) {
     const li = document.createElement('li')
     li.className = (current === p.path ? 'sel ' : '') + (p.running ? 'live' : '')
+    li.setAttribute('aria-label', `Proyecto ${esc(p.name)}${p.running ? ', activo' : ''}`)
     const stallMin = p.running ? getStallMinutes(p.path) : 0
     const stallBadge = stallMin >= 20 ? `<span class="stall-badge" title="${esc(String(stallMin))}min sin commits">${esc(String(stallMin))}m</span>` : ''
     li.innerHTML = `<span class="led"></span>

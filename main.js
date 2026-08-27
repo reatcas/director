@@ -777,6 +777,8 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
 ipcMain.handle('repertoire:remove', (_e, dir) => {
   writeJSON(store(), readJSON(store(), []).filter(p => p.path !== dir))
   invalidateProjectsCache()
+  stopTailing(dir)
+  stopMetricsSampling(dir)
   stopWatchingResume(dir)
   // Evict any cached metrics for removed project
   for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir)) _metricsCache.delete(key) }
@@ -1168,6 +1170,7 @@ ipcMain.handle('notes:read', (_e, dir) => {
 ipcMain.handle('notes:write', (_e, dir, content) => {
   if (!isKnownProject(dir) || typeof content !== 'string') return false
   if (content.length > 50000) return false
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(content)) return false
   const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
   const tmp = p + '.tmp'
   fs.mkdirSync(path.dirname(p), { recursive: true })
