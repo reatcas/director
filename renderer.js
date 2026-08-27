@@ -3058,6 +3058,10 @@ function openAtrilModal() {
   const modal = $('#atrilModal')
   if (!modal) return
   modal.hidden = false
+  requestAnimationFrame(() => {
+    const first = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+    if (first) first.focus()
+  })
 
   // Render color grid
   const colorGrid = $('#atrilColors')
@@ -3148,8 +3152,9 @@ async function loadKnowledge(file, btnId) {
   if (!current) return
 
   if (btnId) {
-    document.querySelectorAll('#knowledgeTab .tp-action').forEach(b => b.classList.remove('warn'))
-    document.getElementById(btnId).classList.add('warn')
+    document.querySelectorAll('#knowledgeTab .tp-action').forEach(b => { b.classList.remove('warn'); b.setAttribute('aria-pressed', 'false') })
+    const _knBtn = document.getElementById(btnId)
+    if (_knBtn) { _knBtn.classList.add('warn'); _knBtn.setAttribute('aria-pressed', 'true') }
   }
 
   const el = document.getElementById('knowledgeContent')

@@ -288,7 +288,7 @@ function findLogo(dir) {
   // 1. Check explicit candidates
   for (const c of LOGO_CANDIDATES) {
     const full = path.join(dir, c)
-    if (fs.existsSync(full)) return full
+    try { fs.statSync(full); return full } catch {}
   }
   // 2. Check package.json icon/logo field
   try {
@@ -299,12 +299,12 @@ function findLogo(dir) {
       for (const field of ['icon', 'logo', 'image']) {
         if (pkg[field] && typeof pkg[field] === 'string') {
           const fp = path.join(dir, pkg[field])
-          if (fp.startsWith(dir + path.sep) && fs.existsSync(fp)) return fp
+          if (fp.startsWith(dir + path.sep)) { try { fs.statSync(fp); return fp } catch {} }
         }
       }
       if (pkg.build && pkg.build.icon) {
         const fp = path.join(dir, pkg.build.icon)
-        if (fp.startsWith(dir + path.sep) && fs.existsSync(fp)) return fp
+        if (fp.startsWith(dir + path.sep)) { try { fs.statSync(fp); return fp } catch {} }
       }
     }
   } catch {}
@@ -342,7 +342,7 @@ function findLogo(dir) {
 
 // ─── Project info ─────────────────────────────────────────────────────────────
 function projectInfo(dir) {
-  const has = f => fs.existsSync(path.join(dir, f))
+  const has = f => { try { fs.statSync(path.join(dir, f)); return true } catch { return false } }
   const installed = has('run.sh') && has('.claude/commands/loop.md')
   const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
   const version = installed ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : null
@@ -377,7 +377,7 @@ function copyDir(src, dst) {
     if (e.name.includes('..') || e.name.includes(path.sep)) continue
     const s = path.join(src, e.name), d = path.join(dst, e.name)
     if (e.isDirectory()) copyDir(s, d)
-    else if (!fs.existsSync(d) || !['CLAUDE.md', 'settings.json'].includes(e.name)) fs.copyFileSync(s, d)
+    else { let _cdEx = false; try { fs.statSync(d); _cdEx = true } catch {}; if (!_cdEx || !['CLAUDE.md', 'settings.json'].includes(e.name)) fs.copyFileSync(s, d) }
     else if (e.name === 'CLAUDE.md') { try { const _cdStat = fs.statSync(s); if (_cdStat.size <= 1_048_576) fs.appendFileSync(d, '\n\n' + fs.readFileSync(s, 'utf8')) } catch {} }
     else if (e.name === 'settings.json') {
       let a = {}, b = {}
@@ -1110,6 +1110,15 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const _prSer = JSON.stringify(pruned)
     if (pruned.length < events.length && _prSer.length <= 2_097_152) writeJSON(lcFile, pruned)
   } catch {}
+  // Prune iter-*.log files: keep only newest 200
+  try {
+    const logDir = path.join(dir, '.claude', 'logs')
+    const iterLogs = fs.readdirSync(logDir).filter(f => f.startsWith('iter-') && f.endsWith('.log'))
+    if (iterLogs.length > 200) {
+      iterLogs.sort()
+      iterLogs.slice(0, iterLogs.length - 200).forEach(f => { try { fs.unlinkSync(path.join(logDir, f)) } catch {} })
+    }
+  } catch {}
   // Cap context-metrics telemetry at 500 entries
   try {
     const ctxFile = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
@@ -1299,7 +1308,7 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
   const p = path.join(dir, '.claude/mixer-history.json')
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
-  hist = Array.isArray(hist) ? hist.filter(h => h && typeof h === 'object') : []
+  hist = Array.isArray(hist) ? hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object') : []
   const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 500) : 50
   return hist.slice(-n)
 })

@@ -1,27 +1,27 @@
-# Cycle 191 Plan — IMPROVEMENT MODE
+# Cycle 192 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 191 (performance BANNED C188+C189+C190)
+## MIXER BUDGET — Cycle 192 (security BANNED C189+C190+C191, quality_tests BANNED C189+C190+C191)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
+| performance | 10 | 3 | 0/3 |
 | backend | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
-| performance | 10 | 0 | BANNED (C188+C189+C190) |
-| business_logic | 5 | 0 | SKIP |
-| ux_accessibility | 5 | 0 | SKIP |
-| data_db | 5 | 0 | SKIP |
+| business_logic | 5 | 1 | 0/1 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| data_db | 5 | 1 | 0/1 |
+| security | 20 | 0 | BANNED (C189+C190+C191) |
+| quality_tests | 35 | 0 | BANNED (C189+C190+C191) |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] S-23 — orchestra:writeConfig: add upper bound to claudeUsageBudget (max 100_000_000_000)
-2. [security] S-24 — orchestra:readIterLog: narrow logPath to iter-*.log pattern to prevent path traversal
-3. [backend] I-564 — blueprint:generate-brief: replace existsSync(roadmapPath) with statSync try/catch (2 calls)
-4. [frontend] I-565 — loadKnowledge: reset _knCurrentFile to null after load completes (prevent ghost guard state)
-5. [quality_tests] T-39 — test C191: S-23 claudeUsageBudget upper bound
-6. [quality_tests] T-40 — test C191: S-24 readIterLog logPath pattern restriction
-7. [quality_tests] T-41 — test C191: I-564 blueprint generateBrief statSync
-8. [quality_tests] T-42 — test C191: I-565 loadKnowledge _knCurrentFile reset
+1. [performance] P-26 — findLogo: replace existsSync(full) with statSync try/catch
+2. [performance] P-27 — findLogo: replace existsSync(fp) with statSync try/catch (2 calls in pkg.json loop)
+3. [performance] P-28 — projectInfo: replace has() existsSync helper with statSync try/catch
+4. [backend] I-566 — copyDir: replace existsSync(d) with statSync try/catch
+5. [frontend] I-567 — loadKnowledge: add aria-pressed state on knowledge tab buttons (active/inactive)
+6. [business_logic] I-568 — orchestra:clearLog: prune old iter-*.log files (keep newest 200)
+7. [ux_accessibility] A-14 — mixer history sparkline: add aria-live="off" and descriptive label on container
+8. [data_db] D-05 — mixer:history: validate entries have ts/event/focus fields of correct types
 
 ## Stats
-- 3723 tests at cycle start
+- 3727 tests at cycle start

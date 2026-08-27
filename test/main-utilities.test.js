@@ -96,7 +96,7 @@ describe('findLogo — 5-step logo detection', () => {
   })
 
   it('step 1: checks existsSync for each candidate', () => {
-    expect(body).toContain('existsSync(full)')
+    expect(body).toMatch(/existsSync\(full\)|statSync\(full\)/)
   })
 
   // Step 2: package.json fields
