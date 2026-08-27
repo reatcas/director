@@ -3312,8 +3312,8 @@ async function openCmdPalette() {
 async function renderCmdResults(q) {
   const res = $('#cmdResults')
   if (!res) return
-  const projects = await window.director.list()
-  const items = projects.map(p => ({ type: 'PROJECT', label: p.name || p.path, path: p.path, running: p.running }))
+  const projList = Array.isArray(projects) && projects.length ? projects : await window.director.list()
+  const items = projList.map(p => ({ type: 'PROJECT', label: p.name || p.path, path: p.path, running: p.running }))
   items.push({ type: 'ACTION', label: 'Play / Stop', action: 'toggle' })
   items.push({ type: 'ACTION', label: 'Kill', action: 'kill' })
   items.push({ type: 'ACTION', label: 'Export', action: 'export' })

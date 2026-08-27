@@ -273,8 +273,9 @@ describe('copyDir — recursive copy with merge logic', () => {
     expect(body).toContain('a.hooks[k]')
   })
 
-  it('uses writeJSON for merged settings', () => {
-    expect(body).toContain('writeJSON(d, a)')
+  it('uses writeJSON for merged settings with size cap', () => {
+    expect(body).toContain('_cdMergeSer')
+    expect(body).toContain('writeJSON(d,')
   })
 })
 

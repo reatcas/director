@@ -375,7 +375,8 @@ function copyDir(src, dst) {
       try { if (fs.statSync(s).size <= 512_000) b = readJSON(s, {}) } catch {}
       a.hooks = a.hooks || {}
       for (const k of Object.keys(b.hooks || {})) a.hooks[k] = [...(a.hooks[k] || []), ...b.hooks[k]]
-      writeJSON(d, a)
+      const _cdMergeSer = JSON.stringify(a)
+      if (_cdMergeSer.length <= 512_000) writeJSON(d, JSON.parse(_cdMergeSer))
     }
   }
 }
@@ -808,7 +809,8 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
   try { if (fs.statSync(store()).size <= 512_000) projects = readJSON(store(), []) } catch {}
   if (!projects.find(p => p.path === dir)) {
     projects.push({ id: Date.now().toString(36), name: path.basename(dir), path: dir, added: new Date().toISOString() })
-    writeJSON(store(), projects)
+    const _rapSer = JSON.stringify(projects)
+    if (_rapSer.length <= 512_000) writeJSON(store(), JSON.parse(_rapSer))
     invalidateProjectsCache()
   }
   return dir
@@ -1176,7 +1178,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   }
   const existingIds = new Set(userMixes.map(m => m.id))
   const merged = [..._defaultMixesCache.filter(p => !existingIds.has(p.id)), ...userMixes]
-  return merged
+  return merged.slice(0, 200)
 })
 
 ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
