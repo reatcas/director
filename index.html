@@ -490,7 +490,7 @@
         <div id="bpTab" class="mixer-tab-pane" role="tabpanel" aria-labelledby="tab-bpTab">
           <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 0">
             <div id="bpPhases" class="bp-phases" role="list" aria-label="Fases del blueprint" style="flex:1"></div>
-            <div id="bpReadiness" class="mono" style="display:none;font-size:9px;white-space:nowrap;padding:3px 8px;border-radius:3px;border:1px solid rgba(255,255,255,0.06)"></div>
+            <div id="bpReadiness" class="mono" aria-live="polite" style="display:none;font-size:9px;white-space:nowrap;padding:3px 8px;border-radius:3px;border:1px solid rgba(255,255,255,0.06)"></div>
           </div>
           <div id="bpChat" class="bp-chat">
             <div id="bpMessages" class="bp-messages" role="log" aria-live="polite" aria-label="Respuestas de Blueprint al orquestador" aria-atomic="false"></div>
@@ -510,7 +510,7 @@
           <div style="padding:6px 10px;display:flex;gap:4px">
             <button id="bpNewSession" class="tp-action" aria-label="Agregar nueva sesión al blueprint">+ SESSION</button>
             <button id="bpGenerate" class="tp-action upgrade" disabled aria-label="Exportar brief generado">GENERATE BRIEF</button>
-            <span id="bpReadiness" class="section-badge mono" style="margin-left:auto"></span>
+            <span id="bpCompleteness" class="section-badge mono" style="margin-left:auto"></span>
           </div>
         </div>
 

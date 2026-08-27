@@ -1960,7 +1960,7 @@ function parseLogLine(dir, line) {
   // Summary lines from run.sh
   if (cl.includes('[orchestra') && cl.includes('summary:')) {
     const summary = cl.replace(/\[orchestra[^\]]*\]\s*summary:\s*/, '')
-    if (summary.trim()) addSummaryEntry(summary.replace(/</g, '&lt;').replace(/>/g, '&gt;'))
+    if (summary.trim()) addSummaryEntry(summary)
     return
   }
 
@@ -2302,7 +2302,7 @@ function updateBurnRate(usage) {
   }
 
   const tokens = usage.tokensEstimated
-  const delta = _prevBurnTokens > 0 ? tokens - _prevBurnTokens : 0
+  const delta = _prevBurnTokens > 0 ? Math.max(0, tokens - _prevBurnTokens) : 0
   _prevBurnTokens = tokens
 
   if (delta > 0) _burnHistory.push(delta)
@@ -2829,7 +2829,9 @@ function bpUpdateCompleteness() {
   const answered = BP_QUESTIONS.filter(q => bpState.answers[q.key] && bpState.answers[q.key].trim()).length
   bpState.completeness = Math.round(answered / total * 100)
   const badge = $('#bpReadiness')
-  if (badge) badge.textContent = `${bpState.completeness}%`
+  if (badge) { badge.textContent = `${bpState.completeness}%`; badge.style.display = bpState.completeness > 0 ? '' : 'none' }
+  const cBadge = $('#bpCompleteness')
+  if (cBadge) cBadge.textContent = bpState.completeness > 0 ? `${bpState.completeness}%` : ''
   const genBtn = $('#bpGenerate')
   if (genBtn) genBtn.disabled = bpState.completeness < 15
 }
