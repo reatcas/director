@@ -798,10 +798,15 @@ ipcMain.handle('repertoire:open', (_e, dir) => {
   return false
 })
 
+const _BLOCKED_FILE_EXT = new Set(['.env', '.key', '.pem', '.cert', '.p12', '.pfx', '.secret'])
+const _BLOCKED_FILE_NAME = new Set(['.env', 'id_rsa', 'id_ed25519', 'id_ecdsa', 'id_dsa', '.htpasswd'])
 ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
   if (!isKnownProject(dir) || typeof subpath !== 'string' || !subpath.trim()) return null
   const p = path.resolve(dir, subpath)
   if (!p.startsWith(dir + path.sep) && p !== dir) return null
+  const base = path.basename(p)
+  const ext = path.extname(p).toLowerCase()
+  if (_BLOCKED_FILE_EXT.has(ext) || _BLOCKED_FILE_NAME.has(base)) return null
   try {
     const stat = fs.statSync(p)
     if (!stat.isFile()) return null
@@ -1390,7 +1395,9 @@ ipcMain.handle('metrics:allocation', (_e, dir) => {
 
 ipcMain.handle('metrics:claude-usage', (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  return getClaudeUsage(dir)
+  const hit = metricsGet('claude-usage:' + dir)
+  if (hit !== null) return hit
+  return metricsSet('claude-usage:' + dir, getClaudeUsage(dir))
 })
 
 // ─── Compliance Metrics ───────────────────────────────────────────────────────
@@ -1786,7 +1793,13 @@ app.whenReady().then(() => {
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 14, y: 17 },
     icon: path.join(__dirname, process.platform === 'darwin' ? 'icon.icns' : 'icon.png'),
-    webPreferences: { preload: path.join(__dirname, 'preload.js') }
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+      webSecurity: true
+    }
   })
   win.loadFile('index.html')
 
