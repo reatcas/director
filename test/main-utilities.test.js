@@ -797,8 +797,8 @@ describe('syncProtocol — protocol sync with legacy cleanup', () => {
 describe('hotReloadAllProjects', () => {
   const body = fnBody('hotReloadAllProjects')
 
-  it('reads project list from store', () => {
-    expect(body).toContain('readJSON(store()')
+  it('reads project list via cachedProjects()', () => {
+    expect(body).toContain('cachedProjects()')
   })
 
   it('syncs protocol to each project', () => {

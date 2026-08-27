@@ -487,7 +487,7 @@ function startHotReloadWatcher() {
 
 function hotReloadAllProjects(changedFile) {
   _defaultMixesCache = null
-  const projects = readJSON(store(), [])
+  const projects = cachedProjects()
   let resynced = 0
   for (const p of projects) {
     if (!p.path) continue
@@ -753,8 +753,7 @@ function playOrchestra(dir, agent = 'claude') {
 
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
 ipcMain.handle('repertoire:list', () => {
-  const projects = readJSON(store(), [])
-  return projects.map(p => ({ ...p, ...projectInfo(p.path) }))
+  return cachedProjects().map(p => ({ ...p, ...projectInfo(p.path) }))
 })
 
 ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
@@ -1070,7 +1069,7 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
 
 // ─── Cross-project session summary (F-18) ───────────────────────────────────
 ipcMain.handle('metrics:session-summary', () => {
-  const projects = readJSON(store(), [])
+  const projects = cachedProjects()
   let active = 0, idle = 0, totalTokens = 0, worstCompliance = null
   for (const p of projects) {
     if (!p.path) continue
@@ -1648,7 +1647,7 @@ app.whenReady().then(() => {
       const raw = req.url.replace('local-img://', '')
       const fp = decodeURIComponent(raw)
       const filePath = path.resolve(fp.startsWith('/') ? fp : '/' + fp)
-      const allowedDirs = readJSON(store(), []).map(p => p.path).filter(Boolean)
+      const allowedDirs = cachedProjects().map(p => p.path).filter(Boolean)
       allowedDirs.push(path.join(app.getPath('userData')))
       if (!allowedDirs.some(d => filePath.startsWith(d + path.sep) || filePath.startsWith(d + '/'))) {
         return new Response('', { status: 403 })

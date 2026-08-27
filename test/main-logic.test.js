@@ -212,9 +212,9 @@ describe('F-18: session summary IPC', () => {
     expect(mainJs).toContain("'metrics:session-summary'")
   })
 
-  it('reads projects from store', () => {
+  it('reads projects via cachedProjects()', () => {
     const block = mainJs.split("'metrics:session-summary'")[1]?.split('ipcMain')[0] || ''
-    expect(block).toContain('readJSON(store()')
+    expect(block).toContain('cachedProjects()')
   })
 
   it('tracks active and idle counts', () => {

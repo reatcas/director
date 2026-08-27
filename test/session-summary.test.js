@@ -8,9 +8,9 @@ const mainJs = fs.readFileSync(path.join(ROOT, 'main.js'), 'utf8')
 describe('session-summary handler structure', () => {
   const block = mainJs.split("'metrics:session-summary'")[1]?.split('\n// ───')[0] || ''
 
-  it('iterates all projects from store', () => {
+  it('iterates all projects via cachedProjects()', () => {
     expect(block).toContain('for (const p of projects)')
-    expect(block).toContain('readJSON(store()')
+    expect(block).toContain('cachedProjects()')
   })
 
   it('skips projects without path', () => {
