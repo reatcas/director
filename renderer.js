@@ -462,8 +462,10 @@ async function loadSessionSummary() {
     if (!s || typeof s !== 'object') { el.textContent = ''; return }
     const tokK = s.totalTokens > 0 ? (s.totalTokens / 1000).toFixed(1) + 'k' : '—'
     const total = typeof s.total === 'number' ? s.total : (s.active || 0) + (s.idle || 0)
+    const worstScore = s.worstCompliance?.score != null ? String(Math.round(s.worstCompliance.score)) + '%' : '—'
+    el.setAttribute('tabindex', '0')
     el.setAttribute('aria-label', `Sesión: ${esc(String(s.active || 0))} activos, ${esc(String(s.idle || 0))} inactivos, ${esc(tokK)} tokens`)
-    el.innerHTML = `<span class="ss-item" aria-label="${esc(String(s.active || 0))} orquestas activas"><span class="ss-val ss-live">${esc(String(s.active || 0))}</span><span>activos</span></span><span class="ss-item" aria-label="${esc(String(s.idle || 0))} orquestas inactivas"><span class="ss-val ss-idle">${esc(String(s.idle || 0))}</span><span>idle</span></span><span class="ss-item" aria-label="${esc(tokK)} tokens totales"><span class="ss-val">${esc(tokK)}</span><span>tok</span></span><span class="ss-item"><span class="ss-val">${esc(String(total))}</span><span>total</span></span>`
+    el.innerHTML = `<span class="ss-item" aria-label="${esc(String(s.active || 0))} orquestas activas"><span class="ss-val ss-live">${esc(String(s.active || 0))}</span><span>activos</span></span><span class="ss-item" aria-label="${esc(String(s.idle || 0))} orquestas inactivas"><span class="ss-val ss-idle">${esc(String(s.idle || 0))}</span><span>idle</span></span><span class="ss-item" aria-label="${esc(tokK)} tokens totales"><span class="ss-val">${esc(tokK)}</span><span>tok</span></span><span class="ss-item"><span class="ss-val">${esc(String(total))}</span><span>total</span></span><span class="ss-item" aria-label="peor cumplimiento ${esc(worstScore)}"><span class="ss-val">${esc(worstScore)}</span><span>compliance</span></span>`
   } catch { }
 }
 

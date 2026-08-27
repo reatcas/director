@@ -585,6 +585,7 @@ function hotReloadAllProjects(changedFile) {
   for (const p of projects) {
     if (!p.path) continue
     syncProtocol(p.path)
+    _metricsCache.delete('version-check:' + p.path)
     // Signal running sessions to restart so they pick up the new run.sh
     if (changedFile === 'run.sh' && isRunning(p.path)) {
       try {
@@ -884,7 +885,7 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
 })
 
 ipcMain.handle('repertoire:remove', (_e, dir) => {
-  if (typeof dir !== 'string') return false
+  if (typeof dir !== 'string' || dir.length === 0) return false
   let _rrProjects = []
   try { if (fs.statSync(store()).size <= 512_000) _rrProjects = readJSON(store(), []) } catch {}
   const _rrSer = JSON.stringify(_rrProjects.filter(p => p.path !== dir))
@@ -1011,6 +1012,7 @@ ipcMain.handle('ai:select', (_e, id) => {
   state.selected = id
   const _aiSSer = JSON.stringify(state)
   if (_aiSSer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aiSSer)); invalidateAiStateCache() }
+  _metricsCache.delete('session-summary')
   return { ok: true }
 })
 
@@ -1394,12 +1396,15 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
 // ─── Mixer history (F-17) ───────────────────────────────────────────────────
 ipcMain.handle('mixer:history', (_e, dir, limit) => {
   if (!isKnownProject(dir)) return []
+  const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 100) : 50
+  const _mhKey = 'mixer-hist:' + dir + ':' + n
+  const _mhHit = metricsGet(_mhKey)
+  if (_mhHit !== null) return _mhHit
   const p = path.join(dir, '.claude/mixer-history.json')
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
   hist = Array.isArray(hist) ? hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) : []
-  const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 100) : 50
-  return hist.slice(-n)
+  return metricsSet(_mhKey, hist.slice(-n))
 })
 
 // ─── Cross-project session summary (F-18) ───────────────────────────────────
@@ -1618,6 +1623,9 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : 200
   const _llType = typeof typeFilter === 'string' && typeFilter.length <= 64 && /^[\w\-]+$/.test(typeFilter) ? typeFilter : null
   const _llBefore = typeof before === 'string' && before.length <= 64 && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : null
+  const _lcKey = 'lc:' + dir + ':' + _llLimit + ':' + (_llType || '') + ':' + (_llBefore || '')
+  const _lcHit = metricsGet(_lcKey)
+  if (_lcHit !== null) return _lcHit
   const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
@@ -1627,7 +1635,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   if (_llBefore) events = events.filter(e => e.ts < _llBefore)
   if (_llType) events = events.filter(e => e.type === _llType)
   const _llEvents = events.slice(-_llLimit).map(e => Buffer.byteLength(e.message, 'utf8') > 4096 ? { ...e, message: Buffer.from(e.message, 'utf8').slice(0, 4096).toString('utf8') } : e)
-  return { events: _llEvents, total: events.length, unfilteredTotal: _llUnfilteredTotal }
+  return metricsSet(_lcKey, { events: _llEvents, total: events.length, unfilteredTotal: _llUnfilteredTotal })
 })
 
 const _LC_TYPES = new Set(['play', 'fine', 'kill', 'commit', 'exit', 'usage_limit', 'directive', 'auto_resume', 'error', 'note', 'cycle_close', 'feature'])
@@ -1914,14 +1922,17 @@ ipcMain.handle('system:kill-proc', (_e, pid, signal = 'SIGTERM') => {
 const customAtrilesFile = () => path.join(app.getPath('userData'), 'custom-atriles.json')
 
 let _atrilesCache = null
+let _atrilesCacheTs = 0
+const _ATRILES_TTL = 60_000
 ipcMain.handle('atriles:list', () => {
-  if (_atrilesCache) return _atrilesCache
+  if (_atrilesCache && Date.now() - _atrilesCacheTs < _ATRILES_TTL) return _atrilesCache
   const p = customAtrilesFile()
   let data = []
   try { if (fs.statSync(p).size <= 512_000) data = readJSON(p, []) } catch {}
   if (!Array.isArray(data)) data = []
   data = data.filter(a => a && typeof a === 'object' && typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) && typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))
   _atrilesCache = data
+  _atrilesCacheTs = Date.now()
   return _atrilesCache
 })
 
@@ -1947,6 +1958,7 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
   if (_asSer.length > 512_000) return false
   writeJSON(customAtrilesFile(), JSON.parse(_asSer))
   _atrilesCache = JSON.parse(_asSer)
+  _atrilesCacheTs = Date.now()
   return true
 })
 
