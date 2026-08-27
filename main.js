@@ -1215,7 +1215,8 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
     try { if (fs.statSync(_dmPath).size <= 512_000) _defaultMixesCache = readJSON(_dmPath, []) } catch {}
   }
   const existingIds = new Set(userMixes.map(m => m.id))
-  const merged = [..._defaultMixesCache.filter(p => !existingIds.has(p.id)), ...userMixes]
+  const validDefaults = _defaultMixesCache.filter(p => p && typeof p === 'object' && typeof p.id === 'string')
+  const merged = [...validDefaults.filter(p => !existingIds.has(p.id)), ...userMixes]
   return merged.slice(0, 200)
 })
 
@@ -1791,6 +1792,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false
   if (data.answers && typeof data.answers === 'object') {
     if (Object.keys(data.answers).length > 200) return false
+    if (Object.keys(data.answers).some(k => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(k))) return false
     const _bsAnswerVals = Object.values(data.answers)
     if (_bsAnswerVals.some(v => v !== null && typeof v === 'object')) return false
     if (_bsAnswerVals.some(v => typeof v === 'string' && v.length > 2000)) return false
@@ -1805,7 +1807,9 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
     if (data.modules.some(m => m.notes !== undefined && (typeof m.notes !== 'string' || m.notes.length > 2000))) return false
     if (data.modules.some(m => m.notes !== undefined && typeof m.notes === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(m.notes))) return false
     if (data.modules.some(m => m.features !== undefined && (!Array.isArray(m.features) || m.features.length > 50 || m.features.some(f => typeof f !== 'string' || f.length > 512)))) return false
+    if (data.modules.some(m => m.features !== undefined && Array.isArray(m.features) && m.features.some(f => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(f)))) return false
     if (data.modules.some(m => m.dependencies !== undefined && (!Array.isArray(m.dependencies) || m.dependencies.length > 50 || m.dependencies.some(d => typeof d !== 'string' || d.length > 256)))) return false
+    if (data.modules.some(m => m.dependencies !== undefined && Array.isArray(m.dependencies) && m.dependencies.some(d => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(d)))) return false
   }
   if (data.completeness !== undefined && (typeof data.completeness !== 'number' || !Number.isFinite(data.completeness) || data.completeness < 0 || data.completeness > 100)) return false
   if (data.sessions !== undefined && !Array.isArray(data.sessions)) return false

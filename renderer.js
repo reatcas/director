@@ -2486,7 +2486,7 @@ async function loadRoadmapFreshness() {
     return
   }
   if (data.isStale) {
-    el.textContent = `${data.staleHours}h untouched`
+    el.textContent = `${Math.max(0, data.staleHours)}h untouched`
     el.className = 'mm-val bad'
     if (fsEl) { fsEl.style.background = 'linear-gradient(90deg, rgba(224,48,48,0.10), transparent 60%)'; fsEl.style.borderBottom = '1px solid rgba(224,48,48,0.18)' }
     const fsLabel = $('#currentFeature')

@@ -1,27 +1,27 @@
-# Cycle 178 Plan — IMPROVEMENT MODE
+# Cycle 179 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 178 (no bans)
+## MIXER BUDGET — Cycle 179 (performance BANNED: 3 consecutive)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 3 | 0/3 |
+| quality_tests | 35 | 4 | 0/4 |
 | security | 20 | 2 | 0/2 |
-| performance | 10 | 1 | 0/1 |
 | backend | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
+| performance | 10 | BANNED | — |
 | ux_accessibility | 5 | 0 | SKIP |
 | business_logic | 5 | 0 | SKIP |
 | data_db | 5 | 0 | SKIP |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] S-03 — blueprint:save: answer string values lack control-char guard (\x00-\x1F excl. \t\n\r)
-2. [security] S-04 — blueprint:save: module m.name/m.description/m.notes lack control-char guard
-3. [performance] P-10 — generate-brief handler: triple existsSync+statSync for directivePath (lines 674/685/697) → single statSync try/catch
-4. [backend] I-535 — metrics:session-summary: add mtime skip for unchanged ORCHESTRA_REPORT.md (reuse _complianceMtimeCache)
-5. [frontend] I-536 — loadMixes: add title="${esc(m.name)}" to .mix-card-name div for truncated name tooltip
-6. [quality_tests] T-05 — test C178: S-03 + S-04 blueprint:save control-char guards
-7. [quality_tests] T-06 — test C178: P-10 directivePath no existsSync + I-535 mtime cache presence
-8. [quality_tests] T-07 — test C178: I-536 mix-card-name title attribute
+1. [security] S-05 — atriles:save: description field lacks control-char guard
+2. [security] S-06 — atriles:save: icon field lacks control-char guard
+3. [backend] I-537 — mixer:saved:list: _defaultMixesCache items need object+string id type guard before merge
+4. [frontend] I-538 — loadRoadmapFreshness: clamp staleHours with Math.max(0, ...) to prevent negative display
+5. [quality_tests] T-08 — test C179: S-05 atriles description control-char guard
+6. [quality_tests] T-09 — test C179: S-06 atriles icon control-char guard
+7. [quality_tests] T-10 — test C179: I-537 _defaultMixesCache type guard + I-538 staleHours clamp
+8. [quality_tests] T-11 — test C179: atriles:save icon length guard still present + mix:saved:list merge cap
 
 ## Stats
-- 3656 tests at cycle start
+- 3664 tests at cycle start
