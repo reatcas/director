@@ -851,6 +851,7 @@ function aiState() {
 }
 ipcMain.handle('ai:credits', () => aiState())
 ipcMain.handle('ai:select', (_e, id) => {
+  if (typeof id !== 'string' || !Object.keys(AI_DEFAULTS).includes(id)) return { ok: false, error: 'Unknown AI' }
   const state = aiState()
   if (!state[id]) return { ok: false, error: 'Unknown AI' }
   state.selected = id
@@ -1038,8 +1039,15 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
 
 ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (!isKnownProject(dir)) return false
+  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
+  const serialized = JSON.stringify(cfg)
+  if (serialized.length > 65_536) return false
+  if (cfg.focus && typeof cfg.focus === 'object') {
+    const weights = Object.values(cfg.focus)
+    if (!weights.every(w => typeof w === 'number' && w >= 0 && w <= 100)) return false
+  }
   const p = path.join(dir, '.claude/orchestra.json')
-  writeJSON(p, cfg)
+  writeJSON(p, JSON.parse(serialized))
   return true
 })
 

@@ -97,7 +97,7 @@ describe('mixer:write handler', () => {
   })
 
   it('uses writeJSON for atomic write', () => {
-    expect(block).toContain('writeJSON(p, cfg)')
+    expect(block).toContain('writeJSON(p,')
   })
 })
 
@@ -111,7 +111,7 @@ describe('orchestra:writeConfig handler', () => {
   })
 
   it('uses writeJSON for atomic write', () => {
-    expect(block).toContain('writeJSON(p, cfg)')
+    expect(block).toContain('writeJSON(p,')
   })
 
   it('writes to orchestra.json', () => {
