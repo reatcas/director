@@ -706,7 +706,8 @@ function playOrchestra(dir, agent = 'claude') {
           if (!isRunning(dir)) {
             const cfgPath = path.join(dir, '.claude/orchestra.json')
             try {
-              const cfg = readJSON(cfgPath, {})
+              let cfg = {}
+              try { if (fs.statSync(cfgPath).size <= 512_000) cfg = readJSON(cfgPath, {}) } catch {}
               cfg.agent = nextAgent
               if (AI_DEFAULTS[nextAgent]?.defaultModel) cfg.model = AI_DEFAULTS[nextAgent].defaultModel
               writeJSON(cfgPath, cfg)
@@ -1094,9 +1095,11 @@ ipcMain.handle('mixer:read',  (_e, dir) => {
   try { if (fs.statSync(_mrPath).size <= 512_000) cfg = readJSON(_mrPath, null) } catch {}
   return cfg
 })
+const _VALID_CATS = new Set(['product','backend','frontend','business_logic','security','quality_tests','devops_infra','performance','data_db','i18n','ux_accessibility'])
 ipcMain.handle('mixer:write', (_e, dir, focus) => {
   if (!isKnownProject(dir)) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
+  if (Object.keys(focus).some(k => !_VALID_CATS.has(k))) return false
   if (Object.values(focus).some(v => typeof v !== 'number' || v < 0 || v > 100)) return false
   const p = path.join(dir, '.claude/orchestra.json')
   let cfg = { version: '2.0.0' }
@@ -1113,9 +1116,12 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
   const _allowedKeys = new Set(['version', 'focus', 'agent', 'model', 'claudeUsageBudget', 'nice'])
   if (!Object.keys(cfg).every(k => _allowedKeys.has(k))) return false
+  if (cfg.agent !== undefined && !Object.keys(AI_DEFAULTS).includes(cfg.agent)) return false
+  if (cfg.model !== undefined && (typeof cfg.model !== 'string' || cfg.model.length > 256)) return false
   const serialized = JSON.stringify(cfg)
   if (serialized.length > 65_536) return false
   if (cfg.focus && typeof cfg.focus === 'object') {
+    if (Object.keys(cfg.focus).some(k => !_VALID_CATS.has(k))) return false
     const weights = Object.values(cfg.focus)
     if (!weights.every(w => typeof w === 'number' && w >= 0 && w <= 100)) return false
   }
@@ -1144,7 +1150,9 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
 ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   if (!isKnownProject(dir)) return false
   if (typeof name !== 'string' || name.length === 0 || name.length > 256) return false
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(name)) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
+  if (Object.keys(focus).some(k => !_VALID_CATS.has(k))) return false
   if (Object.values(focus).some(v => typeof v !== 'number' || v < 0 || v > 100)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
   let mixes = []
@@ -1369,7 +1377,7 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
   if (typeof type !== 'string' || typeof label !== 'string' || typeof message !== 'string') return false
   if (type.length > 64 || label.length > 128 || message.length > 1024) return false
   if (!/^[\w\-]+$/.test(type)) return false
-  if (/\x00/.test(label) || /\x00/.test(message)) return false
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(label) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(message)) return false
   persistLifecycleEvent(dir, type, label, message)
   return true
 })

@@ -169,11 +169,11 @@
   </div>
 
   <!-- SHORTCUTS MODAL (F-24) -->
-  <div id="shortcutsModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Atajos de teclado">
+  <div id="shortcutsModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Atajos de teclado" aria-labelledby="shortcutsTitle">
     <div class="modal-card" style="width:440px;max-height:70vh;overflow-y:auto">
       <button id="closeShortcuts" class="modal-close" aria-label="Cerrar">✕</button>
-      <h2 class="modal-title" style="font-size:14px">ATAJOS DE TECLADO</h2>
-      <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;padding:12px 0;font:11px var(--mono);color:var(--txt)">
+      <h2 class="modal-title" id="shortcutsTitle" style="font-size:14px">ATAJOS DE TECLADO</h2>
+      <dl role="list" aria-label="Lista de atajos de teclado" style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;padding:12px 0;font:11px var(--mono);color:var(--txt)">
         <kbd class="kbd">Space</kbd><span>Play / Stop</span>
         <kbd class="kbd">K</kbd><span>Kill orquesta</span>
         <kbd class="kbd">1–9</kbd><span>Seleccionar proyecto</span>
@@ -184,7 +184,7 @@
         <kbd class="kbd">E</kbd><span>Exportar sesión</span>
         <kbd class="kbd">?</kbd><span>Mostrar atajos</span>
         <kbd class="kbd">Esc</kbd><span>Cerrar modal</span>
-      </div>
+      </dl>
     </div>
   </div>
 
@@ -361,7 +361,7 @@
 
           <!-- Context Compression Panel (F-21) -->
           <div id="compressionPanel" class="alloc-inspector" style="display:none">
-            <button id="compressionToggle" class="alloc-toggle" aria-label="Alternar panel de compresión">▸ COMPRESIÓN DE CONTEXTO</button>
+            <button id="compressionToggle" class="alloc-toggle" aria-label="Alternar panel de compresión" aria-expanded="false">▸ COMPRESIÓN DE CONTEXTO</button>
             <div id="compressionBody" class="alloc-body" style="display:none">
               <div id="compressionStats" class="alloc-summary"></div>
               <div id="compressionHistory" class="compression-history"></div>
@@ -369,7 +369,7 @@
           </div>
 
           <div id="mixerHistoryPanel" class="alloc-inspector" style="display:none">
-            <button id="mixerHistoryToggle" class="alloc-toggle" aria-label="Alternar historial de pesos">▸ HISTORIAL DE PESOS</button>
+            <button id="mixerHistoryToggle" class="alloc-toggle" aria-label="Alternar historial de pesos" aria-expanded="false">▸ HISTORIAL DE PESOS</button>
             <div id="mixerHistoryBody" class="alloc-body" style="display:none">
               <svg id="mixerHistorySvg" class="mh-svg" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
               <div id="mixerHistoryLegend" class="mh-legend"></div>

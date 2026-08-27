@@ -29,7 +29,7 @@ describe('lifecycle:add null byte rejection (I-217)', () => {
   it('rejects message with null bytes', () => {
     expect(block).toContain('message')
     const nullCheck = block.split('\\x00')[0]?.split('\n').pop() || ''
-    expect(block.includes('/\\x00/.test(label)') || block.includes('/\\x00/.test(message)')).toBe(true)
+    expect(block.includes('\\x00') && (block.includes('.test(label)') || block.includes('.test(message)'))).toBe(true)
   })
 
   it('still enforces type allowlist', () => {
