@@ -417,12 +417,13 @@ function startMetricsSampling(dir) {
       const resourceMetrics = scheduler.getMetrics(dir)
       const contextMetrics  = contextProto.getMetrics(dir)
       if (win && !win.isDestroyed()) {
+        const cachedUsage = metricsGet('claude-usage:' + dir)
         win.webContents.send('metrics:update', {
           dir,
           resource: resourceMetrics,
           context:  contextMetrics,
           coordination: coordinator.getStatus(),
-          claudeUsage: getClaudeUsage(dir)
+          claudeUsage: cachedUsage !== null ? cachedUsage : getClaudeUsage(dir)
         })
       }
     }
@@ -1038,7 +1039,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   // Cap context-metrics telemetry at 500 entries
   try {
     const ctxFile = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
-    const hist = readJSON(ctxFile, [])
+    let hist = []
+    try { if (fs.statSync(ctxFile).size <= 1_048_576) hist = readJSON(ctxFile, []) } catch {}
     if (hist.length > 500) writeJSON(ctxFile, hist.slice(-500))
   } catch {}
 })
@@ -1060,7 +1062,9 @@ function snapshotMixer(dir, event) {
   if (!cfg || !cfg.focus) return
   const histFile = path.join(dir, '.claude/mixer-history.json')
   const cutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000
-  const hist = readJSON(histFile, []).filter(h => new Date(h.ts).getTime() >= cutoffMs)
+  let hist = []
+  try { if (fs.statSync(histFile).size <= 512_000) hist = readJSON(histFile, []) } catch {}
+  hist = hist.filter(h => new Date(h.ts).getTime() >= cutoffMs)
   hist.push({ ts: new Date().toISOString(), event, focus: { ...cfg.focus } })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
   writeJSON(histFile, hist)

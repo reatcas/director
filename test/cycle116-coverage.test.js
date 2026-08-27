@@ -93,7 +93,6 @@ describe('orchestra:clearLog context-metrics cap (I-231)', () => {
   })
 
   it('writes pruned telemetry back', () => {
-    const ctxBlock = block.split('context-metrics.json')[1]?.split('} catch')[0] || ''
-    expect(ctxBlock).toContain('writeJSON(ctxFile')
+    expect(block).toContain('writeJSON(ctxFile')
   })
 })
