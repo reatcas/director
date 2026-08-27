@@ -138,3 +138,11 @@
 - [x] **I-103** Suppress scrollLog during batch log paint on project load — eliminate 200 forced layouts when painting initial log lines.
 - [x] **I-104** Replace auth execSync with spawnSync — eliminate shell interpretation for claude/codex/agy auth status checks.
 - [x] **I-105** Invalidate default-mixes cache on hot-reload — ensure preset changes take effect without app restart.
+- [x] **I-106** Add CSS containment to heavy DOM areas — #log, .metrics-strip, #rawLogOverlay get contain properties to reduce layout/paint thrashing.
+- [x] **I-107** Pause particle animation when window hidden — gate rAF loop on visibilitychange to stop O(n²) CPU burn when app is minimized.
+- [x] **I-108** Replace exec with execFile in ai:login — eliminate last shell-interpreted child_process calls and remove redundant require.
+- [x] **I-109** Cache lifecycle log dir creation — skip redundant mkdirSync calls on every lifecycle event write.
+- [x] **I-110** Persist split divider position — save console/mixer split percentage to localStorage, restore on init.
+- [x] **I-111** mixer-graph + three-timer-shim test coverage — 98 new tests for two zero-coverage browser modules.
+- [x] **I-112** Validate lifecycle:add dir + input types/lengths — prevent arbitrary path writes via isKnownProject guard.
+- [x] **I-113** Extend isKnownProject guard to notes:write + lifecycle:list — close remaining dir-validation gaps.
