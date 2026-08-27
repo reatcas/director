@@ -1112,7 +1112,8 @@ let _defaultMixesCache = null
 ipcMain.handle('mixer:saved:list', (_e, dir) => {
   if (!isKnownProject(dir)) return []
   const p = path.join(dir, '.claude/saved-mixes.json')
-  const userMixes = readJSON(p, [])
+  let userMixes = []
+  try { if (fs.statSync(p).size <= 512_000) userMixes = readJSON(p, []) } catch {}
   if (!_defaultMixesCache) {
     _defaultMixesCache = readJSON(path.join(orchestraSrc(), '.claude/default-mixes.json'), [])
   }
@@ -1125,8 +1126,10 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   if (!isKnownProject(dir)) return false
   if (typeof name !== 'string' || name.length === 0 || name.length > 256) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
+  if (Object.values(focus).some(v => typeof v !== 'number' || v < 0 || v > 100)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
-  const mixes = readJSON(p, [])
+  let mixes = []
+  try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
   if (mixes.length >= 100) return false
   mixes.push({ id: Date.now().toString(36), name: name.trim(), ts: new Date().toISOString(), focus })
   writeJSON(p, mixes)
@@ -1137,7 +1140,9 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
   if (!isKnownProject(dir)) return false
   if (typeof id !== 'string' || id.length === 0 || id.length > 64) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
-  const mixes = readJSON(p, []).filter(m => m.id !== id)
+  let mixes = []
+  try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
+  mixes = mixes.filter(m => m.id !== id)
   writeJSON(p, mixes)
   return true
 })

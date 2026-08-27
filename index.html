@@ -80,15 +80,15 @@
         </div>
         <div class="settings-row">
           <span class="settings-key">Compact at (%)</span>
-          <input type="number" id="stgCompactAt" class="mix-import-field mono" value="50" min="10" max="90" style="width:60px">
+          <input type="number" id="stgCompactAt" class="mix-import-field mono" value="50" min="10" max="90" style="width:60px" aria-label="Compresión automática en porcentaje">
         </div>
         <div class="settings-row">
           <span class="settings-key">Max hallucination streak</span>
-          <input type="number" id="stgMaxHallStreak" class="mix-import-field mono" value="5" min="1" max="20" style="width:60px">
+          <input type="number" id="stgMaxHallStreak" class="mix-import-field mono" value="5" min="1" max="20" style="width:60px" aria-label="Límite de alucinaciones consecutivas">
         </div>
         <div class="settings-row">
           <span class="settings-key">Run mode</span>
-          <select id="stgRunMode" class="mix-import-field mono" style="width:120px">
+          <select id="stgRunMode" class="mix-import-field mono" style="width:120px" aria-label="Modo de sistema de ejecución">
             <option value="perpetual">Perpetual</option>
             <option value="single">Single cycle</option>
             <option value="bounded">Bounded</option>
@@ -96,7 +96,7 @@
         </div>
         <div class="settings-row">
           <span class="settings-key">Max iterations (bounded)</span>
-          <input type="number" id="stgMaxIter" class="mix-import-field mono" value="0" min="0" style="width:60px">
+          <input type="number" id="stgMaxIter" class="mix-import-field mono" value="0" min="0" style="width:60px" aria-label="Límite de iteraciones acotadas">
         </div>
       </div>
 
@@ -104,7 +104,7 @@
         <span class="settings-label">AI DEFAULTS</span>
         <div class="settings-row">
           <span class="settings-key">Default provider</span>
-          <select id="stgDefaultAi" class="mix-import-field mono" style="width:160px">
+          <select id="stgDefaultAi" class="mix-import-field mono" style="width:160px" aria-label="Proveedor AI por defecto">
             <option value="claude">Claude (Anthropic)</option>
             <option value="agy">Antigravity</option>
             <option value="codex">Codex (OpenAI)</option>
@@ -113,7 +113,7 @@
         </div>
         <div class="settings-row">
           <span class="settings-key">Auto-switch on quota</span>
-          <label class="stg-switch"><input type="checkbox" id="stgAutoSwitch" checked><span class="stg-slider"></span></label>
+          <label class="stg-switch"><input type="checkbox" id="stgAutoSwitch" checked aria-label="Alternar cambio automático de proveedor"><span class="stg-slider"></span></label>
         </div>
       </div>
 
@@ -121,11 +121,11 @@
         <span class="settings-label">LOGS</span>
         <div class="settings-row">
           <span class="settings-key">Keep last N iter logs</span>
-          <input type="number" id="stgKeepLogs" class="mix-import-field mono" value="50" min="5" max="200" style="width:60px">
+          <input type="number" id="stgKeepLogs" class="mix-import-field mono" value="50" min="5" max="200" style="width:60px" aria-label="Historial de iteraciones a conservar">
         </div>
         <div class="settings-row">
           <span class="settings-key">Auto-scroll</span>
-          <label class="stg-switch"><input type="checkbox" id="stgAutoScroll" checked><span class="stg-slider"></span></label>
+          <label class="stg-switch"><input type="checkbox" id="stgAutoScroll" checked aria-label="Desplazamiento automático del terminal"><span class="stg-slider"></span></label>
         </div>
       </div>
 
@@ -133,15 +133,15 @@
         <span class="settings-label">ALERTAS</span>
         <div class="settings-row">
           <span class="settings-key">Estancamiento (>20min)</span>
-          <label class="stg-switch"><input type="checkbox" id="stgAlertStall" checked><span class="stg-slider"></span></label>
+          <label class="stg-switch"><input type="checkbox" id="stgAlertStall" checked aria-label="Alternar alerta de estancamiento"><span class="stg-slider"></span></label>
         </div>
         <div class="settings-row">
           <span class="settings-key">ALTO (sesión detenida)</span>
-          <label class="stg-switch"><input type="checkbox" id="stgAlertAlto" checked><span class="stg-slider"></span></label>
+          <label class="stg-switch"><input type="checkbox" id="stgAlertAlto" checked aria-label="Alternar alerta de sesión detenida"><span class="stg-slider"></span></label>
         </div>
         <div class="settings-row">
           <span class="settings-key">Límite de uso</span>
-          <label class="stg-switch"><input type="checkbox" id="stgAlertUsage" checked><span class="stg-slider"></span></label>
+          <label class="stg-switch"><input type="checkbox" id="stgAlertUsage" checked aria-label="Alternar alerta de límite de uso"><span class="stg-slider"></span></label>
         </div>
       </div>
     </div>
@@ -153,8 +153,8 @@
       <button id="closeAtrilModal" class="modal-close" aria-label="Cerrar">✕</button>
       <h2 class="modal-title" style="font-size:13px">NEW STAND</h2>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
-        <input id="atrilName" type="text" class="mix-import-field mono" placeholder="Stand name">
-        <textarea id="atrilDesc" class="mix-import-field mono" rows="2" placeholder="Description — how it guides the AI"></textarea>
+        <input id="atrilName" type="text" class="mix-import-field mono" placeholder="Stand name" aria-label="Nombre del stand personalizado">
+        <textarea id="atrilDesc" class="mix-import-field mono" rows="2" placeholder="Description — how it guides the AI" aria-label="Descripción del stand personalizado"></textarea>
         <div>
           <span style="font:700 8px var(--sans);color:var(--dim);letter-spacing:1px">COLOR</span>
           <div id="atrilColors" class="atril-color-grid"></div>
@@ -163,7 +163,7 @@
           <span style="font:700 8px var(--sans);color:var(--dim);letter-spacing:1px">ICON</span>
           <div id="atrilIcons" class="atril-icon-grid"></div>
         </div>
-        <button id="atrilSaveBtn" class="tp-action warn" style="width:100%;padding:8px">CREATE STAND</button>
+        <button id="atrilSaveBtn" class="tp-action warn" style="width:100%;padding:8px" aria-label="Guardar nuevo stand personalizado">CREATE STAND</button>
       </div>
     </div>
   </div>
@@ -352,7 +352,7 @@
 
           <!-- Resource allocation inspector (F-13) -->
           <div id="allocInspector" class="alloc-inspector" style="display:none">
-            <button id="allocToggle" class="alloc-toggle">▸ ASIGNACIÓN DE RECURSOS</button>
+            <button id="allocToggle" class="alloc-toggle" aria-label="Alternar asignación de recursos">▸ ASIGNACIÓN DE RECURSOS</button>
             <div id="allocBody" class="alloc-body" style="display:none">
               <div id="allocSummary" class="alloc-summary"></div>
               <div id="allocCategories" class="alloc-categories"></div>
