@@ -200,3 +200,11 @@
 - [x] **I-165** Memoize orchestraSrc() — computed once, reused for every install/upgrade/hotReload.
 - [x] **I-166** role=tablist + aria-label + aria-selected on mixer tab buttons.
 - [x] **I-167** Evict metrics + readiness cache on repertoire:remove — no stale data after project removal.
+- [x] **I-168** Test orchestraSrc memoization + atriles:list cache + atriles:save invalidation.
+- [x] **I-169** Test orchestra:writeConfig full validation (type, focus weights, size limit).
+- [x] **I-170** Test repertoire:remove cache eviction (_metricsCache + _readinessCache).
+- [x] **I-171** Test mixer tab aria attributes (role=tablist, aria-selected, aria-controls).
+- [x] **I-172** Name/path length limits in atriles:save entries (name ≤256, path ≤4096).
+- [x] **I-173** Security tests for atriles:save entry validation (13 tests in atriles-security.test.js).
+- [x] **I-174** Cache aiState() reads — 5s TTL, invalidated on every write to ai-credits.json.
+- [x] **I-175** Clear _lifecycleDirReady on repertoire:remove — prevents stale mkdirSync skip.

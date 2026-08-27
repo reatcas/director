@@ -1,28 +1,27 @@
-# Cycle 110 Plan — IMPROVEMENT MODE
+# Cycle 111 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 110
+## MIXER BUDGET — Cycle 111
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| security | 20 | 4 | 4/4 |
-| performance | 10 | 2 | 2/2 |
-| ux_accessibility | 5 | 1 | 1/1 |
-| data_db | 5 | 1 | 1/1 |
-| quality_tests | 35 | FROZEN (3rd consecutive) | — |
-| backend | 5 | FROZEN (3rd consecutive) | — |
+| quality_tests | 35 | 4 | 4/4 |
+| security | 20 | 2 | 2/2 |
+| performance | 10 | 1 | 1/1 |
+| backend | 5 | 1 | 1/1 |
+| ux_accessibility | 5 | FROZEN (3rd consecutive) | — |
+| data_db | 5 | 0 | SKIP |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-160 — validate cfg in orchestra:writeConfig (plain object + 64KB size limit) ✅
-2. [security] I-161 — validate id in ai:select against AI_DEFAULTS allowlist ✅
-3. [security] I-162 — validate cfg.focus weights in orchestra:writeConfig (numeric 0-100) ✅
-4. [security] I-163 — security tests for I-160/I-161/I-162 validations ✅
-5. [performance] I-164 — cache atriles:list response ✅
-6. [performance] I-165 — memoize orchestraSrc() result ✅
-7. [ux_accessibility] I-166 — role=tablist + aria-label + aria-selected on mixer tab buttons ✅
-8. [data_db] I-167 — evict metrics + readiness cache on repertoire:remove ✅
+1. [quality_tests] I-168 — test orchestraSrc memoization + atriles cache ✅
+2. [quality_tests] I-169 — test orchestra:writeConfig full validation ✅
+3. [quality_tests] I-170 — test repertoire:remove cache eviction ✅
+4. [quality_tests] I-171 — test mixer tab aria attributes ✅
+5. [security] I-172 — name/path length validation in atriles:save entries ✅
+6. [security] I-173 — security test coverage for atriles:save (13 tests) ✅
+7. [performance] I-174 — cache aiState() reads (5s TTL, invalidated on write) ✅
+8. [backend] I-175 — clear _lifecycleDirReady on repertoire:remove ✅
 
 ## Stats
-- 2974 tests passing (was 2962 at cycle start)
-- +12 net tests added this cycle
-- orchestra:writeConfig now validates type + size + focus weight ranges
-- ai:select uses AI_DEFAULTS allowlist (consistent with orchestra:play)
+- 3008 tests passing (was 2974 at cycle start)
+- +34 net tests added this cycle
+- aiState() now cached — no disk read on every ai:credits poll
