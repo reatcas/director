@@ -1620,6 +1620,7 @@ setInterval(() => {
   for (const [k, v] of _logoCache) { if (now - v.ts > 60_000) _logoCache.delete(k) }
   for (const [k, v] of _piStaticCache) { if (now - v.ts > 30_000) _piStaticCache.delete(k) }
   for (const [k, v] of _isRunningCache) { if (now - v.ts > 1_000) _isRunningCache.delete(k) }
+  for (const [k, v] of _readinessCache) { if (now - v.ts > 10_000) _readinessCache.delete(k) }
 }, _METRICS_EVICT_AGE).unref()
 
 ipcMain.handle('metrics:resource', (_e, dir) => {
@@ -1647,7 +1648,7 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   const file = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
   let hist = []
   try { if (fs.statSync(file).size <= 1_048_576) hist = readJSON(file, []) } catch {}
-  hist = hist.filter(h => h && typeof h === 'object')
+  hist = hist.filter(h => h && typeof h === 'object' && (h.ts === undefined || typeof h.ts === 'string'))
   const _mcHist = hist.length > 500 ? hist.slice(-500) : hist
   if (_mcHist.length > 0) {
     const last = hist[hist.length - 1]
@@ -1970,6 +1971,7 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
   const modules = bp.modules || []
   const sessions = bp.sessions || []
   const ts = new Date().toISOString()
+  const _bpInline = s => typeof s === 'string' ? s.replace(/[\r\n]+/g, ' ').slice(0, 200) : ''
 
   // Generate comprehensive brief for the orchestra's first cycle
   const lines = [
@@ -1978,64 +1980,64 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
     `# The orchestra will use this as its primary context for Phase 0.`,
     '',
     '## PROJECT IDENTITY',
-    `- **Name:** ${a.projectName || '(unnamed)'}`,
-    `- **Description:** ${a.description || '(none)'}`,
-    `- **Type:** ${a.projectType || '(unspecified)'}`,
-    `- **Primary language/stack:** ${a.stack || '(unspecified)'}`,
+    `- **Name:** ${_bpInline(a.projectName) || '(unnamed)'}`,
+    `- **Description:** ${_bpInline(a.description) || '(none)'}`,
+    `- **Type:** ${_bpInline(a.projectType) || '(unspecified)'}`,
+    `- **Primary language/stack:** ${_bpInline(a.stack) || '(unspecified)'}`,
     '',
     '## SCOPE & MAGNITUDE',
-    `- **Size estimate:** ${a.magnitude || '(unknown)'}`,
-    `- **Timeline:** ${a.timeline || '(open-ended)'}`,
-    `- **Team size:** ${a.teamSize || '(solo)'}`,
-    `- **MVP scope:** ${a.mvpScope || '(undefined)'}`,
-    `- **Budget constraints:** ${a.budget || '(none stated)'}`,
+    `- **Size estimate:** ${_bpInline(a.magnitude) || '(unknown)'}`,
+    `- **Timeline:** ${_bpInline(a.timeline) || '(open-ended)'}`,
+    `- **Team size:** ${_bpInline(a.teamSize) || '(solo)'}`,
+    `- **MVP scope:** ${_bpInline(a.mvpScope) || '(undefined)'}`,
+    `- **Budget constraints:** ${_bpInline(a.budget) || '(none stated)'}`,
     '',
     '## TARGET USERS & AUDIENCE',
-    `- **Primary users:** ${a.primaryUsers || '(unspecified)'}`,
-    `- **Expected user count:** ${a.userScale || '(unknown)'}`,
-    `- **Countries/regions:** ${a.countries || '(global)'}`,
-    `- **Languages required:** ${a.languages || 'es'}`,
-    `- **Accessibility requirements:** ${a.accessibility || '(standard)'}`,
+    `- **Primary users:** ${_bpInline(a.primaryUsers) || '(unspecified)'}`,
+    `- **Expected user count:** ${_bpInline(a.userScale) || '(unknown)'}`,
+    `- **Countries/regions:** ${_bpInline(a.countries) || '(global)'}`,
+    `- **Languages required:** ${_bpInline(a.languages) || 'es'}`,
+    `- **Accessibility requirements:** ${_bpInline(a.accessibility) || '(standard)'}`,
     '',
     '## PLATFORM & DEPLOYMENT',
-    `- **Target platforms:** ${a.platforms || '(unspecified)'}`,
-    `- **OS/runtime:** ${a.os || '(any)'}`,
-    `- **Hosting/cloud:** ${a.hosting || '(undecided)'}`,
-    `- **CI/CD:** ${a.cicd || '(none yet)'}`,
-    `- **Domain/DNS:** ${a.domain || '(none)'}`,
+    `- **Target platforms:** ${_bpInline(a.platforms) || '(unspecified)'}`,
+    `- **OS/runtime:** ${_bpInline(a.os) || '(any)'}`,
+    `- **Hosting/cloud:** ${_bpInline(a.hosting) || '(undecided)'}`,
+    `- **CI/CD:** ${_bpInline(a.cicd) || '(none yet)'}`,
+    `- **Domain/DNS:** ${_bpInline(a.domain) || '(none)'}`,
     '',
     '## SECURITY & COMPLIANCE',
-    `- **Auth method:** ${a.auth || '(undecided)'}`,
-    `- **Security level:** ${a.securityLevel || 'standard'}`,
-    `- **Data sensitivity:** ${a.dataSensitivity || '(low)'}`,
-    `- **Regulations:** ${a.regulations || '(none)'}`,
-    `- **Legal constraints:** ${a.legal || '(none)'}`,
-    `- **Privacy policy needed:** ${a.privacyPolicy || 'no'}`,
+    `- **Auth method:** ${_bpInline(a.auth) || '(undecided)'}`,
+    `- **Security level:** ${_bpInline(a.securityLevel) || 'standard'}`,
+    `- **Data sensitivity:** ${_bpInline(a.dataSensitivity) || '(low)'}`,
+    `- **Regulations:** ${_bpInline(a.regulations) || '(none)'}`,
+    `- **Legal constraints:** ${_bpInline(a.legal) || '(none)'}`,
+    `- **Privacy policy needed:** ${_bpInline(a.privacyPolicy) || 'no'}`,
     '',
     '## DATA & INTEGRATIONS',
-    `- **Primary database:** ${a.database || '(undecided)'}`,
-    `- **External APIs:** ${a.externalApis || '(none)'}`,
-    `- **File storage:** ${a.fileStorage || '(local)'}`,
-    `- **Real-time requirements:** ${a.realtime || '(none)'}`,
-    `- **Data migration needs:** ${a.dataMigration || '(none)'}`,
+    `- **Primary database:** ${_bpInline(a.database) || '(undecided)'}`,
+    `- **External APIs:** ${_bpInline(a.externalApis) || '(none)'}`,
+    `- **File storage:** ${_bpInline(a.fileStorage) || '(local)'}`,
+    `- **Real-time requirements:** ${_bpInline(a.realtime) || '(none)'}`,
+    `- **Data migration needs:** ${_bpInline(a.dataMigration) || '(none)'}`,
     '',
     '## UX & DESIGN',
-    `- **Design style/theme:** ${a.designTheme || '(modern default)'}`,
-    `- **Branding:** ${a.branding || '(none yet)'}`,
-    `- **Reference sites/apps:** ${a.references || '(none)'}`,
-    `- **Mobile-first:** ${a.mobileFirst || 'no'}`,
+    `- **Design style/theme:** ${_bpInline(a.designTheme) || '(modern default)'}`,
+    `- **Branding:** ${_bpInline(a.branding) || '(none yet)'}`,
+    `- **Reference sites/apps:** ${_bpInline(a.references) || '(none)'}`,
+    `- **Mobile-first:** ${_bpInline(a.mobileFirst) || 'no'}`,
     '',
     '## PERFORMANCE & SCALE',
-    `- **Expected concurrent users:** ${a.concurrentUsers || '(low)'}`,
-    `- **SLA requirements:** ${a.sla || '(none)'}`,
-    `- **Caching strategy:** ${a.caching || '(default)'}`,
-    `- **CDN needed:** ${a.cdn || 'no'}`,
+    `- **Expected concurrent users:** ${_bpInline(a.concurrentUsers) || '(low)'}`,
+    `- **SLA requirements:** ${_bpInline(a.sla) || '(none)'}`,
+    `- **Caching strategy:** ${_bpInline(a.caching) || '(default)'}`,
+    `- **CDN needed:** ${_bpInline(a.cdn) || 'no'}`,
     '',
     '## BUSINESS RULES',
-    `- **Core business logic:** ${a.businessLogic || '(to be defined)'}`,
-    `- **Workflows:** ${a.workflows || '(none)'}`,
-    `- **Monetization:** ${a.monetization || '(none)'}`,
-    `- **Roles/permissions:** ${a.roles || '(single role)'}`,
+    `- **Core business logic:** ${_bpInline(a.businessLogic) || '(to be defined)'}`,
+    `- **Workflows:** ${_bpInline(a.workflows) || '(none)'}`,
+    `- **Monetization:** ${_bpInline(a.monetization) || '(none)'}`,
+    `- **Roles/permissions:** ${_bpInline(a.roles) || '(single role)'}`,
     '',
   ]
 
