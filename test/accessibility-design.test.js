@@ -71,7 +71,8 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('Zona') || l.includes('soltar') ||
       l.includes('Cerrar') || l.includes('Copiar') || l.includes('Seleccionar') ||
       l.includes('Refrescar') || l.includes('Característica') || l.includes('desarrollo') ||
-      l.includes('Aviso') || l.includes('límite') || l.includes('uso')
+      l.includes('Aviso') || l.includes('límite') || l.includes('uso') ||
+      l.includes('Sin') || l.includes('seleccionado') || l.includes('sistema')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })

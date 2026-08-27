@@ -993,6 +993,7 @@ ipcMain.handle('orchestra:kill', (_e, dir) => {
       if (pid) killProcessGroup(pid)
     } catch {}
   }
+  _metricsCache.delete('claude-usage:' + dir)
   stopTailing(dir)
   stopWatchingResume(dir)
   stopMetricsSampling(dir)
@@ -1029,7 +1030,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   try {
     const lcFile = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
     const cutoff = Date.now() - 90 * 24 * 3_600_000
-    const events = readJSON(lcFile, [])
+    let events = []
+    try { if (fs.statSync(lcFile).size <= 2_097_152) events = readJSON(lcFile, []) } catch {}
     const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
     if (pruned.length < events.length) writeJSON(lcFile, pruned)
   } catch {}
@@ -1046,6 +1048,7 @@ ipcMain.handle('orchestra:tail', (_e, dir) => {
   const masterLog = path.join(dir, '.claude/logs/orchestra.log')
   const log = masterLog
   if (!fs.existsSync(log)) return ''
+  try { if (fs.statSync(log).size > 10_485_760) return '' } catch { return '' }
   const s = fs.readFileSync(log, 'utf8')
   return s.split('\n').slice(-400).join('\n')
 })
@@ -1076,6 +1079,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   cfg.focus = focus
   writeJSON(p, cfg)
   coordinator.invalidateConflictCache()
+  _metricsCache.delete('allocation:' + dir)
   return true
 })
 
@@ -1216,7 +1220,7 @@ ipcMain.handle('notes:write', (_e, dir, content) => {
 // ─── Session export (F-23) ────────────────────────────────────────────────────
 ipcMain.handle('export:session', async (_e, dir) => {
   if (!isKnownProject(dir)) return { ok: false }
-  const read = f => { try { return fs.readFileSync(path.join(dir, f), 'utf8') } catch { return '' } }
+  const read = f => { try { const p = path.join(dir, f); if (fs.statSync(p).size > 1_048_576) return ''; return fs.readFileSync(p, 'utf8') } catch { return '' } }
   const snapshot = {
     exportedAt: new Date().toISOString(),
     project: path.basename(dir),
@@ -1400,8 +1404,10 @@ ipcMain.handle('metrics:snapshot', (_e, dir) => {
 
 ipcMain.handle('metrics:allocation', (_e, dir) => {
   if (!isKnownProject(dir)) return null
+  const hit = metricsGet('allocation:' + dir)
+  if (hit !== null) return hit
   const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
-  return scheduler.computeAllocation(dir, cfg.focus || {})
+  return metricsSet('allocation:' + dir, scheduler.computeAllocation(dir, cfg.focus || {}))
 })
 
 ipcMain.handle('metrics:claude-usage', (_e, dir) => {

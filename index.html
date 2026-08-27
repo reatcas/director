@@ -287,7 +287,7 @@
     <!-- MAIN STAGE — split layout v6 -->
     <main id="stage" aria-label="Escenario principal">
       <!-- Empty state (no project selected) -->
-      <div id="emptyState" class="empty-state on">
+      <div id="emptyState" class="empty-state on" role="status" aria-label="Sin proyecto seleccionado">
         <div class="empty-visual">
           <div class="empty-ring"></div>
           <div class="empty-glyph">𝄞</div>
@@ -398,7 +398,7 @@
           </div>
 
           <!-- PROCESSES -->
-          <div id="procsPanel" class="procs-panel">
+          <div id="procsPanel" class="procs-panel" role="region" aria-label="Panel de procesos del sistema">
             <div class="procs-bar">
               <span class="section-icon">⚙</span>
               <span class="rack-title" style="color:var(--txt)">PROCESSES</span>
