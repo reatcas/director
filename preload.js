@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('director', {
   aiAuthStatus: id  => ipcRenderer.invoke('ai:auth-status', id),
   fine:    p       => ipcRenderer.invoke('orchestra:fine', p),
   kill:    p       => ipcRenderer.invoke('orchestra:kill', p),
-  tail:    p       => ipcRenderer.invoke('orchestra:tail', p),
+  tail:    (p, lines) => ipcRenderer.invoke('orchestra:tail', p, lines),
   clearLog: p      => ipcRenderer.invoke('orchestra:clearLog', p),
   mixerRead:  p       => ipcRenderer.invoke('mixer:read', p),
   mixerWrite: (p, f)  => ipcRenderer.invoke('mixer:write', p, f),

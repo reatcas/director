@@ -329,8 +329,8 @@ class CoordinationProtocol {
       })
       if (hist.length > 300) hist.splice(0, hist.length - 300)
       const tmp = file + '.tmp'
-      fs.writeFileSync(tmp, JSON.stringify(hist))
-      fs.renameSync(tmp, file)
+      const _coSer = JSON.stringify(hist)
+      if (_coSer.length <= 1_048_576) { fs.writeFileSync(tmp, _coSer); fs.renameSync(tmp, file) }
     } catch {}
   }
 

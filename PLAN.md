@@ -1,6 +1,6 @@
-# Cycle 147 Plan — IMPROVEMENT MODE
+# Cycle 148 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 147
+## MIXER BUDGET — Cycle 148
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 0/4 |
@@ -14,11 +14,11 @@
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-413 — resource-scheduler.js: 1MB size cap on serialized JSON before write
-2. [security] I-414 — context-protocol.js: same size cap on context-metrics write
-3. [backend] I-415 — orchestra:tail: add lines param (default 400, max 1000)
-4. [frontend] I-416 — cmd-item: add aria-label announcing running state to screen readers
-5-8. [quality_tests] cycle147-coverage.test.js — 4 tests
+1. [security] I-417 — coordination-protocol.js: 1MB size cap on coordination-metrics write
+2. [security] I-418 — blueprint:save: validate module.description, features, dependencies types
+3. [backend] I-419 — preload.js: forward lines param for orchestra:tail
+4. [frontend] I-420 — settingsModal: add keyboard focus trap (Tab cycles within modal)
+5-8. [quality_tests] cycle148-coverage.test.js — 4 tests
 
 ## Stats
-- 3457 tests passing at cycle start
+- 3464 tests passing at cycle start

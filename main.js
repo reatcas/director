@@ -1709,7 +1709,11 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
     if (_bsAnswerVals.some(v => typeof v === 'string' && v.length > 2000)) return false
   }
   if (data.modules && Array.isArray(data.modules)) {
+    if (data.modules.length > 100) return false
     if (data.modules.some(m => !m || typeof m !== 'object' || typeof m.name !== 'string' || m.name.length > 256)) return false
+    if (data.modules.some(m => m.description !== undefined && typeof m.description !== 'string')) return false
+    if (data.modules.some(m => m.features !== undefined && (!Array.isArray(m.features) || m.features.length > 50 || m.features.some(f => typeof f !== 'string' || f.length > 512)))) return false
+    if (data.modules.some(m => m.dependencies !== undefined && (!Array.isArray(m.dependencies) || m.dependencies.length > 50 || m.dependencies.some(d => typeof d !== 'string' || d.length > 256)))) return false
   }
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false
