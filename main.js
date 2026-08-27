@@ -186,9 +186,13 @@ function killProcessGroup(pid, signal = 'SIGTERM') {
   }, 5000)
 }
 
+let _projectsCache = null
+function invalidateProjectsCache() { _projectsCache = null }
+function cachedProjects() { return _projectsCache || (_projectsCache = readJSON(store(), [])) }
+
 function isKnownProject(dir) {
   if (!dir || typeof dir !== 'string') return false
-  return readJSON(store(), []).some(p => p.path === dir)
+  return cachedProjects().some(p => p.path === dir)
 }
 
 function isRunning(dir) {
@@ -765,12 +769,14 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
   if (!projects.find(p => p.path === dir)) {
     projects.push({ id: Date.now().toString(36), name: path.basename(dir), path: dir, added: new Date().toISOString() })
     writeJSON(store(), projects)
+    invalidateProjectsCache()
   }
   return dir
 })
 
 ipcMain.handle('repertoire:remove', (_e, dir) => {
   writeJSON(store(), readJSON(store(), []).filter(p => p.path !== dir))
+  invalidateProjectsCache()
   stopWatchingResume(dir)
   return true
 })
@@ -1104,7 +1110,7 @@ ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
 
 // ─── Operator notes (F-25) ────────────────────────────────────────────────────
 ipcMain.handle('notes:read', (_e, dir) => {
-  if (!dir) return ''
+  if (!isKnownProject(dir)) return ''
   const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
   try { return fs.readFileSync(p, 'utf8') } catch { return '' }
 })
