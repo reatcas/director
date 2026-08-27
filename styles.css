@@ -477,6 +477,18 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
   50% { opacity: 0.4 }
 }
 
+#sessionSummary {
+  padding: 5px 8px;
+  font: 8px var(--mono);
+  color: var(--dim2);
+  border-top: 1px solid rgba(255,255,255,.04);
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  min-height: 20px;
+}
+#sessionSummary .ss-item { display: flex; align-items: center; gap: 3px }
+#sessionSummary .ss-val { color: var(--txt); font-weight: 600 }
+#sessionSummary .ss-live { color: var(--fl-green) }
+
 /* ══════════════════════════════════════════
    MAIN STAGE
 ══════════════════════════════════════════ */

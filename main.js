@@ -874,6 +874,7 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
   let projects = []
   try { if (fs.statSync(store()).size <= 512_000) projects = readJSON(store(), []) } catch {}
   if (!projects.find(p => p.path === dir)) {
+    if (projects.length >= 100) return dir
     projects.push({ id: Date.now().toString(36), name: path.basename(dir), path: dir, added: new Date().toISOString() })
     const _rapSer = JSON.stringify(projects)
     if (_rapSer.length <= 512_000) writeJSON(store(), JSON.parse(_rapSer))
@@ -1379,7 +1380,7 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
   const p = path.join(dir, '.claude/mixer-history.json')
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
-  hist = Array.isArray(hist) ? hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object') : []
+  hist = Array.isArray(hist) ? hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) : []
   const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 100) : 50
   return hist.slice(-n)
 })
@@ -1551,7 +1552,12 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
       ].join('\n')
       const outFile = path.join(dir, '.claude', `analysis-${Date.now()}.txt`)
       const _reportCapped = report.length > 4_194_304 ? report.slice(0, 4_194_304) : report
-      try { fs.writeFileSync(outFile, _reportCapped) } catch {}
+      try {
+        fs.writeFileSync(outFile, _reportCapped)
+        const _clDir = path.join(dir, '.claude')
+        const _anFiles = fs.readdirSync(_clDir).filter(f => /^analysis-\d+\.txt$/.test(f)).sort()
+        if (_anFiles.length > 10) _anFiles.slice(0, _anFiles.length - 10).forEach(f => { try { fs.unlinkSync(path.join(_clDir, f)) } catch {} })
+      } catch {}
       resolve({ report: _reportCapped, file: outFile })
     })
   })
@@ -1698,7 +1704,7 @@ ipcMain.handle('metrics:allocation', (_e, dir) => {
   if (hit !== null) return hit
   const cfg = readOrchJson(dir)
   const _maFocus = cfg.focus && typeof cfg.focus === 'object' ? Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0)) : {}
-  return metricsSet('allocation:' + dir, scheduler.computeAllocation(dir, _maFocus))
+  return metricsSet('allocation:' + dir, scheduler.computeAllocation(dir, _maFocus), _SLOW_METRICS_TTL)
 })
 
 ipcMain.handle('metrics:claude-usage', (_e, dir) => {

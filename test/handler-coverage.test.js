@@ -184,7 +184,7 @@ describe('orchestra:analyze handler', () => {
   })
 
   it('wraps file write in try/catch', () => {
-    expect(block).toContain('try { fs.writeFileSync')
+    expect(block).toMatch(/try\s*\{[\s\S]*?fs\.writeFileSync/)
   })
 
   it('resolves with capped report and file', () => {

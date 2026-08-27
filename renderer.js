@@ -453,6 +453,17 @@ async function refresh() {
   updateStageView()
 }
 
+async function loadSessionSummary() {
+  const el = $('#sessionSummary')
+  if (!el) return
+  try {
+    const s = await window.director.sessionSummary()
+    if (!s || typeof s !== 'object') { el.textContent = ''; return }
+    const tokK = s.totalTokens > 0 ? (s.totalTokens / 1000).toFixed(1) + 'k' : '—'
+    el.innerHTML = `<span class="ss-item"><span class="ss-val ss-live">${esc(String(s.active || 0))}</span><span>activos</span></span><span class="ss-item"><span class="ss-val">${esc(String(s.idle || 0))}</span><span>idle</span></span><span class="ss-item"><span class="ss-val">${esc(tokK)}</span><span>tok</span></span>`
+  } catch { }
+}
+
 function proj() { return projects.find(p => p.path === current) }
 
 async function saveMixerState() {
@@ -3352,6 +3363,8 @@ if ($('#aboutBtn')) $('#aboutBtn').onclick = () => {
   }
   // Periodic state sync — keeps buttons and status aligned with real process state
   setInterval(refresh, 10000)
+  loadSessionSummary()
+  setInterval(loadSessionSummary, 30000)
 })()
 
 // brandArea click removed — about is now via settings gear
