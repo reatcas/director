@@ -915,8 +915,10 @@ ipcMain.handle('ai:login', (_e, id) => {
 })
 
 ipcMain.handle('orchestra:play', (_e, dir, agent) => {
+  if (!isKnownProject(dir)) return { ok: false, err: 'Unknown project' }
+  if (typeof agent !== 'string' || !Object.keys(AI_DEFAULTS).includes(agent)) return { ok: false, err: 'Select an AI developer first' }
   const state = aiState()
-  if (!agent || !state[agent]) return { ok: false, err: 'Select an AI developer first' }
+  if (!state[agent]) return { ok: false, err: 'Select an AI developer first' }
   state.selected = agent
   state[agent].credits = Math.max(0, state[agent].credits - 1)
   writeJSON(aiStateFile(), state)
