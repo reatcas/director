@@ -330,7 +330,7 @@ function projectInfo(dir) {
   const has = f => fs.existsSync(path.join(dir, f))
   const installed = has('run.sh') && has('.claude/commands/loop.md')
   const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
-  const version = installed ? (fs.existsSync(vf) ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x') : null
+  const version = installed ? (fs.existsSync(vf) ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : '1.x') : null
   const _piPath = path.join(dir, '.claude/orchestra.json')
   let mixer = null
   try { if (fs.statSync(_piPath).size <= 512_000) mixer = readJSON(_piPath, null) } catch {}
@@ -343,8 +343,13 @@ function projectInfo(dir) {
   const startFile = path.join(dir, '.claude/RUN_STARTED')
   let runStarted = null
   if (running && fs.existsSync(startFile)) {
-    const startedStr = fs.readFileSync(startFile, 'utf8').trim()
-    if (startedStr) runStarted = new Date(startedStr).getTime()
+    try {
+      const _sfStat = fs.statSync(startFile)
+      if (_sfStat.size <= 1024) {
+        const startedStr = fs.readFileSync(startFile, 'utf8').trim()
+        if (startedStr) runStarted = new Date(startedStr).getTime()
+      }
+    } catch {}
   }
 
   return { installed, version: version || (installed ? '1.x' : null), mixer, running, usageLimited, alto, logo, hasLogs, runStarted }
@@ -1359,7 +1364,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         read('.claude/mixer-history.json') || '(no history)'
       ].join('\n')
       const outFile = path.join(dir, '.claude', `analysis-${Date.now()}.txt`)
-      try { fs.writeFileSync(outFile, report) } catch {}
+      try { fs.writeFileSync(outFile, report.length > 4_194_304 ? report.slice(0, 4_194_304) : report) } catch {}
       resolve({ report, file: outFile })
     })
   })
@@ -1928,7 +1933,8 @@ app.whenReady().then(() => {
   startHotReloadWatcher()
 
   // Re-attach tailers for any already-running projects + cleanup stale signals
-  const projects = readJSON(store(), [])
+  let projects = []
+  try { if (fs.statSync(store()).size <= 512_000) projects = readJSON(store(), []) } catch {}
   for (const p of projects) {
     if (!p.path) continue
     if (isRunning(p.path) && !procs.has(p.path)) {

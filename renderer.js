@@ -3275,6 +3275,18 @@ if ($('#cmdInput')) {
       if (active) active.click()
       closeCmdPalette()
     }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      const items = Array.from(document.querySelectorAll('#cmdResults .cmd-item'))
+      if (!items.length) return
+      const activeIdx = items.findIndex(el => el.classList.contains('active'))
+      const nextIdx = e.key === 'ArrowDown' ? (activeIdx + 1) % items.length : (activeIdx - 1 + items.length) % items.length
+      items.forEach((el, i) => {
+        el.classList.toggle('active', i === nextIdx)
+        el.setAttribute('aria-selected', String(i === nextIdx))
+      })
+      items[nextIdx].scrollIntoView({ block: 'nearest' })
+    }
   })
 }
 
