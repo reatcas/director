@@ -759,6 +759,7 @@ ipcMain.handle('repertoire:list', () => {
 })
 
 ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
+  if (droppedPath !== undefined && droppedPath !== null && typeof droppedPath !== 'string') return null
   let dir = droppedPath
   if (!dir) {
     const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] })
@@ -1313,7 +1314,9 @@ function persistLifecycleEvent(dir, type, label, message) {
 
 ipcMain.handle('lifecycle:list', (_e, dir) => {
   if (!isKnownProject(dir)) return []
-  const events = readJSON(path.join(dir, '.claude', 'logs', 'lifecycle-events.json'), [])
+  const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
+  let events = []
+  try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
   return { events: events.slice(-200), total: events.length }
 })
 
