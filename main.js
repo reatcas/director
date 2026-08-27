@@ -1469,9 +1469,12 @@ ipcMain.handle('blueprint:load', (_e, dir) => {
 
 ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (!isKnownProject(dir)) return false
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false
+  const serialized = JSON.stringify(data)
+  if (serialized.length > 512_000) return false
   const p = blueprintFile(dir)
   fs.mkdirSync(path.dirname(p), { recursive: true })
-  writeJSON(p, data)
+  writeJSON(p, JSON.parse(serialized))
   return true
 })
 

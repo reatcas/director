@@ -63,7 +63,7 @@ describe('blueprint:save handler', () => {
   })
 
   it('uses writeJSON for atomic persistence', () => {
-    expect(block).toContain('writeJSON(p, data)')
+    expect(block).toContain('writeJSON(p,')
   })
 })
 
