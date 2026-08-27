@@ -1098,7 +1098,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   // Prune lifecycle events older than 90 days
   try {
     const lcFile = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
-    const _lcClearCutoffISO = new Date(Date.now() - 90 * 24 * 3_600_000).toISOString()
+    const _lcClearCutoffISO = _lcCutoff()
     let events = []
     try { if (fs.statSync(lcFile).size <= 2_097_152) events = readJSON(lcFile, []) } catch {}
     const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO)
@@ -1642,7 +1642,7 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
     const lastMtime = _complianceMtimeCache.get(dir)
     if (hit !== null && lastMtime === st.mtimeMs) return hit
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
-    if (!lines.length) return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL)
+    if (!lines.length) { _complianceMtimeCache.set(dir, st.mtimeMs); return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL) }
     const recent = lines.slice(-10)
     const scores = recent.map(l => parseComplianceLine(l)).filter(Boolean).map(c => c.score).filter(s => s !== null)
     const last = parseComplianceLine(recent[recent.length - 1])
@@ -1849,6 +1849,9 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
     if (data.modules.some(m => m.dependencies !== undefined && Array.isArray(m.dependencies) && m.dependencies.some(d => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(d)))) return false
   }
   if (data.completeness !== undefined && (typeof data.completeness !== 'number' || !Number.isFinite(data.completeness) || data.completeness < 0 || data.completeness > 100)) return false
+  if (data.currentPhase !== undefined && (!Number.isInteger(data.currentPhase) || data.currentPhase < 0)) return false
+  if (data.currentQuestion !== undefined && (!Number.isInteger(data.currentQuestion) || data.currentQuestion < 0)) return false
+  if (data.sessionActive !== undefined && typeof data.sessionActive !== 'boolean') return false
   if (data.sessions !== undefined && !Array.isArray(data.sessions)) return false
   if (Array.isArray(data.sessions) && data.sessions.length > 500) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => !s || typeof s !== 'object' || Array.isArray(s) || Object.keys(s).length > 20)) return false
