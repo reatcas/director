@@ -3,10 +3,10 @@
 ## MIXER BUDGET — Cycle 171 (all bans cleared)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
-| backend | 5 | 1 | 0/1 |
-| ux_accessibility | 5 | 1 | 0/1 |
+| quality_tests | 35 | 4 | 4/4 |
+| security | 20 | 2 | 2/2 |
+| backend | 5 | 1 | 1/1 |
+| ux_accessibility | 5 | 1 | 1/1 |
 | performance | 10 | FROZEN | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
