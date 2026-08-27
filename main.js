@@ -1046,9 +1046,11 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
 
 ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   if (!isKnownProject(dir)) return false
+  if (typeof name !== 'string' || name.length === 0 || name.length > 256) return false
+  if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
   const mixes = readJSON(p, [])
-  mixes.push({ id: Date.now().toString(36), name, ts: new Date().toISOString(), focus })
+  mixes.push({ id: Date.now().toString(36), name: name.trim(), ts: new Date().toISOString(), focus })
   writeJSON(p, mixes)
   return true
 })
@@ -1104,7 +1106,7 @@ ipcMain.handle('metrics:session-summary', () => {
 
 // ─── Read iteration log summary ──────────────────────────────────────────────
 ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
-  if (!dir || typeof logPath !== 'string' || !logPath.trim()) return ''
+  if (!isKnownProject(dir) || typeof logPath !== 'string' || !logPath.trim()) return ''
   const fullPath = path.resolve(dir, logPath)
   if (!fullPath.startsWith(dir + path.sep) && fullPath !== dir) return ''
   try {
