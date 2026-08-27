@@ -816,7 +816,7 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
     if (r.canceled) return null
     dir = r.filePaths[0]
   }
-  if (fs.existsSync(dir) && !fs.statSync(dir).isDirectory()) dir = path.dirname(dir)
+  try { if (!fs.statSync(dir).isDirectory()) dir = path.dirname(dir) } catch {}
   let projects = []
   try { if (fs.statSync(store()).size <= 512_000) projects = readJSON(store(), []) } catch {}
   if (!projects.find(p => p.path === dir)) {
@@ -1836,7 +1836,8 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (data.completeness !== undefined && (typeof data.completeness !== 'number' || !Number.isFinite(data.completeness) || data.completeness < 0 || data.completeness > 100)) return false
   if (data.sessions !== undefined && !Array.isArray(data.sessions)) return false
   if (Array.isArray(data.sessions) && data.sessions.length > 500) return false
-  if (Array.isArray(data.sessions) && data.sessions.some(s => !s || typeof s !== 'object' || Array.isArray(s) || (s.started !== undefined && (typeof s.started !== 'string' || s.started.length > 64)))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => !s || typeof s !== 'object' || Array.isArray(s) || Object.keys(s).length > 20)) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.started !== undefined && (typeof s.started !== 'string' || s.started.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.started)))) return false
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false
   const p = blueprintFile(dir)

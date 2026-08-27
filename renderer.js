@@ -1283,6 +1283,7 @@ async function loadMixes() {
       showToast('Mix deleted')
     }
     card.addEventListener('click', () => card.querySelector('.load').click())
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.querySelector('.load').click() } })
     container.appendChild(card)
   })
 }

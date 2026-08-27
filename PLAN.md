@@ -1,27 +1,27 @@
-# Cycle 180 Plan — IMPROVEMENT MODE
+# Cycle 181 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 180 (security + quality_tests BANNED: 3 consecutive each)
+## MIXER BUDGET — Cycle 181 (backend + frontend BANNED: 3 consecutive each)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| performance | 10 | 3 | 0/3 |
-| backend | 5 | 1 | 0/1 |
-| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 4 | 0/4 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
 | ux_accessibility | 5 | 1 | 0/1 |
-| business_logic | 5 | 1 | 0/1 |
-| data_db | 5 | 1 | 0/1 |
-| security | 20 | BANNED | — |
-| quality_tests | 35 | BANNED | — |
+| backend | 5 | BANNED | — |
+| frontend | 5 | BANNED | — |
+| business_logic | 5 | 0 | SKIP |
+| data_db | 5 | 0 | SKIP |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [performance] P-11 — findLogo line 294: pkgStat existsSync+statSync → single statSync try/catch
-2. [performance] P-12 — findLogo line 323: ghDir existsSync+statSync → single statSync try/catch
-3. [performance] P-13 — exit handler line 772: directivePath existsSync+statSync → single statSync try/catch
-4. [backend] I-539 — metrics:session-summary: add _worstComplianceCache to fix worstCompliance gap when mtime matches
-5. [frontend] I-540 — updateComplianceDisplay: guard data.cycles with Number.isFinite before rendering
-6. [ux_accessibility] I-541 — loadMixes mix-card: add role="button" + tabindex="0" for keyboard accessibility
-7. [business_logic] I-542 — snapshotMixer: cache 30-day cutoff ISO with _smCutoff() helper (same pattern as _lcCutoff)
-8. [data_db] I-543 — orchestra:clearLog: add pruning of coordination-metrics.json (keep last 100 entries)
+1. [security] S-07 — blueprint:save sessions: s.started lacks control-char guard
+2. [security] S-08 — blueprint:save sessions: missing per-session key count cap (≤20 keys)
+3. [performance] P-14 — repertoire:add line 819: existsSync+statSync → single statSync try/catch
+4. [ux_accessibility] I-544 — loadMixes mix-card: add keydown handler for Enter/Space to activate load
+5. [quality_tests] T-12 — test C181: S-07 s.started control-char guard
+6. [quality_tests] T-13 — test C181: S-08 per-session key count cap
+7. [quality_tests] T-14 — test C181: P-14 repertoire:add no existsSync(dir) before statSync
+8. [quality_tests] T-15 — test C181: I-544 keydown handler in mix-card
 
 ## Stats
 - 3670 tests at cycle start

@@ -14,7 +14,8 @@ describe('blueprint:save sessions per-item validation (S-01)', () => {
   })
 
   it('rejects sessions items with started string longer than 64 chars', () => {
-    expect(block).toContain('s.started !== undefined && (typeof s.started !== \'string\' || s.started.length > 64)')
+    expect(block).toContain('s.started !== undefined')
+    expect(block).toContain('s.started.length > 64')
   })
 })
 
