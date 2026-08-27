@@ -1,24 +1,24 @@
-# Cycle 139 Plan — IMPROVEMENT MODE
+# Cycle 140 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 139
+## MIXER BUDGET — Cycle 140
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 0/4 |
 | security | 20 | 2 | 0/2 |
 | backend | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
-| performance | 10 | FROZEN (29th) | — |
+| performance | 10 | FROZEN (30th) | — |
 | business_logic | 5 | SKIP (proportional) | — |
 | ux_accessibility | 5 | SKIP (proportional) | — |
 | data_db | 5 | SKIP (proportional) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-380 — aiState(): add statSync 512KB guard for ai-credits.json read
-2. [security] I-381 — atriles:save: expand NUL check to full control char range [\x00-\x08\x0B\x0C\x0E-\x1F\x7F]
-3. [backend] I-382 — copyDir: add size guard before settings.json readJSON merge
-4. [frontend] I-383 — allocInspector/compressionPanel/mixerHistoryPanel: add role="region" + aria-label
-5-8. [quality_tests] cycle139-coverage.test.js — 4 units
+1. [security] I-388 — mixer:write + mixer:saved:save: NaN bypass fix (add !Number.isFinite(v) to focus validation)
+2. [security] I-389 — orchestra:writeConfig: validate nice as int in [-20,19]; claudeUsageBudget as finite non-negative number
+3. [backend] I-390 — orchestra:readIterLog: add NUL byte check on logPath
+4. [frontend] I-391 — renderCmdResults: add role=option + aria-selected to cmd-item divs
+5-8. [quality_tests] cycle140-coverage.test.js
 
 ## Stats
-- 3396 tests passing (cycle 138 close)
+- 3404 tests passing (cycle 139 close)

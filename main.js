@@ -1114,7 +1114,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   if (!isKnownProject(dir)) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
   if (Object.keys(focus).some(k => !_VALID_CATS.has(k))) return false
-  if (Object.values(focus).some(v => typeof v !== 'number' || v < 0 || v > 100)) return false
+  if (Object.values(focus).some(v => typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100)) return false
   const p = path.join(dir, '.claude/orchestra.json')
   let cfg = { version: '2.0.0' }
   try { if (fs.statSync(p).size <= 512_000) cfg = readJSON(p, { version: '2.0.0' }) } catch {}
@@ -1132,6 +1132,8 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (!Object.keys(cfg).every(k => _allowedKeys.has(k))) return false
   if (cfg.agent !== undefined && !Object.keys(AI_DEFAULTS).includes(cfg.agent)) return false
   if (cfg.model !== undefined && (typeof cfg.model !== 'string' || cfg.model.length > 256)) return false
+  if (cfg.nice !== undefined && (!Number.isInteger(cfg.nice) || cfg.nice < -20 || cfg.nice > 19)) return false
+  if (cfg.claudeUsageBudget !== undefined && (typeof cfg.claudeUsageBudget !== 'number' || !Number.isFinite(cfg.claudeUsageBudget) || cfg.claudeUsageBudget < 0)) return false
   const serialized = JSON.stringify(cfg)
   if (serialized.length > 65_536) return false
   if (cfg.focus && typeof cfg.focus === 'object') {
@@ -1167,7 +1169,7 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(name)) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
   if (Object.keys(focus).some(k => !_VALID_CATS.has(k))) return false
-  if (Object.values(focus).some(v => typeof v !== 'number' || v < 0 || v > 100)) return false
+  if (Object.values(focus).some(v => typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
@@ -1241,6 +1243,7 @@ ipcMain.handle('metrics:session-summary', () => {
 // ─── Read iteration log summary ──────────────────────────────────────────────
 ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   if (!isKnownProject(dir) || typeof logPath !== 'string' || !logPath.trim()) return ''
+  if (logPath.includes('\x00')) return ''
   const fullPath = path.resolve(dir, logPath)
   if (!fullPath.startsWith(dir + path.sep) && fullPath !== dir) return ''
   try {

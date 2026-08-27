@@ -3248,7 +3248,7 @@ async function renderCmdResults(q) {
   items.push({ type: 'ACTION', label: 'Export', action: 'export' })
   const filtered = q ? items.filter(i => i.label.toLowerCase().includes(q.toLowerCase())) : items
   res.innerHTML = filtered.slice(0, 10).map((it, i) =>
-    `<div class="cmd-item${i === 0 ? ' active' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`
+    `<div class="cmd-item${i === 0 ? ' active' : ''}" role="option" aria-selected="${i === 0}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`
   ).join('')
   res.querySelectorAll('.cmd-item').forEach((el, i) => {
     el.onclick = () => { executeCmdItem(filtered[i]); closeCmdPalette() }
