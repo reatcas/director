@@ -197,6 +197,8 @@ function cachedProjects() {
   const _rpPath = store()
   let _rpData = []
   try { if (fs.statSync(_rpPath).size <= 512_000) _rpData = readJSON(_rpPath, []) } catch {}
+  if (!Array.isArray(_rpData)) _rpData = []
+  _rpData = _rpData.filter(p => p && typeof p.path === 'string')
   _projectsCache = _rpData
   return _projectsCache
 }
@@ -1414,6 +1416,8 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter) => {
   const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
+  if (!Array.isArray(events)) events = []
+  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string')
   if (_llType) events = events.filter(e => e.type === _llType)
   return { events: events.slice(-_llLimit), total: events.length }
 })
@@ -1689,6 +1693,8 @@ ipcMain.handle('atriles:list', () => {
   const p = customAtrilesFile()
   let data = []
   try { if (fs.statSync(p).size <= 512_000) data = readJSON(p, []) } catch {}
+  if (!Array.isArray(data)) data = []
+  data = data.filter(a => a && typeof a === 'object' && typeof a.name === 'string' && typeof a.path === 'string')
   _atrilesCache = data
   return _atrilesCache
 })

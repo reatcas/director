@@ -85,8 +85,8 @@ describe('normalizeMixerValues — weight normalization', () => {
     expect(body).toContain('100 - assigned')
   })
 
-  it('uses nullish coalescing for missing weights', () => {
-    expect(body).toContain('focus[k] ?? 0')
+  it('uses Number.isFinite guard for missing/NaN weights', () => {
+    expect(body).toContain('Number.isFinite(focus[k])')
   })
 })
 

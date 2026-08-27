@@ -405,6 +405,7 @@ function getStallMinutes(dir) {
 // ─── Core UI Logic ────────────────────────────────────────────────────────────
 async function refresh() {
   projects = await window.director.list()
+  if (!Array.isArray(projects)) projects = []
   const ul = $('#projects')
   ul.innerHTML = ''
   for (const p of projects) {
@@ -423,6 +424,15 @@ async function refresh() {
       <span class="pv">${p.running ? 'LIVE' : p.installed ? 'v' + p.version : '—'}${stallBadge}</span>`
     li.onclick = () => open(p.path)
     ul.appendChild(li)
+  }
+  ul.onkeydown = e => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
+    const items = Array.from(ul.querySelectorAll('li'))
+    if (!items.length) return
+    e.preventDefault()
+    const idx = items.indexOf(document.activeElement)
+    const next = e.key === 'ArrowDown' ? (idx + 1) % items.length : (idx - 1 + items.length) % items.length
+    items[next].focus()
   }
   if (current) {
     paint()
@@ -925,7 +935,7 @@ function updateMixerGraph() {
 function normalizeMixerValues(focus, sections) {
   const keys = sections.map(s => s[0])
   let total = 0
-  for (const k of keys) total += (focus[k] ?? 0)
+  for (const k of keys) total += (Number.isFinite(focus[k]) ? focus[k] : 0)
   if (total === 0) {
     // Distribute equally among all sections
     const each = Math.floor(100 / keys.length)
@@ -940,7 +950,7 @@ function normalizeMixerValues(focus, sections) {
     if (i === keys.length - 1) {
       result[k] = 100 - assigned
     } else {
-      result[k] = Math.round(((focus[k] ?? 0) / total) * 100)
+      result[k] = Math.round(((Number.isFinite(focus[k]) ? focus[k] : 0) / total) * 100)
       assigned += result[k]
     }
   })
@@ -3068,6 +3078,17 @@ if ($('#atrilSaveBtn')) $('#atrilSaveBtn').onclick = async () => {
 // ─── Mixer Tab Switching ─────────────────────────────────────────────────────
 document.querySelectorAll('.mixer-tab').forEach(t => {
   t.addEventListener('click', () => switchTab(t.dataset.mtab))
+})
+
+document.querySelector('.mixer-tabs')?.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+  const tabs = Array.from(document.querySelectorAll('.mixer-tab'))
+  const idx = tabs.indexOf(document.activeElement)
+  if (idx === -1) return
+  e.preventDefault()
+  const next = e.key === 'ArrowRight' ? (idx + 1) % tabs.length : (idx - 1 + tabs.length) % tabs.length
+  tabs[next].focus()
+  switchTab(tabs[next].dataset.mtab)
 })
 
 async function loadKnowledge(file, btnId) {
