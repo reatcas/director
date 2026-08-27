@@ -218,9 +218,8 @@ function isKnownProject(dir) {
 function isRunning(dir) {
   if (procs.has(dir)) return true
   const pidFile = path.join(dir, '.claude/ORCHESTRA_PID')
-  if (!fs.existsSync(pidFile)) return false
   let pid = 0
-  try { const _irStat = fs.statSync(pidFile); if (_irStat.size <= 64) pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10) } catch {}
+  try { const _irStat = fs.statSync(pidFile); if (_irStat.size <= 64) pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10) } catch { return false }
   if (!pid || !pidAlive(pid)) { try { fs.unlinkSync(pidFile) } catch {}; return false }
   return true
 }
@@ -372,6 +371,7 @@ function projectInfo(dir) {
 function copyDir(src, dst) {
   fs.mkdirSync(dst, { recursive: true })
   for (const e of fs.readdirSync(src, { withFileTypes: true })) {
+    if (e.name.includes('..') || e.name.includes(path.sep)) continue
     const s = path.join(src, e.name), d = path.join(dst, e.name)
     if (e.isDirectory()) copyDir(s, d)
     else if (!fs.existsSync(d) || !['CLAUDE.md', 'settings.json'].includes(e.name)) fs.copyFileSync(s, d)
