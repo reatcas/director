@@ -22,7 +22,7 @@ describe('repertoire:add path validation (I-361)', () => {
   const block = mainJs.split("'repertoire:add'")[1]?.split('\nipcMain')[0] || ''
 
   it('rejects NUL bytes in droppedPath', () => {
-    expect(block).toContain("droppedPath.includes('\\x00')")
+    expect(block).toMatch(/droppedPath\.includes\('\\x00'\)|\\x00.*droppedPath/)
   })
 
   it('rejects non-absolute paths', () => {

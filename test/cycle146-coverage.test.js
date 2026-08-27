@@ -48,7 +48,7 @@ describe('blueprint:save answers object/array rejection (I-412)', () => {
   })
 
   it('rejects answers containing objects or arrays', () => {
-    expect(block).toContain("typeof v === 'object'")
+    expect(block).toMatch(/typeof v [!=]== ['"]object['"]|typeof v !== ['"]string['"]/)
     expect(block).toContain('v !== null')
   })
 })

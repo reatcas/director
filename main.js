@@ -58,12 +58,13 @@ function startTailing(dir, logFile) {
             // Double-check: verify PID in file is actually alive, not just a stale file
             const pidFile = path.join(dir, '.claude/ORCHESTRA_PID')
             let pidStillAlive = false
-            if (fs.existsSync(pidFile)) {
+            try {
+              fs.statSync(pidFile)
               try {
                 const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim())
                 pidStillAlive = pid > 0 && pidAlive(pid)
               } catch {}
-            }
+            } catch {}
             if (pidStillAlive) {
               staleCount = 0
             } else {
@@ -105,7 +106,7 @@ function pollGitCommits(dir) {
     const currentHash = execFileSync('git', ['log', '-1', '--format=%H'], { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
     if (currentHash && currentHash !== lastHash) {
       const logArgs = lastHash ? ['log', '--oneline', lastHash + '..'] : ['log', '--oneline', '-1']
-      const newCommits = execFileSync('git', logArgs, { cwd: dir, encoding: 'utf8', timeout: 5000 }).trim().split('\n').filter(Boolean)
+      const newCommits = execFileSync('git', logArgs, { cwd: dir, encoding: 'utf8', timeout: 5000 }).trim().split('\n').filter(Boolean).slice(0, 100)
       gitLastHash.set(dir, currentHash)
       gitLastCommitTime.set(dir, Date.now())
       for (const c of newCommits) {
@@ -816,7 +817,7 @@ ipcMain.handle('repertoire:list', () => {
 
 ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
   if (droppedPath !== undefined && droppedPath !== null && typeof droppedPath !== 'string') return null
-  if (droppedPath && (droppedPath.includes('\x00') || !path.isAbsolute(droppedPath))) return null
+  if (droppedPath && (droppedPath.length > 4096 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(droppedPath) || !path.isAbsolute(droppedPath))) return null
   let dir = droppedPath
   if (!dir) {
     const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] })
@@ -1833,7 +1834,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
     if (Object.keys(data.answers).length > 200) return false
     if (Object.keys(data.answers).some(k => k.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(k))) return false
     const _bsAnswerVals = Object.values(data.answers)
-    if (_bsAnswerVals.some(v => v !== null && typeof v === 'object')) return false
+    if (_bsAnswerVals.some(v => v !== null && typeof v !== 'string')) return false
     if (_bsAnswerVals.some(v => typeof v === 'string' && v.length > 2000)) return false
     if (_bsAnswerVals.some(v => typeof v === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(v))) return false
   }

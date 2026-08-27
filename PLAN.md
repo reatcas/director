@@ -1,27 +1,27 @@
-# Cycle 188 Plan — IMPROVEMENT MODE
+# Cycle 189 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 188 (security BANNED C185+C186+C187, quality_tests BANNED C185+C186+C187)
+## MIXER BUDGET — Cycle 189 (backend BANNED C186+C187+C188, frontend BANNED C186+C187+C188)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| performance | 10 | 3 | 0/3 |
-| backend | 5 | 1 | 0/1 |
-| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 4 | 0/4 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
 | business_logic | 5 | 1 | 0/1 |
-| ux_accessibility | 5 | 1 | 0/1 |
-| data_db | 5 | 1 | 0/1 |
-| security | 20 | 0 | BANNED (C185+C186+C187) |
-| quality_tests | 35 | 0 | BANNED (C185+C186+C187) |
+| ux_accessibility | 5 | 0 | SKIP |
+| data_db | 5 | 0 | SKIP |
+| backend | 5 | 0 | BANNED (C186+C187+C188) |
+| frontend | 5 | 0 | BANNED (C186+C187+C188) |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [performance] P-21 — playOrchestra: replace existsSync(alto)+unlinkSync and existsSync(usageSignal)+try{unlinkSync}catch{} with direct try{unlinkSync}catch{}
-2. [performance] P-22 — exit handler: !fs.existsSync(altoPath) → statSync try/catch (statAlto flag)
-3. [performance] P-23 — repertoire:open: fs.existsSync(dir) → statSync try/catch
-4. [backend] I-559 — metrics:roadmap-freshness: guard staleHours with Number.isFinite check in isStale expression
-5. [frontend] I-560 — loadKnowledge: add concurrent-load guard (_knCurrentFile) to prevent stale responses overwriting newer results
-6. [business_logic] I-561 — lifecycle:list: add ISO date format validation to event filter (not just typeof string check)
-7. [ux_accessibility] A-13 — init: set aria-live="polite" on #knowledgeContent element for screen reader announcements
-8. [data_db] D-04 — snapshotMixer: validate focus values are finite numbers before storing in mixer-history.json
+1. [security] S-19 — repertoire:add: full control-char guard on droppedPath + 4096 length cap
+2. [security] S-20 — blueprint:save: reject boolean/number answer values (only null/string valid)
+3. [performance] P-24 — git watcher pidFile: replace existsSync with statSync try/catch
+4. [business_logic] I-562 — git watcher: cap newCommits to 100 to prevent unbounded processing
+5. [quality_tests] T-31 — test C189: S-19 repertoire:add control-char + length guard
+6. [quality_tests] T-32 — test C189: S-20 blueprint answer value type rejection
+7. [quality_tests] T-33 — test C189: P-24 pidFile statSync + I-562 newCommits cap
+8. [quality_tests] T-34 — test C188: lifecycle:list ISO date pattern filter (I-561 retrospective)
 
 ## Stats
-- 3714 tests at cycle start
+- 3712 tests at cycle start
