@@ -2024,6 +2024,7 @@ async function loadLifecycleHistory() {
 
     const el = document.createElement('div')
     el.className = 'le le-action le-history'
+    el.dataset.evType = ev.type
     el.style.setProperty('--le-color', s.color)
     el.style.background = `color-mix(in srgb, ${s.color} 4%, transparent)`
     el.style.opacity = '0.7'

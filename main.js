@@ -813,6 +813,7 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
 })
 
 ipcMain.handle('repertoire:remove', (_e, dir) => {
+  if (typeof dir !== 'string') return false
   let _rrProjects = []
   try { if (fs.statSync(store()).size <= 512_000) _rrProjects = readJSON(store(), []) } catch {}
   writeJSON(store(), _rrProjects.filter(p => p.path !== dir))
@@ -1256,7 +1257,7 @@ ipcMain.handle('metrics:session-summary', () => {
 // ─── Read iteration log summary ──────────────────────────────────────────────
 ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   if (!isKnownProject(dir) || typeof logPath !== 'string' || !logPath.trim()) return ''
-  if (logPath.includes('\x00')) return ''
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(logPath)) return ''
   const fullPath = path.resolve(dir, logPath)
   if (!fullPath.startsWith(dir + path.sep) && fullPath !== dir) return ''
   try {

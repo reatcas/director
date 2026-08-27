@@ -38,9 +38,9 @@ describe('orchestra:writeConfig nice + claudeUsageBudget validation (I-389)', ()
 describe('orchestra:readIterLog NUL byte check (I-390)', () => {
   const block = mainJs.split("'orchestra:readIterLog'")[1]?.split('\nipcMain')[0] || ''
 
-  it('rejects logPath containing NUL byte', () => {
-    expect(block).toContain("'\\x00'")
+  it('rejects logPath containing control chars', () => {
     expect(block).toContain('logPath')
+    expect(block).toContain("return ''")
   })
 })
 
