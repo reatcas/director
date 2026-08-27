@@ -992,7 +992,7 @@ function aiState() {
     state[id].defaultModel = defaults.defaultModel
     if (!Number.isFinite(state[id].credits) || state[id].credits < 0) state[id].credits = defaults.credits
     state[id].credits = Math.min(100, state[id].credits)
-    if (state[id].resetAt && new Date(state[id].resetAt) <= new Date()) {
+    if (state[id].resetAt && typeof state[id].resetAt === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(state[id].resetAt) && new Date(state[id].resetAt) <= new Date()) {
       state[id].credits = 100
       state[id].resetAt = nextReset()
       dirty = true
@@ -1203,6 +1203,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   } catch {}
   _metricsCache.delete('snapshot:' + dir)
   _metricsCache.delete('context:' + dir)
+  for (const k of _metricsCache.keys()) { if (k.startsWith('lc:' + dir + ':')) _metricsCache.delete(k) }
 })
 
 ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
@@ -1243,13 +1244,17 @@ function snapshotMixer(dir, event) {
   hist = hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && h.ts >= cutoffISO && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
   const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
   const _ssFocus = Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
+  if (Object.keys(_ssFocus).length === 0) return
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
   const _sortedJson = o => JSON.stringify(Object.fromEntries(Object.keys(o).sort().map(k => [k, o[k]])))
   if (_ssLast && _ssLast.event === _ssEvent && _sortedJson(_ssLast.focus) === _sortedJson(_ssFocus)) return
   hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: _ssFocus })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
   const _mhSer = JSON.stringify(hist)
-  if (_mhSer.length <= 512_000) writeJSON(histFile, hist)
+  if (_mhSer.length <= 512_000) {
+    writeJSON(histFile, hist)
+    for (const k of _metricsCache.keys()) { if (k.startsWith('mixer-hist:' + dir + ':')) _metricsCache.delete(k) }
+  }
 }
 
 ipcMain.handle('mixer:read',  (_e, dir) => {
@@ -1778,11 +1783,12 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const hit = metricsGet('compliance:' + dir)
   const reportPath = path.join(dir, 'ORCHESTRA_REPORT.md')
+  let st = null
+  try { st = fs.statSync(reportPath) } catch { return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL) }
+  if (st.size > 1_048_576) return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL)
+  const lastMtime = _complianceMtimeCache.get(dir)
+  if (hit !== null && lastMtime === st.mtimeMs) return hit
   try {
-    const st = fs.statSync(reportPath)
-    if (st.size > 1_048_576) return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL)
-    const lastMtime = _complianceMtimeCache.get(dir)
-    if (hit !== null && lastMtime === st.mtimeMs) return hit
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
     if (!lines.length) { _complianceMtimeCache.set(dir, st.mtimeMs); return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL) }
     const recent = lines.slice(-10)
@@ -1802,7 +1808,7 @@ ipcMain.handle('metrics:roadmap-freshness', (_e, dir) => {
   if (hit !== null) return hit
   const roadmapPath = path.join(dir, 'ROADMAP.md')
   let mtime
-  try { mtime = fs.statSync(roadmapPath).mtimeMs } catch { return { exists: false } }
+  try { mtime = fs.statSync(roadmapPath).mtimeMs } catch { return metricsSet('freshness:' + dir, { exists: false }, _SLOW_METRICS_TTL) }
   return new Promise(resolve => {
     execFile('git', ['-C', dir, 'log', '-1', '--format=%ct'], (err, stdout) => {
       if (err || !stdout.trim()) return resolve(metricsSet('freshness:' + dir, { exists: true, mtime, isStale: false }, _SLOW_METRICS_TTL))

@@ -1,27 +1,27 @@
-# Cycle 215 Plan — IMPROVEMENT MODE
+# Cycle 216 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 215 (performance+ux_accessibility+data_db BANNED — in C212+C213+C214)
+## MIXER BUDGET — Cycle 216 (security+quality_tests BANNED — in C213+C214+C215)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 3 | 0/3 |
-| security | 20 | 2 | 0/2 |
+| performance | 10 | 3 | 0/3 |
 | backend | 5 | 1 | 0/1 |
 | business_logic | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
-| performance | 10 | 0 | BANNED |
-| ux_accessibility | 5 | 0 | BANNED |
-| data_db | 5 | 0 | BANNED |
+| ux_accessibility | 5 | 1 | 0/1 |
+| data_db | 5 | 1 | 0/1 |
+| security | 20 | 0 | BANNED |
+| quality_tests | 35 | 0 | BANNED |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] S-59 — getClaudeUsage: add /^iter-[\w\-.]+\.log$/ regex to iter log filename filter
-2. [security] S-60 — blueprint:generate-brief _bpInline: strip control chars [\x00-\x08\x0B\x0C\x0E-\x1F\x7F] in addition to newlines
-3. [backend] I-592 — orchestra:writeConfig: evict snapshot: cache when focus changes (mirrors mixer:write fix from C214)
-4. [business_logic] BL-10 — metricsGet: use ?? instead of || for TTL to handle edge cases where TTL=0
-5. [frontend] FE-09 — loadSessionSummary: show — empty state instead of clearing element on null/missing data
-6. [quality_tests] T-98 — cycle215-coverage.test.js covering S-59, S-60, I-592, BL-10, FE-09
-7. [quality_tests] T-99 — fix cycle111-coverage.test.js slice(0,8) fragile anchor
-8. [quality_tests] T-100 — remove dead block variable in cycle158-coverage.test.js
+1. [performance] P-56 — metrics:compliance: cache null result when ORCHESTRA_REPORT.md is missing (avoids repeated failed statSync on every cache miss)
+2. [performance] P-57 — metrics:roadmap-freshness: cache {exists:false} when ROADMAP.md missing (same uncached-miss pattern)
+3. [performance] P-58 — snapshotMixer: evict mixer-hist:dir:* cache after writing history
+4. [backend] I-593 — orchestra:clearLog: evict lc:dir:* cache keys (I-591 fixed lifecycle:add but clearLog still doesn't invalidate)
+5. [business_logic] BL-11 — aiState(): validate resetAt is a valid ISO date format before using it for reset logic
+6. [frontend] FE-10 — loadSessionSummary: add ss-warn class to credits span when creditsRemaining === 0
+7. [ux_accessibility] A-24 — compliance ss-item: add ss-warn class when worstScore < 50 for visual at-a-glance status
+8. [data_db] D-18 — snapshotMixer: skip write if filtered focus object is empty (empty focus signals misconfiguration)
 
 ## Stats
-- 3937 tests at cycle start
+- 3945 tests at cycle start
