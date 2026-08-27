@@ -633,6 +633,7 @@ if ($('#removeBtn')) $('#removeBtn').onclick = async () => {
   stopClock()
   setStatus('IDLE')
   setOrchestraState('idle')
+  const _ncCounter = $('#notesCharCount'); if (_ncCounter) _ncCounter.textContent = ''
   if ($('#log')) $('#log').innerHTML = ''
   if ($('#mixerStrips')) $('#mixerStrips').innerHTML = ''
   if ($('#mixesList')) $('#mixesList').innerHTML = ''

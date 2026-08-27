@@ -1334,6 +1334,8 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   const p = path.join(dir, '.claude/saved-mixes.json')
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
+  if (!Array.isArray(mixes)) mixes = []
+  mixes = mixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object')
   if (mixes.length >= 100) return false
   mixes.push({ id: Date.now().toString(36), name: name.trim(), ts: new Date().toISOString(), focus })
   const _msSer = JSON.stringify(mixes)
@@ -1380,6 +1382,8 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
 
 // ─── Cross-project session summary (F-18) ───────────────────────────────────
 ipcMain.handle('metrics:session-summary', () => {
+  const _ssHit = metricsGet('session-summary')
+  if (_ssHit !== null) return _ssHit
   const projects = cachedProjects()
   let active = 0, idle = 0, totalTokens = 0, worstCompliance = null
   for (const p of projects) {
@@ -1413,7 +1417,7 @@ ipcMain.handle('metrics:session-summary', () => {
   }
   const aiCredits = aiState()
   const creditsRemaining = Object.values(aiCredits).filter(v => typeof v === 'object' && v !== null && 'credits' in v).reduce((sum, ai) => sum + (ai.credits || 0), 0)
-  return { active, idle, total: projects.length, totalTokens, worstCompliance, creditsRemaining }
+  return metricsSet('session-summary', { active, idle, total: projects.length, totalTokens, worstCompliance, creditsRemaining })
 })
 
 // ─── Read iteration log summary ──────────────────────────────────────────────
@@ -1463,8 +1467,12 @@ ipcMain.handle('notes:write', (_e, dir, content) => {
 })
 
 // ─── Session export (F-23) ────────────────────────────────────────────────────
+let _exportSessionBusy = false
 ipcMain.handle('export:session', async (_e, dir) => {
   if (!isKnownProject(dir)) return { ok: false }
+  if (_exportSessionBusy) return { ok: false, err: 'Export in progress' }
+  _exportSessionBusy = true
+  try {
   const read = f => { try { const p = path.join(dir, f); if (fs.statSync(p).size > 1_048_576) return ''; return fs.readFileSync(p, 'utf8') } catch { return '' } }
   const snapshot = {
     exportedAt: new Date().toISOString(),
@@ -1490,6 +1498,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
   if (result.canceled) return { ok: false }
   fs.writeFileSync(result.filePath, serialized)
   return { ok: true, path: result.filePath }
+  } finally { _exportSessionBusy = false }
 })
 
 // ─── Analysis ─────────────────────────────────────────────────────────────────
@@ -1564,7 +1573,8 @@ function persistLifecycleEvent(dir, type, label, message) {
     const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO)
     const _evType = typeof type === 'string' ? type.slice(0, 64) : 'unknown'
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
-    const _evMsg = typeof message === 'string' ? message.slice(0, 4096) : String(message).slice(0, 4096)
+    const _evMsgRaw = typeof message === 'string' ? message : String(message)
+    const _evMsg = Buffer.byteLength(_evMsgRaw, 'utf8') > 4096 ? Buffer.from(_evMsgRaw, 'utf8').slice(0, 4096).toString('utf8') : _evMsgRaw
     pruned.push({ ts: new Date().toISOString(), type: _evType, label: _evLabel, message: _evMsg })
     if (pruned.length > 300) pruned.splice(0, pruned.length - 300)
     let _lcSer = JSON.stringify(pruned)
@@ -1664,7 +1674,7 @@ ipcMain.handle('metrics:context', (_e, dir) => {
         avgSavedPerCycle: hist.length > 0 ? Math.floor(totalSaved/hist.length) : 0
       },
       historySize: hist.length
-    })
+    }, _SLOW_METRICS_TTL)
   }
   return live
 })
@@ -2106,7 +2116,7 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
   if (!isKnownProject(dir)) return { ready: false, missing: ['project'] }
   const now = Date.now()
   const cached = _readinessCache.get(dir)
-  if (cached && now - cached.ts < 5_000) return cached.val
+  if (cached && now - cached.ts < 10_000) return cached.val
   const bpPath = blueprintFile(dir)
   let bp = null
   try { if (fs.statSync(bpPath).size <= 512_000) bp = readJSON(bpPath, null) } catch {}

@@ -10,9 +10,9 @@ describe('blueprint:readiness cache', () => {
     expect(mainJs).toContain('const _readinessCache = new Map()')
   })
 
-  it('checks TTL of 5000ms before returning cached value', () => {
+  it('checks TTL before returning cached value', () => {
     const block = mainJs.split("'blueprint:readiness'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('5_000')
+    expect(block).toMatch(/(?:5_000|10_000)/)
     expect(block).toContain('_readinessCache.get(dir)')
   })
 

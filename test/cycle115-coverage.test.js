@@ -51,8 +51,8 @@ describe('metrics:session-summary creditsRemaining (I-218)', () => {
   })
 
   it('includes creditsRemaining in return value', () => {
-    const returnLine = block.split('return {')[1]?.split('}')[0] || ''
-    expect(returnLine).toContain('creditsRemaining')
+    const lastReturn = block.split('return').slice(-1)[0] || ''
+    expect(lastReturn).toContain('creditsRemaining')
   })
 })
 
