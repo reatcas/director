@@ -336,12 +336,12 @@
           </div>
 
           <!-- Telemetry metrics strip -->
-          <div id="metricsStrip" class="metrics-strip">
-            <div class="mm-cell"><span class="mm-label">RESOURCES</span><span class="mm-val" id="mmAllocVal">—</span></div>
-            <div class="mm-cell"><span class="mm-label">MEMORY</span><span class="mm-val" id="mmMemVal">—</span></div>
-            <div class="mm-cell"><span class="mm-label">TOKENS</span><span class="mm-val" id="mmTokensVal">—</span></div>
-            <div class="mm-cell"><span class="mm-label">COMPRESSION</span><span class="mm-val" id="mmCompressionVal">—</span></div>
-            <div class="mm-cell"><span class="mm-label">INSTANCES</span><span class="mm-val" id="mmInstancesVal">—</span></div>
+          <div id="metricsStrip" class="metrics-strip" role="status" aria-label="Métricas de telemetría del proyecto" aria-live="off">
+            <div class="mm-cell" aria-label="Recursos de CPU asignados"><span class="mm-label">RESOURCES</span><span class="mm-val" id="mmAllocVal">—</span></div>
+            <div class="mm-cell" aria-label="Uso de memoria"><span class="mm-label">MEMORY</span><span class="mm-val" id="mmMemVal">—</span></div>
+            <div class="mm-cell" aria-label="Tokens de contexto procesados"><span class="mm-label">TOKENS</span><span class="mm-val" id="mmTokensVal">—</span></div>
+            <div class="mm-cell" aria-label="Ratio de compresión de contexto"><span class="mm-label">COMPRESSION</span><span class="mm-val" id="mmCompressionVal">—</span></div>
+            <div class="mm-cell" aria-label="Instancias activas de orquesta"><span class="mm-label">INSTANCES</span><span class="mm-val" id="mmInstancesVal">—</span></div>
             <div class="mm-cell"><span class="mm-label">COMPLIANCE</span><span class="mm-val" id="mmComplianceVal">—</span><svg id="complianceSpark" width="60" height="16" style="display:none;margin-top:2px"></svg></div>
             <div class="mm-cell"><span class="mm-label">ROADMAP</span><span class="mm-val" id="mmRoadmapVal">—</span></div>
             <div class="mm-cell"><span class="mm-label">BURN RATE</span><span class="mm-val" id="mmBurnVal">—</span><svg id="burnSpark" width="60" height="16" style="display:none;margin-top:2px"></svg></div>
