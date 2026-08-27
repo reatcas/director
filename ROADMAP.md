@@ -184,3 +184,11 @@
 - [x] **I-149** isKnownProject on orchestra:fine + orchestra:kill — prevent ALTO writes to arbitrary dirs.
 - [x] **I-150** Ctrl+P/./K keyboard shortcuts + aria-keyshortcuts on transport buttons.
 - [x] **I-151** Validate agent param in orchestra:play against AI_DEFAULTS allowlist + isKnownProject guard.
+- [x] **I-152** Test orchestra:fine/kill isKnownProject guards + return shape.
+- [x] **I-153** Test orchestra:play agent allowlist + isKnownProject + error messages.
+- [x] **I-154** Test mixer:saved:delete/export id validation (string, length ≤64).
+- [x] **I-155** Test Ctrl+P/./K shortcuts — aria-keyshortcuts in HTML + ctrlKey handlers in renderer.
+- [x] **I-156** 30s TTL cache for metrics:compliance + metrics:roadmap-freshness (per-entry TTL in _metricsCache).
+- [x] **I-157** lifecycle:list returns {events, total} capped at 200 + renderer adapts gracefully.
+- [x] **I-158** role=status + aria-label on metrics strip cells — screen readers now describe each metric.
+- [x] **I-159** Prune lifecycle-events.json entries >90 days old on orchestra:clearLog.
