@@ -2038,8 +2038,9 @@ async function loadLifecycleHistory() {
   // Show last 80 events as compact entries
   const recent = events.slice(-80)
   for (const ev of recent) {
-    const time = new Date(ev.ts).toLocaleTimeString('en-US', { hour12: false })
-    const date = new Date(ev.ts).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
+    const _lhD = new Date(ev.ts)
+    const time = isNaN(_lhD.getTime()) ? ev.ts.slice(0, 8) : _lhD.toLocaleTimeString('en-US', { hour12: false })
+    const date = isNaN(_lhD.getTime()) ? ev.ts.slice(0, 10) : _lhD.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
     rawLogBuffer.push(`[${ev.ts}] [${ev.label}] ${ev.message}`)
 
     // Render as a compact history entry

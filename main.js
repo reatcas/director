@@ -1117,9 +1117,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
 ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
   if (!isKnownProject(dir)) return ''
   const _tailLines = Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400
-  const masterLog = path.join(dir, '.claude/logs/orchestra.log')
-  const log = masterLog
-  if (!fs.existsSync(log)) return ''
+  const log = path.join(dir, '.claude/logs/orchestra.log')
   try { if (fs.statSync(log).size > 10_485_760) return '' } catch { return '' }
   const s = fs.readFileSync(log, 'utf8')
   return s.split('\n').map(l => l.length > 4096 ? l.slice(0, 4096) : l).slice(-_tailLines).join('\n')
@@ -1145,7 +1143,10 @@ function snapshotMixer(dir, event) {
   if (!Array.isArray(hist)) hist = []
   hist = hist.filter(h => typeof h.ts === 'string' && h.ts >= cutoffISO)
   const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
-  hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: { ...cfg.focus } })
+  const _ssFocus = { ...cfg.focus }
+  const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
+  if (_ssLast && _ssLast.event === _ssEvent && JSON.stringify(_ssLast.focus) === JSON.stringify(_ssFocus)) return
+  hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: _ssFocus })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
   const _mhSer = JSON.stringify(hist)
   if (_mhSer.length <= 512_000) writeJSON(histFile, hist)
@@ -1838,6 +1839,9 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (Array.isArray(data.sessions) && data.sessions.length > 500) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => !s || typeof s !== 'object' || Array.isArray(s) || Object.keys(s).length > 20)) return false
   if (Array.isArray(data.sessions) && data.sessions.some(s => s.started !== undefined && (typeof s.started !== 'string' || s.started.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.started)))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.label !== undefined && (typeof s.label !== 'string' || s.label.length > 128 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s.label)))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.duration !== undefined && (typeof s.duration !== 'number' || !Number.isFinite(s.duration) || s.duration < 0))) return false
+  if (Array.isArray(data.sessions) && data.sessions.some(s => s.commits !== undefined && (!Number.isInteger(s.commits) || s.commits < 0))) return false
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false
   const p = blueprintFile(dir)
