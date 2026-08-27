@@ -1023,7 +1023,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
 // ─── Saved mixes (named snapshots) ───────────────────────────────────────────
 let _defaultMixesCache = null
 ipcMain.handle('mixer:saved:list', (_e, dir) => {
-  if (!dir) return []
+  if (!isKnownProject(dir)) return []
   const p = path.join(dir, '.claude/saved-mixes.json')
   const userMixes = readJSON(p, [])
   if (!_defaultMixesCache) {
@@ -1373,7 +1373,7 @@ ipcMain.handle('orchestra:version-check', (_e, dir) => {
 })
 
 ipcMain.handle('orchestra:upgrade', (_e, dir) => {
-  if (!dir) return { ok: false, err: 'No project' }
+  if (!isKnownProject(dir)) return { ok: false, err: 'No project' }
   const src = orchestraSrc()
   // Purge legacy files before upgrading
   for (const f of LEGACY_PURGE) {
