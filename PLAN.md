@@ -1,29 +1,27 @@
-# Cycle 119 Plan — IMPROVEMENT MODE
+# Cycle 120 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 119
+## MIXER BUDGET — Cycle 120
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 4/4 |
 | security | 20 | 2 | 2/2 |
-| ux_accessibility | 5 | 1 | 1/1 |
-| data_db | 5 | 1 | 1/1 |
-| backend | 5 | FROZEN (3rd consecutive) | — |
-| frontend | 5 | FROZEN (3rd consecutive) | — |
-| performance | 10 | FROZEN (10th consecutive) | — |
+| backend | 5 | 1 | 1/1 |
+| frontend | 5 | 1 | 1/1 |
+| performance | 10 | FROZEN (11th consecutive) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [quality_tests] I-244 — test alerts:config array rejection ✅
-2. [quality_tests] I-245 — test blueprint:generate-brief 512KB cap ✅
-3. [quality_tests] I-246 — test parseComplianceLine input guard ✅
-4. [quality_tests] I-247 — test stopMetricsSampling cache eviction ✅
-5. [security] I-240 — blueprint:generate-brief caps output at 512KB ✅
-6. [security] I-241 — alerts:config rejects Array.isArray(cfg) ✅
-7. [ux_accessibility] I-242 — nodeGraphSection role=img, canvas aria-hidden, divider role=separator ✅
-8. [data_db] I-243 — stopMetricsSampling evicts _metricsCache for stopped dir ✅
+1. [quality_tests] I-252 — test readFile sensitive file blocklist ✅
+2. [quality_tests] I-253 — test BrowserWindow security flags ✅
+3. [quality_tests] I-254 — test metrics:claude-usage caching ✅
+4. [quality_tests] I-255 — test transport header landmark + cycle 119 regression ✅
+5. [security] I-248 — repertoire:readFile: .env/.key/.pem/.cert/id_rsa/id_ed25519 blocklist ✅
+6. [security] I-249 — BrowserWindow: contextIsolation=true, nodeIntegration=false, webSecurity=true ✅
+7. [backend] I-250 — metrics:claude-usage: add metricsSet cache (2s TTL) ✅
+8. [frontend] I-251 — transport header: role=banner + aria-label ✅
 
 ## Stats
-- 3152 tests passing (was 3136 at cycle start)
-- +16 net tests added this cycle
-- alerts:config now correctly rejects array input (was typeof-only)
-- stopMetricsSampling now cleans up metricsCache on orchestra stop
+- 3166 tests passing (was 3152 at cycle start)
+- +14 net tests added this cycle
+- Electron renderer now has contextIsolation + nodeIntegration disabled + webSecurity
+- readFile now blocks access to credential files

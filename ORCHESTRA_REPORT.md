@@ -38,3 +38,8 @@
 ▸ ◼ Cycle 119 cerrado — COMPLIANCE quality_tests:4/4 security:2/2 ux_accessibility:1/1 data_db:1/1 DRIFT:none TESTS:green
 - 3152 tests (was 3136) +16 net
 - alerts:config array guard; brief output cap 512KB; sampler cache eviction
+
+## Cycle 120 — 2026-08-27T02:15:44Z
+▸ ◼ Cycle 120 cerrado — COMPLIANCE quality_tests:4/4 security:2/2 backend:1/1 frontend:1/1 DRIFT:none TESTS:green
+- 3166 tests (was 3152) +14 net
+- SECURITY: Electron security flags; readFile credential blocklist
