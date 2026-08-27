@@ -1330,7 +1330,7 @@ setInterval(() => {
 ipcMain.handle('metrics:resource', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const hit = metricsGet('resource:' + dir)
-  if (hit) return hit
+  if (hit !== null) return hit
   const live = scheduler.getMetrics(dir)
   if (live && live.allocation) return metricsSet('resource:' + dir, live)
   // Compute allocation from current mixer weights on demand
@@ -1345,7 +1345,7 @@ ipcMain.handle('metrics:resource', (_e, dir) => {
 ipcMain.handle('metrics:context', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const hit = metricsGet('context:' + dir)
-  if (hit) return hit
+  if (hit !== null) return hit
   const live = contextProto.getMetrics(dir)
   if (live && live.lastDelta) return metricsSet('context:' + dir, live)
   // Read persisted telemetry if no live data
@@ -1394,6 +1394,7 @@ ipcMain.handle('metrics:claude-usage', (_e, dir) => {
 
 // ─── Compliance Metrics ───────────────────────────────────────────────────────
 function parseComplianceLine(line) {
+  if (typeof line !== 'string' || !line.includes('COMPLIANCE')) return null
   const m = line.match(/COMPLIANCE\s+(.+?)(?:\s+DRIFT:(.*?))?(?:\s+TESTS:(\w+))?$/)
   if (!m) return null
   const pairs = m[1].trim().split(/\s+/)
