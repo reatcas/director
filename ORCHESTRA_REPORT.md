@@ -28,3 +28,8 @@
 ▸ ◼ Cycle 117 cerrado — COMPLIANCE security:4/4 backend:1/1 frontend:1/1 ux_accessibility:1/1 data_db:1/1 DRIFT:none TESTS:green
 - 3121 tests (was 3104) +17 net
 - CSP meta tag; export:session 10MB cap; readFile isFile(); all modal aria-labels
+
+## Cycle 118 — 2026-08-27T02:09:20Z
+▸ ◼ Cycle 118 cerrado — COMPLIANCE quality_tests:5/5 backend:1/1 frontend:1/1 business_logic:1/1 DRIFT:none TESTS:green
+- 3136 tests (was 3121) +15 net
+- metrics hit !== null fix; parseComplianceLine guard; i18n titles
