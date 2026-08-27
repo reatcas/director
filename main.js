@@ -415,14 +415,15 @@ function getClaudeUsage(dir) {
         }
       }
     } catch {}
-    usageTracker.set(dir, { runStarted, iterCount, totalBytes, lastScan: now })
+    const _guPath = path.join(dir, '.claude/orchestra.json')
+    let _guCfg = {}
+    try { if (fs.statSync(_guPath).size <= 512_000) _guCfg = readJSON(_guPath, {}) } catch {}
+    const _dailyBudget = (typeof _guCfg.claudeUsageBudget === 'number' && Number.isFinite(_guCfg.claudeUsageBudget) && _guCfg.claudeUsageBudget > 0) ? _guCfg.claudeUsageBudget : 1_000_000
+    usageTracker.set(dir, { runStarted, iterCount, totalBytes, lastScan: now, dailyBudget: _dailyBudget })
   }
 
   const tokensEstimated = Math.round(totalBytes / 4)
-  const _guPath = path.join(dir, '.claude/orchestra.json')
-  let cfg = {}
-  try { if (fs.statSync(_guPath).size <= 512_000) cfg = readJSON(_guPath, {}) } catch {}
-  const dailyBudget = (typeof cfg.claudeUsageBudget === 'number' && Number.isFinite(cfg.claudeUsageBudget) && cfg.claudeUsageBudget > 0) ? cfg.claudeUsageBudget : 1_000_000
+  const dailyBudget = usageTracker.get(dir)?.dailyBudget || 1_000_000
 
   const percent = Math.min(99, Math.round((tokensEstimated / dailyBudget) * 100))
   const status = percent >= 90 ? 'critical' : percent >= 70 ? 'high' : percent >= 40 ? 'mid' : 'normal'
@@ -834,6 +835,7 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir)) _metricsCache.delete(key) }
   usageTracker.delete(dir)
   _readinessCache.delete(dir)
+  _complianceMtimeCache.delete(dir)
   // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
   const lcLogDir = path.join(dir, '.claude', 'logs')
   _lifecycleDirReady.delete(lcLogDir)
@@ -1448,7 +1450,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter) => {
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
   if (!Array.isArray(events)) events = []
-  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && typeof e.label === 'string')
+  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && typeof e.label === 'string' && typeof e.message === 'string')
   if (_llType) events = events.filter(e => e.type === _llType)
   return { events: events.slice(-_llLimit), total: events.length }
 })

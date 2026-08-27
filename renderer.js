@@ -468,6 +468,12 @@ function debouncedMixerSave() {
   _mixerSaveTimer = setTimeout(() => saveMixerState(), 500)
 }
 
+let _mixerGraphTimer = null
+function debouncedMixerGraph() {
+  clearTimeout(_mixerGraphTimer)
+  _mixerGraphTimer = setTimeout(() => { updateMixerGraph(); updateSmartAuroraColors() }, 80)
+}
+
 async function open(dir) {
   if (current) {
     clearTimeout(_mixerSaveTimer)
@@ -862,16 +868,14 @@ async function loadMixer() {
     inp.addEventListener('input', () => {
       const newVal = parseInt(inp.value, 10)
       rebalanceMixer(k, newVal)
-      updateSmartAuroraColors()
+      debouncedMixerGraph()
       debouncedMixerSave()
-      updateMixerGraph()
     })
     inp.addEventListener('change', () => {
       const newVal = parseInt(inp.value, 10)
       rebalanceMixer(k, newVal)
-      updateSmartAuroraColors()
+      debouncedMixerGraph()
       debouncedMixerSave()
-      updateMixerGraph()
     })
   }
   // Update aurora colors from the freshly built strips
@@ -1209,9 +1213,10 @@ function buildMixRibbon(focus) {
     }
   }
   if (total === 0) return '<div class="mix-ribbon"><div class="mix-ribbon-seg" style="width:100%;background:var(--dim2)"></div></div>'
+  const _colorSafe = c => (typeof c === 'string' && /^[a-zA-Z0-9#(),. %]+$/.test(c)) ? c : 'var(--dim2)'
   const html = segments.map(s => {
     const pct = Math.max(2, Math.round(s.value / total * 100))
-    return `<div class="mix-ribbon-seg" style="width:${pct}%;background:${s.color}"></div>`
+    return `<div class="mix-ribbon-seg" style="width:${pct}%;background:${_colorSafe(s.color)}"></div>`
   }).join('')
   return `<div class="mix-ribbon">${html}</div>`
 }

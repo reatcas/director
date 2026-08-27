@@ -35,7 +35,7 @@ describe('getClaudeUsage dailyBudget guard (I-477)', () => {
   const block = mainJs.split('function getClaudeUsage')[1]?.split('\nfunction ')[0] || ''
 
   it('uses Number.isFinite guard on claudeUsageBudget', () => {
-    expect(block).toContain('Number.isFinite(cfg.claudeUsageBudget)')
+    expect(block).toContain('Number.isFinite(_guCfg.claudeUsageBudget)')
   })
 
   it('falls back to 1_000_000 if budget is invalid', () => {
