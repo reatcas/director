@@ -93,9 +93,15 @@ const gitWatchers = new Map()
 const gitLastHash = new Map()
 const gitLastCommitTime = new Map()
 
+const _gitCommitMtimes = new Map()
 function pollGitCommits(dir) {
   const lastHash = gitLastHash.get(dir) || ''
   try {
+    const _commitMsgFile = path.join(dir, '.git', 'COMMIT_EDITMSG')
+    let _curMtime = 0
+    try { _curMtime = fs.statSync(_commitMsgFile).mtimeMs } catch {}
+    if (_curMtime && _curMtime === _gitCommitMtimes.get(dir)) return
+    _gitCommitMtimes.set(dir, _curMtime)
     const currentHash = execFileSync('git', ['log', '-1', '--format=%H'], { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
     if (currentHash && currentHash !== lastHash) {
       const logArgs = lastHash ? ['log', '--oneline', lastHash + '..'] : ['log', '--oneline', '-1']
@@ -1083,10 +1089,10 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   // Prune lifecycle events older than 90 days
   try {
     const lcFile = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
-    const cutoff = Date.now() - 90 * 24 * 3_600_000
+    const _lcClearCutoffISO = new Date(Date.now() - 90 * 24 * 3_600_000).toISOString()
     let events = []
     try { if (fs.statSync(lcFile).size <= 2_097_152) events = readJSON(lcFile, []) } catch {}
-    const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
+    const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO)
     const _prSer = JSON.stringify(pruned)
     if (pruned.length < events.length && _prSer.length <= 2_097_152) writeJSON(lcFile, pruned)
   } catch {}
@@ -1386,8 +1392,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
       }
       // Fetch local metrics
       const usage = getClaudeUsage(dir)
-      const complianceLines = read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE'))
-      const avgCompliance = complianceLines.length ? 'Calculated from log' : 'N/A'
+      const _orchestraReport = read('ORCHESTRA_REPORT.md')
 
       const report = [
         `=== ORCHESTRA ANALYSIS — ${new Date().toISOString()} ===`,
@@ -1400,7 +1405,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         `Tokens Estimated: ${usage ? (usage.tokensEstimated / 1000).toFixed(1) + 'k' : 'unknown'}`,
         ``,
         `--- ORCHESTRA_REPORT.md (last 150 lines) ---`,
-        read('ORCHESTRA_REPORT.md').split('\n').slice(-150).join('\n'),
+        _orchestraReport.split('\n').slice(-150).join('\n'),
         ``,
         `--- ROADMAP.md ---`, read('ROADMAP.md') || '(missing)',
         ``,
@@ -1425,6 +1430,12 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
 
 // ─── Lifecycle events persistence ─────────────────────────────────────────────
 const _lifecycleDirReady = new Set()
+let _lcCutoffISO = '', _lcCutoffAt = 0
+function _lcCutoff() {
+  const now = Date.now()
+  if (now - _lcCutoffAt > 60_000) { _lcCutoffISO = new Date(now - 90 * 24 * 60 * 60 * 1000).toISOString(); _lcCutoffAt = now }
+  return _lcCutoffISO
+}
 function persistLifecycleEvent(dir, type, label, message) {
   if (!dir) return
   try {
@@ -1433,7 +1444,7 @@ function persistLifecycleEvent(dir, type, label, message) {
     const file = path.join(logDir, 'lifecycle-events.json')
     let events = []
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
-    const cutoffISO = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    const cutoffISO = _lcCutoff()
     const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO)
     const _evType = typeof type === 'string' ? type.slice(0, 64) : 'unknown'
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
@@ -1608,9 +1619,8 @@ ipcMain.handle('metrics:roadmap-freshness', (_e, dir) => {
   const hit = metricsGet('freshness:' + dir)
   if (hit !== null) return hit
   const roadmapPath = path.join(dir, 'ROADMAP.md')
-  if (!fs.existsSync(roadmapPath)) return { exists: false }
   let mtime
-  try { mtime = fs.statSync(roadmapPath).mtimeMs } catch { return { exists: true } }
+  try { mtime = fs.statSync(roadmapPath).mtimeMs } catch { return { exists: false } }
   return new Promise(resolve => {
     execFile('git', ['-C', dir, 'log', '-1', '--format=%ct'], (err, stdout) => {
       if (err || !stdout.trim()) return resolve(metricsSet('freshness:' + dir, { exists: true, mtime, isStale: false }, _SLOW_METRICS_TTL))

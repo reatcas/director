@@ -38,6 +38,7 @@ class CoordinationProtocol {
     this.conflictLog = []          // historical conflicts (max 100)
     this.events      = []          // coordination events log (max 200)
     this._cachedConflicts = null   // cached detectConflicts result
+    this._totalMemMB = Math.floor(os.totalmem() / 1048576)  // constant at runtime
   }
 
   // ─── Instance registration ─────────────────────────────────────────────
@@ -223,8 +224,7 @@ class CoordinationProtocol {
         if (overlapping.length > 0) {
           // Compute combined memory pressure
           const combinedMemMB = infoA.memBudgetMB + infoB.memBudgetMB
-          const totalMem = Math.floor(os.totalmem() / 1048576)
-          const memPressure = combinedMemMB / totalMem
+          const memPressure = combinedMemMB / this._totalMemMB
 
           conflicts.push({
             instanceA: dirA,

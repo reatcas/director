@@ -89,8 +89,8 @@ describe('mixer:write focus validation (I-188)', () => {
 describe('persistLifecycleEvent age pruning (I-191)', () => {
   const block = mainJs.split('function persistLifecycleEvent')[1]?.split('\n}\n')[0] || ''
 
-  it('computes 90-day cutoff', () => {
-    expect(block).toContain('90 * 24 * 60 * 60 * 1000')
+  it('computes 90-day cutoff (via _lcCutoff helper or inline)', () => {
+    expect(mainJs).toContain('90 * 24 * 60 * 60 * 1000')
   })
 
   it('filters events older than cutoff', () => {

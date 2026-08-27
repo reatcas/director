@@ -15,9 +15,9 @@ describe('metrics:roadmap-freshness statSync race fix (I-392)', () => {
     expect(block).toContain('} catch {')
   })
 
-  it('returns exists:true on statSync error instead of throwing', () => {
+  it('returns exists:false on statSync error (single statSync replaces existsSync+statSync)', () => {
     const catchBlock = block.split('} catch {')[1]?.split('\n')[0] || ''
-    expect(catchBlock).toContain('exists: true')
+    expect(catchBlock).toContain('exists: false')
   })
 })
 

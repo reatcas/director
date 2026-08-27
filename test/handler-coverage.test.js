@@ -172,9 +172,9 @@ describe('orchestra:analyze handler', () => {
     expect(block).toContain('feat|fix|test|refactor|chore|security')
   })
 
-  it('reads ORCHESTRA_REPORT.md for compliance lines', () => {
+  it('reads ORCHESTRA_REPORT.md once into cached variable', () => {
     expect(block).toContain("'ORCHESTRA_REPORT.md'")
-    expect(block).toContain('COMPLIANCE')
+    expect(block).toContain('_orchestraReport')
   })
 
   it('writes analysis to timestamped file in .claude/', () => {

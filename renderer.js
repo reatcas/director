@@ -1239,7 +1239,8 @@ async function loadMixes() {
   mixes.forEach(m => {
     const card = document.createElement('div')
     card.className = 'mix-card'
-    const date = new Date(m.ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const _mDate = m.ts && typeof m.ts === 'string' ? new Date(m.ts) : null
+    const date = (_mDate && !isNaN(_mDate)) ? _mDate.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
     const ribbon = buildMixRibbon(m.focus)
 
     card.innerHTML = `
