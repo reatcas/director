@@ -23,3 +23,8 @@
 ▸ ◼ Cycle 116 cerrado — COMPLIANCE quality_tests:4/4 security:2/2 backend:1/1 frontend:1/1 DRIFT:none TESTS:green
 - 3104 tests (was 3089) +15 net
 - SECURITY: repertoire:open was unguarded; lifecycle:add null byte protection; modal role=dialog
+
+## Cycle 117 — 2026-08-27T02:06:36Z
+▸ ◼ Cycle 117 cerrado — COMPLIANCE security:4/4 backend:1/1 frontend:1/1 ux_accessibility:1/1 data_db:1/1 DRIFT:none TESTS:green
+- 3121 tests (was 3104) +17 net
+- CSP meta tag; export:session 10MB cap; readFile isFile(); all modal aria-labels

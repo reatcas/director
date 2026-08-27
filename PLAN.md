@@ -1,28 +1,29 @@
-# Cycle 116 Plan — IMPROVEMENT MODE
+# Cycle 117 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 116
+## MIXER BUDGET — Cycle 117
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 4/4 |
-| security | 20 | 2 | 2/2 |
+| security | 20 | 4 | 4/4 |
 | backend | 5 | 1 | 1/1 |
 | frontend | 5 | 1 | 1/1 |
-| data_db | 5 | FROZEN (3rd consecutive) | — |
-| performance | 10 | FROZEN (7th consecutive) | — |
+| ux_accessibility | 5 | 1 | 1/1 |
+| data_db | 5 | 1 | 1/1 |
+| quality_tests | 35 | FROZEN (3rd consecutive) | — |
+| performance | 10 | FROZEN (8th consecutive) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [quality_tests] I-220 — test repertoire:open isKnownProject guard ✅
-2. [quality_tests] I-221 — test lifecycle:add null byte rejection ✅
-3. [quality_tests] I-222 — test metrics:session-summary creditsRemaining ✅
-4. [quality_tests] I-223 — test modal role=dialog + aria-modal attributes ✅
-5. [security] I-216 — repertoire:open: isKnownProject guard instead of bare !dir ✅
-6. [security] I-217 — lifecycle:add: reject null bytes in label/message ✅
-7. [backend] I-218 — metrics:session-summary: add creditsRemaining field ✅
-8. [frontend] I-219 — all 5 modals: role=dialog + aria-modal=true + Spanish aria-label ✅
+1. [security] I-224 — CSP meta tag + viewport meta in index.html ✅
+2. [security] I-225 — IPC audit: all handlers use isKnownProject or exempt ✅
+3. [security] I-226 — export:session: 10MB output size cap ✅
+4. [security] I-227 — 17-test suite for all cycle 117 additions ✅
+5. [backend] I-228 — repertoire:readFile: stat.isFile() check rejects directories ✅
+6. [frontend] I-229 — viewport meta tag added ✅
+7. [ux_accessibility] I-230 — compliance/roadmap/burn-rate/AI-usage metrics cells aria-labels ✅
+8. [data_db] I-231 — orchestra:clearLog caps context-metrics.json at 500 entries ✅
 
 ## Stats
-- 3104 tests passing (was 3089 at cycle start)
-- +15 net tests added this cycle
-- repertoire:open was unguarded — fixed
-- All modals now accessible with role=dialog and aria-modal
+- 3121 tests passing (was 3104 at cycle start)
+- +17 net tests added this cycle
+- CSP added to index.html
+- All IPC handlers now use isKnownProject or have documented exemptions
