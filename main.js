@@ -1103,7 +1103,7 @@ ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
   if (!fs.existsSync(log)) return ''
   try { if (fs.statSync(log).size > 10_485_760) return '' } catch { return '' }
   const s = fs.readFileSync(log, 'utf8')
-  return s.split('\n').slice(-_tailLines).join('\n')
+  return s.split('\n').map(l => l.length > 4096 ? l.slice(0, 4096) : l).slice(-_tailLines).join('\n')
 })
 
 // ─── Mixer snapshot ───────────────────────────────────────────────────────────
@@ -1772,7 +1772,8 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (data.modules && Array.isArray(data.modules)) {
     if (data.modules.length > 100) return false
     if (data.modules.some(m => !m || typeof m !== 'object' || typeof m.name !== 'string' || m.name.length > 256)) return false
-    if (data.modules.some(m => m.description !== undefined && typeof m.description !== 'string')) return false
+    if (data.modules.some(m => m.description !== undefined && (typeof m.description !== 'string' || m.description.length > 2000))) return false
+    if (data.modules.some(m => m.notes !== undefined && (typeof m.notes !== 'string' || m.notes.length > 2000))) return false
     if (data.modules.some(m => m.features !== undefined && (!Array.isArray(m.features) || m.features.length > 50 || m.features.some(f => typeof f !== 'string' || f.length > 512)))) return false
     if (data.modules.some(m => m.dependencies !== undefined && (!Array.isArray(m.dependencies) || m.dependencies.length > 50 || m.dependencies.some(d => typeof d !== 'string' || d.length > 256)))) return false
   }

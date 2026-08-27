@@ -266,7 +266,7 @@
       <button id="removeBtn" class="tp-action dim" aria-label="Eliminar proyecto">REMOVE</button>
     </div>
     <div id="transportUtils">
-      <button id="mixerDrawerToggle" class="tp-btn" title="Open mixer console" aria-label="Abrir mixer">≡</button>
+      <button id="mixerDrawerToggle" class="tp-btn" title="Open mixer console" aria-label="Abrir mixer" aria-expanded="false" aria-controls="mixerDrawer">≡</button>
       <button id="themeToggle" class="tp-btn" title="Alternar tema" aria-label="Cambiar tema">◐</button>
       <button id="settingsBtn" class="tp-btn" title="Configuración" aria-label="Configuración">⚙</button>
       <button id="aboutBtn" class="tp-btn" title="About" aria-label="Acerca de">?</button>
@@ -444,7 +444,7 @@
       <div id="mixerDrawerOverlay" class="drawer-overlay"></div>
 
       <!-- MIXER DRAWER (slides in from right) -->
-      <div id="mixerDrawer" class="mixer-drawer">
+      <div id="mixerDrawer" class="mixer-drawer" role="dialog" aria-modal="true" aria-label="Consola de mezcla" aria-hidden="true">
         <div class="mixer-drawer-header">
           <span class="mixer-drawer-title">MIX CONSOLE</span>
           <button id="mixerDrawerClose" class="tp-btn" aria-label="Cerrar mixer">✕</button>

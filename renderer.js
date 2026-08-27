@@ -2220,10 +2220,14 @@ async function loadMetrics() {
 
   function openDrawer() {
     drawer.classList.add('open')
+    drawer.setAttribute('aria-hidden', 'false')
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true')
     if (overlay) overlay.classList.add('visible')
   }
   function closeDrawer() {
     drawer.classList.remove('open')
+    drawer.setAttribute('aria-hidden', 'true')
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false')
     if (overlay) overlay.classList.remove('visible')
   }
 
