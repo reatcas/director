@@ -1,36 +1,31 @@
-# Cycle 172 Plan — IMPROVEMENT MODE
+# Cycle 173 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 172 (security+quality_tests BANNED: 3 consecutive)
+## MIXER BUDGET — Cycle 173 (backend BANNED: 3 consecutive)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| performance | 10 | 3 | 3/3 |
-| backend | 5 | 1 | 1/1 |
-| frontend | 5 | 1 | 1/1 |
-| business_logic | 5 | 1 | 1/1 |
-| ux_accessibility | 5 | 1 | 1/1 |
-| data_db | 5 | 1 | 1/1 |
-| security | 20 | BANNED | — |
-| quality_tests | 35 | BANNED | — |
-| performance_note | — | unfrozen (no perf commits in last 30) | — |
+| quality_tests | 35 | 4 | 0/4 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| backend | 5 | BANNED | — |
+| frontend | 5 | 0 | SKIP |
+| business_logic | 5 | 0 | SKIP |
+| data_db | 5 | 0 | SKIP |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [performance] P-01 — loadProcs() interval: !current guard (skip ps aux when idle)
-2. [performance] P-02 — getAllSections(): memoize with customAtriles fingerprint
-3. [performance] P-03 — metrics:compliance: mtime guard (skip re-parse when file unchanged)
-4. [backend] I-519 — stopGitWatcher: gitLastCommitTime.delete(dir) memory leak fix
-5. [frontend] I-520 — refreshAnalysis: aria-busy + disabled during load
-6. [business_logic] I-521 — pollGitCommits stall init: fix confusing double-check lines 113-114
-7. [ux_accessibility] I-522 — settingsModal/aboutModal open: focus first focusable element
-8. [data_db] I-523 — persistLifecycleEvent: ISO string cutoff (avoid 500 Date allocs per call)
+1. [security] S-01 — atriles:save: add color field CSS-safe validation
+2. [security] S-02 — orchestra:writeConfig: add control-char guard to quietFlags + version
+3. [performance] P-04 — snapshotMixer: ISO string cutoff (avoid new Date() allocs per filter)
+4. [ux_accessibility] I-524 — modal close (closeSettings/closeAbout/Escape): restore focus to trigger btn
+5. [quality_tests] T-01 — test S-01: atriles:save rejects invalid color values
+6. [quality_tests] T-02 — test S-02: writeConfig rejects control chars in quietFlags/version
+7. [quality_tests] T-03 — test P-04: snapshotMixer uses ISO cutoff string
+8. [quality_tests] T-04 — test I-524: settingsModal/aboutModal close restores focus
 
 ## Stats
-- 3621 tests at cycle start (quality_tests BANNED → 0 test units this cycle)
-- loadProcs() runs every 5s calling ps aux even when no project selected
-- getAllSections() rebuilds array on every call; called 5+ times per mixer render
-- metrics:compliance re-parses ORCHESTRA_REPORT.md every 30s even if file unchanged
-- stopGitWatcher: gitLastCommitTime map never cleared → memory leak per stopped session
-- refreshAnalysis button has no aria-busy feedback during load
-- pollGitCommits lines 113-114: redundant .get()/.has() logic, not clearly correct
-- settingsModal/aboutModal open without moving focus → keyboard users can't tab in
-- persistLifecycleEvent: new Date(e.ts).getTime() for 500 events per call → 500 Date allocs
+- 3621 tests at cycle start (quality_tests ALLOWED — streak broken at C172)
+- atriles:save validates name/path/description/id/icon but NOT color → CSS injection via buildMixRibbon/setProperty
+- orchestra:writeConfig: quietFlags and version lack control-char guard (model/modelComplex have it)
+- snapshotMixer: hist.filter(h => new Date(h.ts).getTime() >= cutoffMs) → N Date allocs per snapshot
+- modal close (closeSettings, closeAbout, Escape, backdrop click) → no focus restore to trigger button

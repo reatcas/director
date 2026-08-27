@@ -1116,10 +1116,10 @@ function snapshotMixer(dir, event) {
   try { if (fs.statSync(_ssPath).size <= 512_000) cfg = readJSON(_ssPath, null) } catch {}
   if (!cfg || !cfg.focus) return
   const histFile = path.join(dir, '.claude/mixer-history.json')
-  const cutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000
+  const cutoffISO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   let hist = []
   try { if (fs.statSync(histFile).size <= 512_000) hist = readJSON(histFile, []) } catch {}
-  hist = hist.filter(h => new Date(h.ts).getTime() >= cutoffMs)
+  hist = hist.filter(h => typeof h.ts === 'string' && h.ts >= cutoffISO)
   const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
   hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: { ...cfg.focus } })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
@@ -1161,7 +1161,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
   const _allowedKeys = new Set(['version', 'focus', 'agent', 'model', 'claudeUsageBudget', 'nice', 'mode', 'maxIterations', 'caveman', 'modelComplex', 'compactAt', 'quietFlags', 'smartMix', 'smartModel', 'modelFast', 'architectInterval', 'autoSwitch', 'keepLogs', 'maxHallucinationStreak'])
   if (!Object.keys(cfg).every(k => _allowedKeys.has(k))) return false
-  if (cfg.version !== undefined && (typeof cfg.version !== 'string' || cfg.version.length > 64)) return false
+  if (cfg.version !== undefined && (typeof cfg.version !== 'string' || cfg.version.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.version))) return false
   if (cfg.agent !== undefined && !Object.keys(AI_DEFAULTS).includes(cfg.agent)) return false
   if (cfg.model !== undefined && (typeof cfg.model !== 'string' || cfg.model.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.model))) return false
   if (cfg.nice !== undefined && (!Number.isInteger(cfg.nice) || cfg.nice < -20 || cfg.nice > 19)) return false
@@ -1171,7 +1171,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (cfg.caveman !== undefined && typeof cfg.caveman !== 'boolean') return false
   if (cfg.modelComplex !== undefined && (typeof cfg.modelComplex !== 'string' || cfg.modelComplex.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelComplex))) return false
   if (cfg.compactAt !== undefined && (typeof cfg.compactAt !== 'number' || !Number.isFinite(cfg.compactAt) || cfg.compactAt < 0 || cfg.compactAt > 100)) return false
-  if (cfg.quietFlags !== undefined && (typeof cfg.quietFlags !== 'string' || cfg.quietFlags.length > 256)) return false
+  if (cfg.quietFlags !== undefined && (typeof cfg.quietFlags !== 'string' || cfg.quietFlags.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.quietFlags))) return false
   if (cfg.smartMix !== undefined && typeof cfg.smartMix !== 'boolean') return false
   if (cfg.smartModel !== undefined && (typeof cfg.smartModel !== 'string' || cfg.smartModel.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.smartModel))) return false
   if (cfg.modelFast !== undefined && (typeof cfg.modelFast !== 'string' || cfg.modelFast.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelFast))) return false
@@ -1742,7 +1742,8 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
     typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 &&
     (a.description === undefined || a.description === null || (typeof a.description === 'string' && a.description.length <= 1024)) &&
     (a.id === undefined || (typeof a.id === 'string' && a.id.length <= 64 && /^[\w\-]+$/.test(a.id))) &&
-    (a.icon === undefined || (typeof a.icon === 'string' && a.icon.length <= 64))
+    (a.icon === undefined || (typeof a.icon === 'string' && a.icon.length <= 64)) &&
+    (a.color === undefined || (typeof a.color === 'string' && a.color.length <= 64 && /^[a-zA-Z0-9#(),. %]+$/.test(a.color)))
   )
   if (!valid) return false
   if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false

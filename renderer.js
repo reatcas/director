@@ -3205,12 +3205,12 @@ if ($('#settingsBtn')) $('#settingsBtn').onclick = () => {
   const _sf = _sm.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
   if (_sf) _sf.focus()
 }
-if ($('#closeSettings')) $('#closeSettings').onclick = () => { $('#settingsModal').hidden = true }
-if ($('#settingsModal')) $('#settingsModal').onclick = e => { if (e.target === $('#settingsModal')) $('#settingsModal').hidden = true }
+if ($('#closeSettings')) $('#closeSettings').onclick = () => { $('#settingsModal').hidden = true; const _stBtn = $('#settingsBtn'); if (_stBtn) _stBtn.focus() }
+if ($('#settingsModal')) $('#settingsModal').onclick = e => { if (e.target === $('#settingsModal')) { $('#settingsModal').hidden = true; const _stBtn = $('#settingsBtn'); if (_stBtn) _stBtn.focus() } }
 if ($('#settingsModal')) $('#settingsModal').addEventListener('keydown', e => {
   const modal = $('#settingsModal')
   if (!modal || modal.hidden) return
-  if (e.key === 'Escape') { modal.hidden = true; return }
+  if (e.key === 'Escape') { modal.hidden = true; const _stBtn = $('#settingsBtn'); if (_stBtn) _stBtn.focus(); return }
   if (e.key === 'Tab') {
     const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
     if (!focusable.length) return
@@ -3292,15 +3292,15 @@ if ($('#aboutBtn')) $('#aboutBtn').onclick = () => {
 })()
 
 // brandArea click removed — about is now via settings gear
-if ($('#closeAbout')) $('#closeAbout').onclick = () => { $('#aboutModal').hidden = true }
+if ($('#closeAbout')) $('#closeAbout').onclick = () => { $('#aboutModal').hidden = true; const _abBtn = $('#aboutBtn'); if (_abBtn) _abBtn.focus() }
 
 if ($('#aboutModal')) $('#aboutModal').onclick = (e) => {
-  if (e.target === $('#aboutModal')) $('#aboutModal').hidden = true
+  if (e.target === $('#aboutModal')) { $('#aboutModal').hidden = true; const _abBtn = $('#aboutBtn'); if (_abBtn) _abBtn.focus() }
 }
 if ($('#aboutModal')) $('#aboutModal').addEventListener('keydown', e => {
   const modal = $('#aboutModal')
   if (!modal || modal.hidden) return
-  if (e.key === 'Escape') { modal.hidden = true; return }
+  if (e.key === 'Escape') { modal.hidden = true; const _abBtn = $('#aboutBtn'); if (_abBtn) _abBtn.focus(); return }
   if (e.key === 'Tab') {
     const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
     if (!focusable.length) return
@@ -3424,8 +3424,8 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     if ($('#cmdPalette') && !$('#cmdPalette').hidden) { closeCmdPalette(); return }
     if ($('#shortcutsModal') && !$('#shortcutsModal').hidden) { $('#shortcutsModal').hidden = true; return }
-    if ($('#settingsModal') && !$('#settingsModal').hidden) { $('#settingsModal').hidden = true; return }
-    if ($('#aboutModal') && !$('#aboutModal').hidden) { $('#aboutModal').hidden = true; return }
+    if ($('#settingsModal') && !$('#settingsModal').hidden) { $('#settingsModal').hidden = true; const _stBtn = $('#settingsBtn'); if (_stBtn) _stBtn.focus(); return }
+    if ($('#aboutModal') && !$('#aboutModal').hidden) { $('#aboutModal').hidden = true; const _abBtn = $('#aboutBtn'); if (_abBtn) _abBtn.focus(); return }
     return
   }
   const tag = (e.target.tagName || '').toLowerCase()

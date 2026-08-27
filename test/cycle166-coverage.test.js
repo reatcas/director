@@ -29,7 +29,7 @@ describe('orchestra:writeConfig version validation (I-494)', () => {
   const block = mainJs.split("'orchestra:writeConfig'")[1]?.split('\nipcMain')[0] || ''
 
   it('validates cfg.version as string ≤64 chars when present', () => {
-    expect(block).toContain("cfg.version !== undefined && (typeof cfg.version !== 'string' || cfg.version.length > 64)")
+    expect(block).toContain("cfg.version !== undefined && (typeof cfg.version !== 'string' || cfg.version.length > 64 ||")
   })
 })
 
