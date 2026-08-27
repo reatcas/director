@@ -1926,6 +1926,8 @@ function parseLogLine(dir, line) {
         activateMixerStand(commitCatMatch[1])
         setTimeout(() => activateMixerStand(null), 3000)
         if (window.mixerGraph) window.mixerGraph.pulse('commit', commitCatMatch[1])
+        const lr = document.getElementById('a11y-live')
+        if (lr) { lr.textContent = ''; requestAnimationFrame(() => { lr.textContent = `Nuevo commit: ${commitCatMatch[1]}` }) }
       }
       addCycleEntry(cl)
       if (current) trackCommit(current)

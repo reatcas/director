@@ -382,7 +382,7 @@
 
           <!-- Log area -->
           <div class="console-log-wrap">
-            <div id="log"></div>
+            <div id="log" role="log" aria-live="polite" aria-label="Registro de orquesta" aria-atomic="false"></div>
             <!-- Raw log overlay -->
             <div id="rawLogOverlay">
               <div class="raw-bar">
@@ -552,5 +552,6 @@
 <script src="mixer-graph.js"></script>
 <script src="renderer.js"></script>
 <script src="mixer-chart.js"></script>
+<div id="a11y-live" aria-live="assertive" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"></div>
 </body>
 </html>

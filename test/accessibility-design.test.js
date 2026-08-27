@@ -53,6 +53,7 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('Cerrar') || l.includes('Iniciar') || l.includes('Detener') ||
       l.includes('Cortar') || l.includes('Configuración') || l.includes('Acerca') ||
       l.includes('Cambiar') || l.includes('Filtrar') || l.includes('Alternar') ||
+      l.includes('Registro') || l.includes('orquesta') ||
       l.includes('AI') || l.includes('provider') || l.includes('model')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
