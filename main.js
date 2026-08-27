@@ -324,7 +324,9 @@ function projectInfo(dir) {
   const installed = has('run.sh') && has('.claude/commands/loop.md')
   const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
   const version = installed ? (fs.existsSync(vf) ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x') : null
-  const mixer = readJSON(path.join(dir, '.claude/orchestra.json'), null)
+  const _piPath = path.join(dir, '.claude/orchestra.json')
+  let mixer = null
+  try { if (fs.statSync(_piPath).size <= 512_000) mixer = readJSON(_piPath, null) } catch {}
   const running = isRunning(dir)
   const usageLimited = has(USAGE_LIMIT_SIGNAL)
   const alto = has('.claude/ALTO')
@@ -395,7 +397,9 @@ function getClaudeUsage(dir) {
   }
 
   const tokensEstimated = Math.round(totalBytes / 4)
-  const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
+  const _guPath = path.join(dir, '.claude/orchestra.json')
+  let cfg = {}
+  try { if (fs.statSync(_guPath).size <= 512_000) cfg = readJSON(_guPath, {}) } catch {}
   const dailyBudget = cfg.claudeUsageBudget || 1_000_000
 
   const percent = Math.min(99, Math.round((tokensEstimated / dailyBudget) * 100))
@@ -527,7 +531,9 @@ function playOrchestra(dir, agent = 'claude') {
   fs.mkdirSync(sharedMem, { recursive: true })
 
   // ── Resource allocation from mixer weights ──────────────────────────────
-  const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
+  const _poPath = path.join(dir, '.claude/orchestra.json')
+  let cfg = {}
+  try { if (fs.statSync(_poPath).size <= 512_000) cfg = readJSON(_poPath, {}) } catch {}
   const focus = cfg.focus || {}
   const allocation = scheduler.computeAllocation(dir, focus)
 
@@ -1066,7 +1072,9 @@ ipcMain.handle('orchestra:tail', (_e, dir) => {
 // ─── Mixer snapshot ───────────────────────────────────────────────────────────
 function snapshotMixer(dir, event) {
   if (!dir) return
-  const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), null)
+  const _ssPath = path.join(dir, '.claude/orchestra.json')
+  let cfg = null
+  try { if (fs.statSync(_ssPath).size <= 512_000) cfg = readJSON(_ssPath, null) } catch {}
   if (!cfg || !cfg.focus) return
   const histFile = path.join(dir, '.claude/mixer-history.json')
   const cutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000
@@ -1437,7 +1445,9 @@ ipcMain.handle('metrics:allocation', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const hit = metricsGet('allocation:' + dir)
   if (hit !== null) return hit
-  const cfg = readJSON(path.join(dir, '.claude/orchestra.json'), {})
+  const _maPath = path.join(dir, '.claude/orchestra.json')
+  let cfg = {}
+  try { if (fs.statSync(_maPath).size <= 512_000) cfg = readJSON(_maPath, {}) } catch {}
   return metricsSet('allocation:' + dir, scheduler.computeAllocation(dir, cfg.focus || {}))
 })
 
@@ -1626,6 +1636,7 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
     typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096
   )
   if (!valid) return false
+  if (atriles.some(a => /\x00/.test(a.name) || /\x00/.test(a.path))) return false
   writeJSON(customAtrilesFile(), atriles)
   _atrilesCache = atriles
   return true
