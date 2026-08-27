@@ -778,6 +778,9 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   writeJSON(store(), readJSON(store(), []).filter(p => p.path !== dir))
   invalidateProjectsCache()
   stopWatchingResume(dir)
+  // Evict any cached metrics for removed project
+  for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir)) _metricsCache.delete(key) }
+  _readinessCache.delete(dir)
   return true
 })
 
