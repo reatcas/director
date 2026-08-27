@@ -1094,6 +1094,7 @@ ipcMain.handle('orchestra:fine', (_e, dir) => {
   snapshotMixer(dir, 'fine')
   fs.writeFileSync(path.join(dir, '.claude/ALTO'), '')
   _metricsCache.delete('claude-usage:' + dir)
+  _metricsCache.delete('session-summary')
   _invalidateIsRunning(dir)
   stopWatchingResume(dir)
   persistLifecycleEvent(dir, 'fine', 'FINE', 'Cerrando último compás')
@@ -1164,7 +1165,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const _lcClearCutoffISO = _lcCutoff()
     let events = []
     try { if (fs.statSync(lcFile).size <= 2_097_152) events = readJSON(lcFile, []) } catch {}
-    let pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO)
+    let pruned = events.filter(e => e && typeof e === 'object' && typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO && typeof e.type === 'string' && typeof e.label === 'string' && typeof e.message === 'string')
     if (pruned.length > 300) pruned = pruned.slice(-300)
     const _prSer = JSON.stringify(pruned)
     if (pruned.length < events.length && _prSer.length <= 2_097_152) writeJSON(lcFile, pruned)
@@ -1229,7 +1230,7 @@ function snapshotMixer(dir, event) {
   let hist = []
   try { if (fs.statSync(histFile).size <= 512_000) hist = readJSON(histFile, []) } catch {}
   if (!Array.isArray(hist)) hist = []
-  hist = hist.filter(h => typeof h.ts === 'string' && h.ts >= cutoffISO)
+  hist = hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && h.ts >= cutoffISO && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
   const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
   const _ssFocus = Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
@@ -1581,7 +1582,7 @@ function persistLifecycleEvent(dir, type, label, message) {
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
     const cutoffISO = _lcCutoff()
     const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO)
-    const _evType = typeof type === 'string' ? type.slice(0, 64) : 'unknown'
+    const _evType = typeof type === 'string' && _LC_TYPES.has(type) ? type : 'unknown'
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
     const _evMsgRaw = typeof message === 'string' ? message : String(message)
     const _evMsg = Buffer.byteLength(_evMsgRaw, 'utf8') > 4096 ? Buffer.from(_evMsgRaw, 'utf8').slice(0, 4096).toString('utf8') : _evMsgRaw

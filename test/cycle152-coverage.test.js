@@ -36,9 +36,9 @@ describe('refresh project list aria-current (I-434)', () => {
 describe('persistLifecycleEvent type cap and write size cap (I-435+I-438)', () => {
   const block = mainJs.split('function persistLifecycleEvent')[1]?.split('\nfunction ')[0] || ''
 
-  it('caps type via _evType at 64 chars', () => {
+  it('caps type via _evType with validation', () => {
     expect(block).toContain('_evType')
-    expect(block).toContain('type.slice(0, 64)')
+    expect(block).toMatch(/type\.slice\(0, 64\)|_LC_TYPES\.has\(type\)/)
   })
 
   it('guards lifecycle write via _lcSer at 2MB', () => {
