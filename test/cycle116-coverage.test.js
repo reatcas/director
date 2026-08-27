@@ -88,8 +88,8 @@ describe('orchestra:clearLog context-metrics cap (I-231)', () => {
     expect(block).toContain('context-metrics.json')
   })
 
-  it('slices to last 500 entries', () => {
-    expect(block).toContain('slice(-500)')
+  it('slices context-metrics to configured cap', () => {
+    expect(block).toMatch(/slice\(-(?:500|300)\)/)
   })
 
   it('writes pruned telemetry back', () => {

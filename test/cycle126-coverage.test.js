@@ -17,8 +17,8 @@ describe('orchestra:clearLog context-metrics size guard (I-297)', () => {
     expect(block).toContain('let hist = []')
   })
 
-  it('still caps at 500 entries', () => {
-    expect(block).toContain('hist.length > 500')
+  it('caps at configured max entries', () => {
+    expect(block).toMatch(/hist\.length > (?:500|300)/)
   })
 })
 

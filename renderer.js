@@ -786,6 +786,7 @@ function renderCommitBreakdown(report) {
     html += '</div>'
     el.innerHTML = html
     el.style.display = ''
+    el.setAttribute('aria-label', 'Distribución de commits por tipo: ' + sorted.map(([t, c]) => `${t} ${c}`).join(', '))
   } catch { el.style.display = 'none' }
 }
 
@@ -3357,7 +3358,7 @@ if ($('#aboutModal')) $('#aboutModal').addEventListener('keydown', e => {
 })
 
 // ─── Keyboard shortcuts (F-24) ──────────────────────────────────────────────
-if ($('#closeShortcuts')) $('#closeShortcuts').onclick = () => { $('#shortcutsModal').hidden = true }
+if ($('#closeShortcuts')) $('#closeShortcuts').onclick = () => { $('#shortcutsModal').hidden = true; if (_scmPrevFocus) { _scmPrevFocus.focus(); _scmPrevFocus = null } }
 if ($('#shortcutsModal')) $('#shortcutsModal').onclick = e => { if (e.target === $('#shortcutsModal')) $('#shortcutsModal').hidden = true }
 let _scmPrevFocus = null
 if ($('#shortcutsModal')) $('#shortcutsModal').addEventListener('keydown', e => {

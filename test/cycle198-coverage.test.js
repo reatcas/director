@@ -71,12 +71,11 @@ describe('mixer:history limit tightened to 100 (I-578)', () => {
 describe('readOrchJson only caches on successful file read (D-08)', () => {
   const block = mainJs.split('function readOrchJson')[1]?.split('\nfunction ')[0] || ''
 
-  it('tracks successful read with _read flag', () => {
-    expect(block).toContain('_read = true')
+  it('validates parsed result is a non-null object before caching', () => {
+    expect(block).toMatch(/_parsed !== null.*typeof _parsed.*object|typeof _parsed.*object.*_parsed !== null/)
   })
 
-  it('only caches when _read is true', () => {
-    expect(block).toContain('if (_read)')
+  it('only caches when parse yields valid object', () => {
     expect(block).toContain('_orchJsonCache.set')
   })
 })

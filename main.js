@@ -192,9 +192,15 @@ function readOrchJson(dir, fb = {}) {
   if (hit && now - hit.ts < 2_000) return hit.data
   const p = path.join(dir, '.claude/orchestra.json')
   let data = fb
-  let _read = false
-  try { if (fs.statSync(p).size <= 512_000) { data = readJSON(p, fb); _read = true } } catch {}
-  if (_read) _orchJsonCache.set(dir, { data, ts: now })
+  try {
+    if (fs.statSync(p).size <= 512_000) {
+      const _parsed = readJSON(p, null)
+      if (_parsed !== null && typeof _parsed === 'object' && !Array.isArray(_parsed)) {
+        data = _parsed
+        _orchJsonCache.set(dir, { data, ts: now })
+      }
+    }
+  } catch {}
   return data
 }
 function _invalidateOrchJson(dir) { _orchJsonCache.delete(dir) }
@@ -203,6 +209,8 @@ function _invalidateOrchJson(dir) { _orchJsonCache.delete(dir) }
 function pidAlive(pid) {
   try { process.kill(pid, 0); return true } catch { return false }
 }
+const _isRunningCache = new Map()
+function _invalidateIsRunning(dir) { _isRunningCache.delete(dir) }
 
 // Kill the entire process group (bash + claude subprocess).
 // detached:true makes the child a process group leader, so -pid kills the group.
@@ -233,11 +241,16 @@ function isKnownProject(dir) {
 
 function isRunning(dir) {
   if (procs.has(dir)) return true
+  const now = Date.now()
+  const _irHit = _isRunningCache.get(dir)
+  if (_irHit && now - _irHit.ts < 1_000) return _irHit.val
   const pidFile = path.join(dir, '.claude/ORCHESTRA_PID')
   let pid = 0
-  try { const _irStat = fs.statSync(pidFile); if (_irStat.size <= 64) pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10) } catch { return false }
-  if (!pid || !pidAlive(pid)) { try { fs.unlinkSync(pidFile) } catch {}; return false }
-  return true
+  try { const _irStat = fs.statSync(pidFile); if (_irStat.size <= 64) pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10) } catch { _isRunningCache.set(dir, { val: false, ts: now }); return false }
+  const _irVal = !!(pid && pidAlive(pid))
+  if (!_irVal) { try { fs.unlinkSync(pidFile) } catch {} }
+  _isRunningCache.set(dir, { val: _irVal, ts: now })
+  return _irVal
 }
 
 // ─── Auto-resume after usage limit ───────────────────────────────────────────
@@ -885,6 +898,7 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   _orchJsonCache.delete(dir)
   _logoCache.delete(dir)
   _piStaticCache.delete(dir)
+  _invalidateIsRunning(dir)
   _complianceMtimeCache.delete(dir)
   _worstComplianceCache.delete(dir)
   // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
@@ -1065,6 +1079,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   if (_aisPlaySer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisPlaySer)); invalidateAiStateCache() }
   _metricsCache.delete('claude-usage:' + dir)
   _piStaticCache.delete(dir)
+  _invalidateIsRunning(dir)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
   return playOrchestra(dir, agent)
 })
@@ -1074,6 +1089,7 @@ ipcMain.handle('orchestra:fine', (_e, dir) => {
   snapshotMixer(dir, 'fine')
   fs.writeFileSync(path.join(dir, '.claude/ALTO'), '')
   _metricsCache.delete('claude-usage:' + dir)
+  _invalidateIsRunning(dir)
   stopWatchingResume(dir)
   persistLifecycleEvent(dir, 'fine', 'FINE', 'Cerrando último compás')
   // Safety net: if the process is still alive after 90s, escalate to group kill
@@ -1104,6 +1120,7 @@ ipcMain.handle('orchestra:kill', (_e, dir) => {
     } catch {}
   }
   _metricsCache.delete('claude-usage:' + dir)
+  _invalidateIsRunning(dir)
   stopTailing(dir)
   stopWatchingResume(dir)
   stopMetricsSampling(dir)
@@ -1156,12 +1173,12 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
       iterLogs.slice(0, iterLogs.length - 200).forEach(f => { try { fs.unlinkSync(path.join(logDir, f)) } catch {} })
     }
   } catch {}
-  // Cap context-metrics telemetry at 500 entries
+  // Cap context-metrics telemetry at 300 entries (matches context-protocol.js cap)
   try {
     const ctxFile = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
     let hist = []
     try { if (fs.statSync(ctxFile).size <= 1_048_576) hist = readJSON(ctxFile, []) } catch {}
-    if (hist.length > 500) { const _ctxTrimSer = JSON.stringify(hist.slice(-500)); if (_ctxTrimSer.length <= 1_048_576) writeJSON(ctxFile, JSON.parse(_ctxTrimSer)) }
+    if (hist.length > 300) { const _ctxTrimSer = JSON.stringify(hist.slice(-300)); if (_ctxTrimSer.length <= 1_048_576) writeJSON(ctxFile, JSON.parse(_ctxTrimSer)) }
   } catch {}
   // Cap coordination-metrics telemetry at 100 entries on log clear
   try {
@@ -1176,9 +1193,19 @@ ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
   if (!isKnownProject(dir)) return ''
   const _tailLines = Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400
   const log = path.join(dir, '.claude/logs/orchestra.log')
-  try { if (fs.statSync(log).size > 10_485_760) return '' } catch { return '' }
-  const s = fs.readFileSync(log, 'utf8')
-  return s.split('\n').map(l => l.length > 4096 ? l.slice(0, 4096) : l).slice(-_tailLines).join('\n')
+  try {
+    const stat = fs.statSync(log)
+    if (stat.size > 10_485_760) return ''
+    const readSize = Math.min(stat.size, _tailLines * 200)
+    const buf = Buffer.alloc(readSize)
+    const fd = fs.openSync(log, 'r')
+    fs.readSync(fd, buf, 0, readSize, stat.size - readSize)
+    fs.closeSync(fd)
+    const s = buf.toString('utf8')
+    const nl = s.indexOf('\n')
+    const trimmed = stat.size > readSize && nl >= 0 ? s.slice(nl + 1) : s
+    return trimmed.split('\n').map(l => l.length > 4096 ? l.slice(0, 4096) : l).slice(-_tailLines).join('\n')
+  } catch { return '' }
 })
 
 // ─── Mixer snapshot ───────────────────────────────────────────────────────────
@@ -1199,7 +1226,7 @@ function snapshotMixer(dir, event) {
   if (!Array.isArray(hist)) hist = []
   hist = hist.filter(h => typeof h.ts === 'string' && h.ts >= cutoffISO)
   const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
-  const _ssFocus = Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v)))
+  const _ssFocus = Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
   const _sortedJson = o => JSON.stringify(Object.fromEntries(Object.keys(o).sort().map(k => [k, o[k]])))
   if (_ssLast && _ssLast.event === _ssEvent && _sortedJson(_ssLast.focus) === _sortedJson(_ssFocus)) return
@@ -1586,6 +1613,7 @@ setInterval(() => {
   for (const [k, v] of _orchJsonCache) { if (now - v.ts > 10_000) _orchJsonCache.delete(k) }
   for (const [k, v] of _logoCache) { if (now - v.ts > 60_000) _logoCache.delete(k) }
   for (const [k, v] of _piStaticCache) { if (now - v.ts > 30_000) _piStaticCache.delete(k) }
+  for (const [k, v] of _isRunningCache) { if (now - v.ts > 1_000) _isRunningCache.delete(k) }
 }, _METRICS_EVICT_AGE).unref()
 
 ipcMain.handle('metrics:resource', (_e, dir) => {
@@ -1598,7 +1626,7 @@ ipcMain.handle('metrics:resource', (_e, dir) => {
   const cfg = readOrchJson(dir)
   if (cfg.focus) {
     const alloc = scheduler.computeAllocation(dir, cfg.focus)
-    return metricsSet('resource:' + dir, { allocation: alloc, baseline: null, lastSample: null, efficiency: null, sampleCount: 0 })
+    return metricsSet('resource:' + dir, { allocation: alloc, baseline: null, lastSample: null, efficiency: null, sampleCount: 0 }, _SLOW_METRICS_TTL)
   }
   return live
 })

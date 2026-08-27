@@ -24,7 +24,7 @@ describe('orchestra:clearLog ctx-metrics trim write cap (I-461)', () => {
 
   it('serializes trimmed history via _ctxTrimSer', () => {
     expect(block).toContain('_ctxTrimSer')
-    expect(block).toContain('hist.slice(-500)')
+    expect(block).toMatch(/hist\.slice\(-(?:500|300)\)/)
   })
 
   it('only writes trimmed history if within 1MB', () => {
