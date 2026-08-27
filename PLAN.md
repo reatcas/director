@@ -3,12 +3,12 @@
 ## MIXER BUDGET — Cycle 204 (quality_tests + security BANNED: both appear in C201+C202+C203)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| performance | 10 | 3 | 0/3 |
-| backend | 5 | 1 | 0/1 |
-| frontend | 5 | 1 | 0/1 |
-| business_logic | 5 | 1 | 0/1 |
-| ux_accessibility | 5 | 1 | 0/1 |
-| data_db | 5 | 1 | 0/1 |
+| performance | 10 | 3 | 3/3 |
+| backend | 5 | 1 | 1/1 |
+| frontend | 5 | 1 | 1/1 |
+| business_logic | 5 | 1 | 1/1 |
+| ux_accessibility | 5 | 1 | 1/1 |
+| data_db | 5 | 1 | 1/1 |
 | quality_tests | 35 | 0 | BANNED (C201+C202+C203) |
 | security | 20 | 0 | BANNED (C201+C202+C203) |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
