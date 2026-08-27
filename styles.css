@@ -275,6 +275,7 @@ body {
 @keyframes ai-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 #aiSelect, #modelSelect { appearance:none; min-width:142px; padding:5px 18px 5px 20px; border:1px solid #294352; border-radius:3px; background:#101821; color:var(--txt); font:700 9px var(--sans); letter-spacing:.4px; outline:none; cursor:pointer; box-shadow:inset 0 1px rgba(255,255,255,.04),0 0 10px rgba(0,210,255,.08) }
 #aiSelect:focus, #modelSelect:focus { border-color:var(--ai-cyan); box-shadow:0 0 12px rgba(0,255,238,.28) }
+#aiSelect:focus-visible, #modelSelect:focus-visible { outline: 2px solid var(--ai-cyan); outline-offset: 2px }
 #aiSelect option, #modelSelect option { background:#10141c; color:#d7e3ec }
 .ai-auth-dot { width:7px; height:7px; border-radius:50%; background:#e03030; box-shadow:0 0 6px #e03030, 0 0 12px rgba(224,48,48,.3); flex-shrink:0; transition:all .4s ease }
 .ai-auth-dot.connected { background:#28a828; box-shadow:0 0 6px #28a828, 0 0 12px rgba(40,168,40,.3) }
@@ -1540,6 +1541,7 @@ body.light #nodeGraphSection {
   border-color: var(--ai-cyan);
   box-shadow: 0 0 6px rgba(0,255,238,0.1);
 }
+.chat-field:focus-visible { outline: 1px solid var(--ai-cyan); outline-offset: 1px }
 .chat-field::placeholder { color: var(--dim2) }
 .chat-send {
   width: 30px;
@@ -2533,6 +2535,7 @@ html.light .smart-mix-bar.active .smart-toggle { border-color: rgba(0,122,110,.3
   border-color: var(--ai-cyan);
   box-shadow: 0 0 8px rgba(0,255,238,0.1);
 }
+.bp-input:focus-visible { outline: 1px solid var(--ai-cyan); outline-offset: 1px }
 .bp-send {
   width: 32px; height: 30px;
   border-radius: var(--radius-sm);
