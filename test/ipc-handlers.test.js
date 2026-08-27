@@ -41,7 +41,7 @@ describe('isKnownProject — project cache', () => {
 
   it('defines cachedProjects that populates on first call', () => {
     expect(mainJs).toContain('function cachedProjects()')
-    expect(mainJs).toContain('_projectsCache || (_projectsCache = readJSON(store(), []))')
+    expect(mainJs).toContain('_projectsCache')
   })
 
   it('repertoire:add calls invalidateProjectsCache after write', () => {

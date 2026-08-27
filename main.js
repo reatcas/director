@@ -189,7 +189,14 @@ function killProcessGroup(pid, signal = 'SIGTERM') {
 
 let _projectsCache = null
 function invalidateProjectsCache() { _projectsCache = null }
-function cachedProjects() { return _projectsCache || (_projectsCache = readJSON(store(), [])) }
+function cachedProjects() {
+  if (_projectsCache) return _projectsCache
+  const _rpPath = store()
+  let _rpData = []
+  try { if (fs.statSync(_rpPath).size <= 512_000) _rpData = readJSON(_rpPath, []) } catch {}
+  _projectsCache = _rpData
+  return _projectsCache
+}
 
 function isKnownProject(dir) {
   if (!dir || typeof dir !== 'string') return false
@@ -784,7 +791,8 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
     dir = r.filePaths[0]
   }
   if (fs.existsSync(dir) && !fs.statSync(dir).isDirectory()) dir = path.dirname(dir)
-  const projects = readJSON(store(), [])
+  let projects = []
+  try { if (fs.statSync(store()).size <= 512_000) projects = readJSON(store(), []) } catch {}
   if (!projects.find(p => p.path === dir)) {
     projects.push({ id: Date.now().toString(36), name: path.basename(dir), path: dir, added: new Date().toISOString() })
     writeJSON(store(), projects)
@@ -794,7 +802,9 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
 })
 
 ipcMain.handle('repertoire:remove', (_e, dir) => {
-  writeJSON(store(), readJSON(store(), []).filter(p => p.path !== dir))
+  let _rrProjects = []
+  try { if (fs.statSync(store()).size <= 512_000) _rrProjects = readJSON(store(), []) } catch {}
+  writeJSON(store(), _rrProjects.filter(p => p.path !== dir))
   invalidateProjectsCache()
   stopTailing(dir)
   stopMetricsSampling(dir)
@@ -1166,6 +1176,7 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
 ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
   if (!isKnownProject(dir)) return false
   if (typeof id !== 'string' || id.length === 0 || id.length > 64) return false
+  if (!/^[0-9a-z]+$/.test(id)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}

@@ -2234,6 +2234,7 @@ async function loadMetrics() {
     body.style.display = open ? 'none' : ''
     btn.textContent = (open ? '▸' : '▾') + ' ASIGNACIÓN DE RECURSOS'
     btn.classList.toggle('open', !open)
+    btn.setAttribute('aria-expanded', String(!open))
   })
 })()
 
@@ -2317,6 +2318,21 @@ function updateBurnRate(usage) {
     body.style.display = open ? 'none' : ''
     btn.textContent = (open ? '▸' : '▾') + ' COMPRESIÓN DE CONTEXTO'
     btn.classList.toggle('open', !open)
+    btn.setAttribute('aria-expanded', String(!open))
+  })
+})()
+
+;(function initMixerHistoryPanel() {
+  const btn = $('#mixerHistoryToggle')
+  if (!btn) return
+  btn.addEventListener('click', () => {
+    const body = $('#mixerHistoryBody')
+    if (!body) return
+    const open = body.style.display !== 'none'
+    body.style.display = open ? 'none' : ''
+    btn.textContent = (open ? '▸' : '▾') + ' HISTORIAL DE PESOS'
+    btn.classList.toggle('open', !open)
+    btn.setAttribute('aria-expanded', String(!open))
   })
 })()
 
