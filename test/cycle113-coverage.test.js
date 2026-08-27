@@ -67,7 +67,7 @@ describe('context-metrics telemetry cap (I-203)', () => {
   })
 
   it('writes pruned history back to file', () => {
-    expect(block).toContain('writeJSON(file, hist)')
+    expect(block).toContain('writeJSON(file,')
   })
 })
 

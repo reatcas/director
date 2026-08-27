@@ -1,6 +1,6 @@
-# Cycle 157 Plan — IMPROVEMENT MODE
+# Cycle 158 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 157
+## MIXER BUDGET — Cycle 158
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
 | quality_tests | 35 | 4 | 0/4 |
@@ -14,11 +14,11 @@
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-460 — repertoire:remove: _rrSer write size cap
-2. [security] I-461 — orchestra:clearLog ctx-metrics trim: _ctxTrimSer write size cap
-3. [backend] I-462 — mixer:read: sanitize cfg.focus with _VALID_CATS + Number.isFinite
-4. [frontend] I-463 — cmdPalette keydown: Tab focus trap within modal
-5-8. [quality_tests] cycle157-coverage.test.js — 4 tests
+1. [security] I-464 — orchestra:play allocation write: _allocSer 256KB cap
+2. [security] I-465 — metrics:context hist trim write: _mcTrimSer 1MB cap
+3. [backend] I-466 — mixer:history: filter hist to valid objects before slice
+4. [frontend] I-467 — model select innerHTML: esc() m.id and m.label
+5-8. [quality_tests] cycle158-coverage.test.js — 4 tests
 
 ## Stats
-- 3524 tests at cycle start
+- 3532 tests at cycle start

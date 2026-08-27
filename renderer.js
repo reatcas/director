@@ -189,7 +189,7 @@ function updateAiControl() {
     modelSelect.parentElement.style.display = 'inline-block'
     modelSelect.style.display = 'inline-block'
     const prevModel = modelSelect.value
-    modelSelect.innerHTML = credit.models.map(m => `<option value="${m.id}">${m.label}</option>`).join('')
+    modelSelect.innerHTML = credit.models.map(m => `<option value="${esc(m.id)}">${esc(m.label)}</option>`).join('')
     if (credit.models.some(m => m.id === prevModel)) {
       modelSelect.value = prevModel
     } else {

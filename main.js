@@ -594,7 +594,8 @@ function playOrchestra(dir, agent = 'claude') {
   // Write allocation metadata for the orchestra to read
   const telDir = path.join(dir, '.claude', 'telemetry')
   fs.mkdirSync(telDir, { recursive: true })
-  writeJSON(path.join(telDir, 'current-allocation.json'), allocation)
+  const _allocSer = JSON.stringify(allocation)
+  if (_allocSer.length <= 262_144) writeJSON(path.join(telDir, 'current-allocation.json'), JSON.parse(_allocSer))
 
   // ── Focus Directive Injection ──────────────────────────────────────────
   const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
@@ -1237,6 +1238,7 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
   const p = path.join(dir, '.claude/mixer-history.json')
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
+  hist = Array.isArray(hist) ? hist.filter(h => h && typeof h === 'object') : []
   const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 500) : 50
   return hist.slice(-n)
 })
@@ -1481,7 +1483,7 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   let hist = []
   try { if (fs.statSync(file).size <= 1_048_576) hist = readJSON(file, []) } catch {}
   hist = hist.filter(h => h && typeof h === 'object')
-  if (hist.length > 500) { hist = hist.slice(-500); try { writeJSON(file, hist) } catch {} }
+  if (hist.length > 500) { const _mcTrimSer = JSON.stringify(hist.slice(-500)); if (_mcTrimSer.length <= 1_048_576) { try { writeJSON(file, JSON.parse(_mcTrimSer)) } catch {} } }
   if (hist.length > 0) {
     const last = hist[hist.length - 1]
     let totalProcessed = 0, totalSaved = 0
