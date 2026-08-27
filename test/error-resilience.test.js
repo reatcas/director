@@ -12,8 +12,7 @@ describe('null dir guard on all IPC handlers', () => {
   const noGuardNeeded = ['ai:credits', 'ai:select', 'ai:auth-status', 'ai:login',
     'metrics:coordination', 'metrics:session-summary', 'system:claude-procs', 'system:kill-proc',
     'orchestra:hotReload', 'atriles:list', 'atriles:save', 'repertoire:list', 'repertoire:add',
-    'repertoire:open', 'repertoire:remove', 'orchestra:install', 'orchestra:play',
-    'orchestra:fine', 'orchestra:kill', 'lifecycle:add']
+    'repertoire:open', 'repertoire:remove', 'orchestra:play', 'lifecycle:add']
   const dirHandlers = handlerNames.filter(name => {
     if (noGuardNeeded.includes(name)) return false
     const block = mainJs.split(`'${name}'`)[1]?.split('ipcMain.handle')[0] || ''

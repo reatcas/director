@@ -925,6 +925,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
 })
 
 ipcMain.handle('orchestra:fine', (_e, dir) => {
+  if (!isKnownProject(dir)) return { ok: false }
   snapshotMixer(dir, 'fine')
   fs.writeFileSync(path.join(dir, '.claude/ALTO'), '')
   stopWatchingResume(dir)
@@ -943,6 +944,7 @@ ipcMain.handle('orchestra:fine', (_e, dir) => {
 })
 
 ipcMain.handle('orchestra:kill', (_e, dir) => {
+  if (!isKnownProject(dir)) return { ok: false }
   // Write ALTO first so any surviving subprocess exits cleanly
   try { fs.writeFileSync(path.join(dir, '.claude/ALTO'), '') } catch {}
   const c = procs.get(dir)
@@ -1058,6 +1060,7 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
 
 ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
   if (!isKnownProject(dir)) return false
+  if (typeof id !== 'string' || id.length === 0 || id.length > 64) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
   const mixes = readJSON(p, []).filter(m => m.id !== id)
   writeJSON(p, mixes)
@@ -1066,6 +1069,7 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
 
 ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
   if (!isKnownProject(dir)) return null
+  if (typeof id !== 'string' || id.length === 0 || id.length > 64) return null
   const mixes = readJSON(path.join(dir, '.claude/saved-mixes.json'), [])
   const mix = mixes.find(m => m.id === id)
   if (!mix) return null
