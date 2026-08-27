@@ -602,12 +602,12 @@ img.badge, img.badge.sm { object-fit: contain; background: transparent; box-shad
 #nodeGraphSection {
   height: 210px; min-height: 210px; flex-shrink: 0;
   position: relative;
-  background: radial-gradient(ellipse at 50% 40%, #0a0a28 0%, #05051a 45%, #020208 100%);
+  background: var(--panel);
   overflow: hidden;
   border-top: 1px solid var(--line);
 }
 body.light #nodeGraphSection {
-  background: radial-gradient(ellipse at 50% 40%, #dde8ff 0%, #eef2ff 50%, #f5f8ff 100%);
+  background: var(--panel);
 }
 .ng-label {
   position: absolute;

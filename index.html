@@ -286,11 +286,6 @@
       <ul id="projects" role="list" aria-label="Repertorio de proyectos"></ul>
       <div id="sessionSummary" role="status" aria-live="polite" aria-label="Resumen de sesión" tabindex="0"></div>
     </aside>
-    <!-- NODE GRAPH (below rack) -->
-    <div id="nodeGraphSection" class="ng-section" role="application" tabindex="0" aria-roledescription="Grafo interactivo" aria-label="Grafo de nodos del mixer — navega con mouse">
-      <div id="mixerGraphCanvas" class="mg-canvas" aria-hidden="true"></div>
-      <div class="ng-label">⟡ NODE GRAPH</div>
-    </div>
     </div><!-- /#leftColumn -->
 
     <!-- MAIN STAGE — console -->
@@ -533,6 +528,12 @@
           </div>
           <textarea id="notesArea" class="mono" placeholder="Escribe notas sobre esta sesión…" aria-label="Notas del operador para esta sesión" maxlength="50000" style="flex:1;margin:0 10px 10px;padding:8px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:4px;font-size:11px;resize:none"></textarea>
         </div>
+
+      <!-- NODE GRAPH (bottom of mix panel) -->
+      <div id="nodeGraphSection" class="ng-section" role="application" tabindex="0" aria-roledescription="Grafo interactivo" aria-label="Grafo de nodos del mixer — navega con mouse">
+        <div id="mixerGraphCanvas" class="mg-canvas" aria-hidden="true"></div>
+        <div class="ng-label">⟡ NODE GRAPH</div>
+      </div>
 
     </div>
 

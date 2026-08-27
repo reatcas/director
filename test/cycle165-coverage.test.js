@@ -11,10 +11,10 @@ describe('3-column layout structure (I-490)', () => {
     expect(indexHtml).toContain('id="leftColumn"')
   })
 
-  it('#nodeGraphSection is inside leftColumn', () => {
-    const leftIdx = indexHtml.indexOf('id="leftColumn"')
-    const ngIdx   = indexHtml.indexOf('id="nodeGraphSection"')
-    expect(ngIdx).toBeGreaterThan(leftIdx)
+  it('#nodeGraphSection is inside mixerDrawer (right column)', () => {
+    const mixIdx = indexHtml.indexOf('id="mixerDrawer"')
+    const ngIdx  = indexHtml.indexOf('id="nodeGraphSection"')
+    expect(ngIdx).toBeGreaterThan(mixIdx)
   })
 
   it('#mixerDrawer is a permanent right column (role=complementary)', () => {
