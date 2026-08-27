@@ -1,29 +1,29 @@
-# Cycle 124 Plan — IMPROVEMENT MODE
+# Cycle 125 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 124
+## MIXER BUDGET — Cycle 125
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 4/4 |
-| security | 20 | 2 | 2/2 |
+| security | 20 | 4 | 4/4 |
+| backend | 5 | 1 | 1/1 |
 | frontend | 5 | 1 | 1/1 |
+| ux_accessibility | 5 | 1 | 1/1 |
 | business_logic | 5 | 1 | 1/1 |
-| backend | 5 | FROZEN (3rd: 121,122,123) | — |
-| ux_accessibility | 5 | FROZEN (3rd: 121,122,123) | — |
-| performance | 10 | FROZEN (15th) | — |
+| quality_tests | 35 | FROZEN (3rd: 122,123,124) | — |
+| performance | 10 | FROZEN (16th) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-281 — repertoire:add: validate droppedPath is string when provided ✅
-2. [security] I-282 — lifecycle:list: stat.size > 2MB guard before readJSON ✅
-3. [frontend] I-283 — usageBanner: role=alert + aria-live=assertive + aria-label ✅
-4. [business_logic] I-284 — resource-scheduler persistTelemetry: size guard 1MB ✅
-5. [quality_tests] I-285 — test repertoire:add type guard ✅
-6. [quality_tests] I-286 — test lifecycle:list size guard ✅
-7. [quality_tests] I-287 — test usageBanner alert role ✅
-8. [quality_tests] I-288 — test resource-scheduler size guard ✅
+1. [security] I-289 — orchestra:kill: evict claude-usage cache ✅
+2. [security] I-290 — orchestra:clearLog: lifecycle events 2MB size guard ✅
+3. [security] I-291 — export:session read(): stat.size > 1MB guard ✅
+4. [security] I-292 — orchestra:tail: stat.size > 10MB guard ✅
+5. [backend] I-293 — metrics:allocation: metricsGet/Set cache ✅
+6. [frontend] I-294 — emptyState: role=status + aria-label ✅
+7. [ux_accessibility] I-295 — procsPanel: role=region + aria-label ✅
+8. [business_logic] I-296 — mixer:write: evict allocation cache on focus change ✅
 
 ## Stats
-- 3217 tests passing (was 3206 at cycle start)
-- +11 net tests added this cycle
-- All telemetry JSON reads now guarded by size checks
-- lifecycle:list protected against oversized event files
+- 3231 tests passing (was 3217 at cycle start)
+- +14 net tests added this cycle
+- All major log reads now bounded with size guards
+- metrics:allocation now cached, evicted on mixer:write
