@@ -1157,13 +1157,26 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
 ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (!isKnownProject(dir)) return false
   if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
-  const _allowedKeys = new Set(['version', 'focus', 'agent', 'model', 'claudeUsageBudget', 'nice'])
+  const _allowedKeys = new Set(['version', 'focus', 'agent', 'model', 'claudeUsageBudget', 'nice', 'mode', 'maxIterations', 'caveman', 'modelComplex', 'compactAt', 'quietFlags', 'smartMix', 'smartModel', 'modelFast', 'architectInterval', 'autoSwitch', 'keepLogs', 'maxHallucinationStreak'])
   if (!Object.keys(cfg).every(k => _allowedKeys.has(k))) return false
   if (cfg.version !== undefined && (typeof cfg.version !== 'string' || cfg.version.length > 64)) return false
   if (cfg.agent !== undefined && !Object.keys(AI_DEFAULTS).includes(cfg.agent)) return false
-  if (cfg.model !== undefined && (typeof cfg.model !== 'string' || cfg.model.length > 256)) return false
+  if (cfg.model !== undefined && (typeof cfg.model !== 'string' || cfg.model.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.model))) return false
   if (cfg.nice !== undefined && (!Number.isInteger(cfg.nice) || cfg.nice < -20 || cfg.nice > 19)) return false
   if (cfg.claudeUsageBudget !== undefined && (typeof cfg.claudeUsageBudget !== 'number' || !Number.isFinite(cfg.claudeUsageBudget) || cfg.claudeUsageBudget < 0)) return false
+  if (cfg.mode !== undefined && (typeof cfg.mode !== 'string' || !['improvement', 'product', 'auto'].includes(cfg.mode))) return false
+  if (cfg.maxIterations !== undefined && (!Number.isInteger(cfg.maxIterations) || cfg.maxIterations < 1 || cfg.maxIterations > 10000)) return false
+  if (cfg.caveman !== undefined && typeof cfg.caveman !== 'boolean') return false
+  if (cfg.modelComplex !== undefined && (typeof cfg.modelComplex !== 'string' || cfg.modelComplex.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelComplex))) return false
+  if (cfg.compactAt !== undefined && (typeof cfg.compactAt !== 'number' || !Number.isFinite(cfg.compactAt) || cfg.compactAt < 0 || cfg.compactAt > 100)) return false
+  if (cfg.quietFlags !== undefined && (typeof cfg.quietFlags !== 'string' || cfg.quietFlags.length > 256)) return false
+  if (cfg.smartMix !== undefined && typeof cfg.smartMix !== 'boolean') return false
+  if (cfg.smartModel !== undefined && (typeof cfg.smartModel !== 'string' || cfg.smartModel.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.smartModel))) return false
+  if (cfg.modelFast !== undefined && (typeof cfg.modelFast !== 'string' || cfg.modelFast.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelFast))) return false
+  if (cfg.architectInterval !== undefined && (!Number.isInteger(cfg.architectInterval) || cfg.architectInterval < 1 || cfg.architectInterval > 1000)) return false
+  if (cfg.autoSwitch !== undefined && typeof cfg.autoSwitch !== 'boolean') return false
+  if (cfg.keepLogs !== undefined && typeof cfg.keepLogs !== 'boolean') return false
+  if (cfg.maxHallucinationStreak !== undefined && (!Number.isInteger(cfg.maxHallucinationStreak) || cfg.maxHallucinationStreak < 1 || cfg.maxHallucinationStreak > 100)) return false
   const serialized = JSON.stringify(cfg)
   if (serialized.length > 65_536) return false
   if (cfg.focus && typeof cfg.focus === 'object') {
@@ -1544,7 +1557,7 @@ function parseComplianceLine(line) {
   const m = line.match(/COMPLIANCE\s+(.+?)(?:\s+DRIFT:(.*?))?(?:\s+TESTS:(\w+))?$/)
   if (!m) return null
   const pairs = m[1].trim().split(/\s+/)
-  const drift = m[2] ? m[2].trim() : 'none'
+  const drift = m[2] ? m[2].trim().slice(0, 128) : 'none'
   const tests = m[3] || 'unknown'
   let totalPlanned = 0, totalActual = 0
   const categories = {}

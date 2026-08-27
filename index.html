@@ -450,14 +450,14 @@
           <button id="mixerDrawerClose" class="tp-btn" aria-label="Cerrar mixer">✕</button>
         </div>
         <div class="mixer-tabs" role="tablist" aria-label="Paneles del mezclador">
-          <button class="mixer-tab on" data-mtab="mixTab" role="tab" aria-selected="true" aria-controls="mixTab" aria-label="Mezcla de categorías">MIX</button>
-          <button class="mixer-tab" data-mtab="bpTab" role="tab" aria-selected="false" aria-controls="bpTab" aria-label="Blueprint del proyecto">BLUEPRINT</button>
-          <button class="mixer-tab" data-mtab="knowledgeTab" role="tab" aria-selected="false" aria-controls="knowledgeTab" aria-label="Base de conocimiento">KNOWLEDGE</button>
-          <button class="mixer-tab" data-mtab="notesTab" role="tab" aria-selected="false" aria-controls="notesTab" aria-label="Notas del operador">NOTES</button>
+          <button id="tab-mixTab" class="mixer-tab on" data-mtab="mixTab" role="tab" aria-selected="true" aria-controls="mixTab" aria-label="Mezcla de categorías">MIX</button>
+          <button id="tab-bpTab" class="mixer-tab" data-mtab="bpTab" role="tab" aria-selected="false" aria-controls="bpTab" aria-label="Blueprint del proyecto">BLUEPRINT</button>
+          <button id="tab-knowledgeTab" class="mixer-tab" data-mtab="knowledgeTab" role="tab" aria-selected="false" aria-controls="knowledgeTab" aria-label="Base de conocimiento">KNOWLEDGE</button>
+          <button id="tab-notesTab" class="mixer-tab" data-mtab="notesTab" role="tab" aria-selected="false" aria-controls="notesTab" aria-label="Notas del operador">NOTES</button>
         </div>
 
         <!-- MIX tab content -->
-        <div id="mixTab" class="mixer-tab-pane on" role="tabpanel" aria-label="Mezcla de categorías">
+        <div id="mixTab" class="mixer-tab-pane on" role="tabpanel" aria-labelledby="tab-mixTab">
           <div id="mixesHeader">
             <span class="rack-title" style="color:var(--txt)">SAVED MIXES</span>
             <div id="mixesImport">
@@ -487,7 +487,7 @@
         </div>
 
         <!-- BLUEPRINT tab content -->
-        <div id="bpTab" class="mixer-tab-pane" role="tabpanel" aria-label="Blueprint del proyecto">
+        <div id="bpTab" class="mixer-tab-pane" role="tabpanel" aria-labelledby="tab-bpTab">
           <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 0">
             <div id="bpPhases" class="bp-phases" role="list" aria-label="Fases del blueprint" style="flex:1"></div>
             <div id="bpReadiness" class="mono" style="display:none;font-size:9px;white-space:nowrap;padding:3px 8px;border-radius:3px;border:1px solid rgba(255,255,255,0.06)"></div>
@@ -515,7 +515,7 @@
         </div>
 
         <!-- KNOWLEDGE tab content -->
-        <div id="knowledgeTab" class="mixer-tab-pane kn-pane" role="tabpanel" aria-label="Base de conocimiento del orquestador">
+        <div id="knowledgeTab" class="mixer-tab-pane kn-pane" role="tabpanel" aria-labelledby="tab-knowledgeTab">
           <div class="bp-phases" style="display:flex; gap:10px; padding:10px; flex-wrap:wrap">
             <button id="knBtnRoadmap" class="tp-action kn-btn on" aria-label="Panel de conocimiento: ROADMAP">ROADMAP.md</button>
             <button id="knBtnReport" class="tp-action kn-btn" aria-label="Panel de conocimiento: REPORT">REPORT.md</button>
@@ -532,7 +532,7 @@
         </div>
 
         <!-- NOTES tab content (F-25) -->
-        <div id="notesTab" class="mixer-tab-pane" style="display:flex;flex-direction:column;height:100%" role="tabpanel" aria-label="Notas del operador">
+        <div id="notesTab" class="mixer-tab-pane" style="display:flex;flex-direction:column;height:100%" role="tabpanel" aria-labelledby="tab-notesTab">
           <div style="padding:10px 10px 4px">
             <span class="settings-label">NOTAS DEL OPERADOR</span>
           </div>
