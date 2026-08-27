@@ -192,7 +192,7 @@
   <div id="cmdPalette" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Paleta de comandos">
     <div class="modal-card" style="width:400px">
       <input id="cmdInput" type="text" class="mix-import-field mono" placeholder="Buscar proyecto o acción…" style="width:100%;font-size:13px;padding:10px" autofocus aria-label="Buscar en Paleta de comandos">
-      <div id="cmdResults" style="max-height:240px;overflow-y:auto;margin-top:8px"></div>
+      <div id="cmdResults" role="listbox" aria-label="Resultados de la Paleta de comandos" style="max-height:240px;overflow-y:auto;margin-top:8px"></div>
     </div>
   </div>
 
@@ -352,7 +352,7 @@
 
           <!-- Resource allocation inspector (F-13) -->
           <div id="allocInspector" class="alloc-inspector" style="display:none">
-            <button id="allocToggle" class="alloc-toggle" aria-label="Alternar asignación de recursos">▸ ASIGNACIÓN DE RECURSOS</button>
+            <button id="allocToggle" class="alloc-toggle" aria-label="Alternar asignación de recursos" aria-expanded="false">▸ ASIGNACIÓN DE RECURSOS</button>
             <div id="allocBody" class="alloc-body" style="display:none">
               <div id="allocSummary" class="alloc-summary"></div>
               <div id="allocCategories" class="alloc-categories"></div>

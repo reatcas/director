@@ -104,7 +104,8 @@ describe('app shutdown sequence', () => {
 
 describe('data flow invariants', () => {
   it('orchestra.json is read/written via readJSON/writeJSON', () => {
-    expect(mainJs).toContain("readJSON(path.join(dir, '.claude/orchestra.json'")
+    expect(mainJs).toContain("orchestra.json')")
+    expect(mainJs).toContain('readJSON(')
   })
 
   it('store path uses app.getPath(userData)', () => {

@@ -1110,6 +1110,8 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
 ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (!isKnownProject(dir)) return false
   if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
+  const _allowedKeys = new Set(['version', 'focus', 'agent', 'model', 'claudeUsageBudget', 'nice'])
+  if (!Object.keys(cfg).every(k => _allowedKeys.has(k))) return false
   const serialized = JSON.stringify(cfg)
   if (serialized.length > 65_536) return false
   if (cfg.focus && typeof cfg.focus === 'object') {
@@ -1262,7 +1264,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
     orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim() || 'unknown',
     runStarted: read('.claude/RUN_STARTED').trim() || null,
     lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; return d })(),
-    mixerConfig: readJSON(path.join(dir, '.claude/orchestra.json'), {}),
+    mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return d })(),
     mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; return d })(),
     claudeUsage: getClaudeUsage(dir),
     compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')),
