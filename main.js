@@ -1242,7 +1242,8 @@ function persistLifecycleEvent(dir, type, label, message) {
 
 ipcMain.handle('lifecycle:list', (_e, dir) => {
   if (!isKnownProject(dir)) return []
-  return readJSON(path.join(dir, '.claude', 'logs', 'lifecycle-events.json'), [])
+  const events = readJSON(path.join(dir, '.claude', 'logs', 'lifecycle-events.json'), [])
+  return { events: events.slice(-200), total: events.length }
 })
 
 ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {

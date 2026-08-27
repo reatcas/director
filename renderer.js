@@ -1986,7 +1986,8 @@ function parseLogLine(dir, line) {
 // ─── Lifecycle History (persisted across sessions) ───────────────────────────
 async function loadLifecycleHistory() {
   if (!current) return
-  const events = await window.director.lifecycleList(current)
+  const res = await window.director.lifecycleList(current)
+  const events = res?.events ?? (Array.isArray(res) ? res : [])
   if (!events || events.length === 0) return
 
   // Show last 80 events as compact entries
@@ -2843,7 +2844,9 @@ async function loadLifecycleTimeline() {
   const countEl = $('#lifecycleCount')
   if (!el) return
 
-  const events = await window.director.lifecycleList(current)
+  const res = await window.director.lifecycleList(current)
+  const events = res?.events ?? (Array.isArray(res) ? res : [])
+  const total = res?.total ?? events.length
   if (!events || events.length === 0) {
     el.innerHTML = '<div style="padding:8px;color:var(--dim);font:9px var(--mono)">Sin eventos</div>'
     if (countEl) countEl.textContent = '0'
@@ -2851,7 +2854,7 @@ async function loadLifecycleTimeline() {
   }
 
   const recent = events.slice(-50)
-  if (countEl) countEl.textContent = String(events.length)
+  if (countEl) countEl.textContent = String(total)
 
   el.innerHTML = recent.map(ev => {
     const d = new Date(ev.ts)
