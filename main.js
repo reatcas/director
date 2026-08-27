@@ -332,7 +332,8 @@ function findLogo(dir) {
   try {
     for (const f of fs.readdirSync(dir)) {
       const fp = path.join(dir, f)
-      if (/\.(png|svg|jpg|webp|ico)$/i.test(f) && fs.statSync(fp).isFile() && fs.statSync(fp).size < 500000) {
+      let _flSt = null; try { _flSt = fs.statSync(fp) } catch {}
+      if (_flSt && /\.(png|svg|jpg|webp|ico)$/i.test(f) && _flSt.isFile() && _flSt.size < 500000) {
         return fp
       }
     }
@@ -409,9 +410,11 @@ function getClaudeUsage(dir) {
   const now = Date.now()
   let iterCount, totalBytes
 
+  let _dailyBudget = 1_000_000
   if (cached && cached.runStarted === runStarted && (now - cached.lastScan) < 25_000) {
     iterCount = cached.iterCount
     totalBytes = cached.totalBytes
+    _dailyBudget = cached.dailyBudget || 1_000_000
   } else {
     iterCount = 0
     totalBytes = 0
@@ -430,12 +433,12 @@ function getClaudeUsage(dir) {
     const _guPath = path.join(dir, '.claude/orchestra.json')
     let _guCfg = {}
     try { if (fs.statSync(_guPath).size <= 512_000) _guCfg = readJSON(_guPath, {}) } catch {}
-    const _dailyBudget = (typeof _guCfg.claudeUsageBudget === 'number' && Number.isFinite(_guCfg.claudeUsageBudget) && _guCfg.claudeUsageBudget > 0) ? _guCfg.claudeUsageBudget : 1_000_000
+    _dailyBudget = (typeof _guCfg.claudeUsageBudget === 'number' && Number.isFinite(_guCfg.claudeUsageBudget) && _guCfg.claudeUsageBudget > 0) ? _guCfg.claudeUsageBudget : 1_000_000
     usageTracker.set(dir, { runStarted, iterCount, totalBytes, lastScan: now, dailyBudget: _dailyBudget })
   }
 
   const tokensEstimated = Math.round(totalBytes / 4)
-  const dailyBudget = usageTracker.get(dir)?.dailyBudget || 1_000_000
+  const dailyBudget = _dailyBudget
 
   const percent = Math.min(99, Math.round((tokensEstimated / dailyBudget) * 100))
   const status = percent >= 90 ? 'critical' : percent >= 70 ? 'high' : percent >= 40 ? 'mid' : 'normal'
@@ -1218,7 +1221,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (cfg.caveman !== undefined && typeof cfg.caveman !== 'boolean') return false
   if (cfg.modelComplex !== undefined && (typeof cfg.modelComplex !== 'string' || cfg.modelComplex.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelComplex))) return false
   if (cfg.compactAt !== undefined && (typeof cfg.compactAt !== 'number' || !Number.isFinite(cfg.compactAt) || cfg.compactAt < 0 || cfg.compactAt > 100)) return false
-  if (cfg.quietFlags !== undefined && (typeof cfg.quietFlags !== 'string' || cfg.quietFlags.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.quietFlags))) return false
+  if (cfg.quietFlags !== undefined && (typeof cfg.quietFlags !== 'string' || cfg.quietFlags.length > 256 || /[^-a-zA-Z0-9 =./]/.test(cfg.quietFlags))) return false
   if (cfg.smartMix !== undefined && typeof cfg.smartMix !== 'boolean') return false
   if (cfg.smartModel !== undefined && (typeof cfg.smartModel !== 'string' || cfg.smartModel.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.smartModel))) return false
   if (cfg.modelFast !== undefined && (typeof cfg.modelFast !== 'string' || cfg.modelFast.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelFast))) return false
@@ -1800,7 +1803,7 @@ ipcMain.handle('atriles:list', () => {
   let data = []
   try { if (fs.statSync(p).size <= 512_000) data = readJSON(p, []) } catch {}
   if (!Array.isArray(data)) data = []
-  data = data.filter(a => a && typeof a === 'object' && typeof a.name === 'string' && typeof a.path === 'string')
+  data = data.filter(a => a && typeof a === 'object' && typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) && typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))
   _atrilesCache = data
   return _atrilesCache
 })

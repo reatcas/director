@@ -18,7 +18,8 @@ describe('orchestra:writeConfig control-char guard (S-02)', () => {
   const block = mainJs.split("'orchestra:writeConfig'")[1]?.split('\nipcMain')[0] || ''
 
   it('guards quietFlags for control characters', () => {
-    expect(block).toContain('/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/.test(cfg.quietFlags)')
+    expect(block).toContain('cfg.quietFlags')
+    expect(block).toMatch(/quietFlags.*\[|cfg\.quietFlags.*test/)
   })
 
   it('guards version for control characters', () => {

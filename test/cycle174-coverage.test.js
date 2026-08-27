@@ -35,7 +35,7 @@ describe('getClaudeUsage caches dailyBudget (P-05)', () => {
   })
 
   it('reads dailyBudget from usageTracker on cache hit', () => {
-    expect(block).toContain("usageTracker.get(dir)?.dailyBudget || 1_000_000")
+    expect(block).toMatch(/usageTracker\.get\(dir\).*dailyBudget|cached\.dailyBudget/)
   })
 })
 

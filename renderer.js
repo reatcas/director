@@ -3151,11 +3151,13 @@ let _knCurrentFile = null
 async function loadKnowledge(file, btnId) {
   if (!current) return
 
+  const _knBtns = document.querySelectorAll('#knowledgeTab .tp-action')
   if (btnId) {
-    document.querySelectorAll('#knowledgeTab .tp-action').forEach(b => { b.classList.remove('warn'); b.setAttribute('aria-pressed', 'false') })
+    _knBtns.forEach(b => { b.classList.remove('warn'); b.setAttribute('aria-pressed', 'false') })
     const _knBtn = document.getElementById(btnId)
     if (_knBtn) { _knBtn.classList.add('warn'); _knBtn.setAttribute('aria-pressed', 'true') }
   }
+  _knBtns.forEach(b => { b.disabled = true })
 
   const el = document.getElementById('knowledgeContent')
   if (el) el.textContent = 'Cargando…'
@@ -3169,6 +3171,8 @@ async function loadKnowledge(file, btnId) {
     if (_knCurrentFile !== file) return
     _knCurrentFile = null
     if (el) el.textContent = `[Error al cargar: ${file}]`
+  } finally {
+    _knBtns.forEach(b => { b.disabled = false })
   }
 }
 
