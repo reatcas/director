@@ -1190,7 +1190,9 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
   if (mixes.length >= 100) return false
   mixes.push({ id: Date.now().toString(36), name: name.trim(), ts: new Date().toISOString(), focus })
-  writeJSON(p, mixes)
+  const _msSer = JSON.stringify(mixes)
+  if (_msSer.length > 512_000) return false
+  writeJSON(p, JSON.parse(_msSer))
   return true
 })
 
@@ -1209,6 +1211,7 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
 ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
   if (!isKnownProject(dir)) return null
   if (typeof id !== 'string' || id.length === 0 || id.length > 64) return null
+  if (!/^[0-9a-z]+$/.test(id)) return null
   const p = path.join(dir, '.claude/saved-mixes.json')
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
@@ -1223,7 +1226,7 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
   const p = path.join(dir, '.claude/mixer-history.json')
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
-  const n = typeof limit === 'number' && limit > 0 ? Math.min(limit, 500) : 50
+  const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 500) : 50
   return hist.slice(-n)
 })
 

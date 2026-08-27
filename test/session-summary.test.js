@@ -62,8 +62,8 @@ describe('mixer:history handler structure', () => {
     expect(block).toContain('readJSON(')
   })
 
-  it('validates limit as positive number', () => {
-    expect(block).toContain("typeof limit === 'number'")
+  it('validates limit as positive integer', () => {
+    expect(block).toContain('Number.isInteger(limit)')
     expect(block).toContain('limit > 0')
   })
 
