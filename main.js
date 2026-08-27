@@ -1203,7 +1203,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (cfg.agent !== undefined && !Object.keys(AI_DEFAULTS).includes(cfg.agent)) return false
   if (cfg.model !== undefined && (typeof cfg.model !== 'string' || cfg.model.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.model))) return false
   if (cfg.nice !== undefined && (!Number.isInteger(cfg.nice) || cfg.nice < -20 || cfg.nice > 19)) return false
-  if (cfg.claudeUsageBudget !== undefined && (typeof cfg.claudeUsageBudget !== 'number' || !Number.isFinite(cfg.claudeUsageBudget) || cfg.claudeUsageBudget < 0)) return false
+  if (cfg.claudeUsageBudget !== undefined && (typeof cfg.claudeUsageBudget !== 'number' || !Number.isFinite(cfg.claudeUsageBudget) || cfg.claudeUsageBudget < 0 || cfg.claudeUsageBudget > 100_000_000_000)) return false
   if (cfg.mode !== undefined && (typeof cfg.mode !== 'string' || !['improvement', 'product', 'auto', 'perpetual'].includes(cfg.mode))) return false
   if (cfg.maxIterations !== undefined && (!Number.isInteger(cfg.maxIterations) || cfg.maxIterations < 0 || cfg.maxIterations > 10000)) return false
   if (cfg.caveman !== undefined && typeof cfg.caveman !== 'boolean') return false
@@ -1346,6 +1346,7 @@ ipcMain.handle('metrics:session-summary', () => {
 ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   if (!isKnownProject(dir) || typeof logPath !== 'string' || !logPath.trim()) return ''
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(logPath)) return ''
+  if (!/^\.claude\/logs\/iter-[\w\-.]+\.log$/.test(logPath.trim())) return ''
   const fullPath = path.resolve(dir, logPath)
   if (!fullPath.startsWith(dir + path.sep) && fullPath !== dir) return ''
   try {
@@ -1988,7 +1989,8 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
 
   // Also generate initial ROADMAP.md from modules if none exists
   const roadmapPath = path.join(dir, 'ROADMAP.md')
-  if (!fs.existsSync(roadmapPath) && modules.length > 0) {
+  let _gbRmExists = false; try { fs.statSync(roadmapPath); _gbRmExists = true } catch {}
+  if (!_gbRmExists && modules.length > 0) {
     const roadmapLines = [
       '# ROADMAP',
       `> Auto-generated from Blueprint — ${ts}`,
@@ -2011,7 +2013,8 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
     try { const _rmSer = roadmapLines.join('\n'); fs.writeFileSync(roadmapPath, _rmSer.length > 512_000 ? _rmSer.slice(0, 512_000) : _rmSer) } catch {}
   }
 
-  return { brief, briefPath, roadmapGenerated: !fs.existsSync(roadmapPath) }
+  let _gbRmExists2 = false; try { fs.statSync(roadmapPath); _gbRmExists2 = true } catch {}
+  return { brief, briefPath, roadmapGenerated: !_gbRmExists2 }
 })
 
 const _readinessCache = new Map()

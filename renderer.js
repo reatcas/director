@@ -3158,9 +3158,11 @@ async function loadKnowledge(file, btnId) {
   try {
     const content = await window.director.readFile(current, file)
     if (_knCurrentFile !== file) return
+    _knCurrentFile = null
     if (el) el.textContent = content != null ? content : `[Archivo no encontrado: ${file}]`
   } catch {
     if (_knCurrentFile !== file) return
+    _knCurrentFile = null
     if (el) el.textContent = `[Error al cargar: ${file}]`
   }
 }
