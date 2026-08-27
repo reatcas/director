@@ -360,7 +360,7 @@ class ContextProtocol {
       fs.mkdirSync(telDir, { recursive: true })
       const file = path.join(telDir, 'context-metrics.json')
       let hist = []
-      try { hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
+      try { if (fs.statSync(file).size <= 1_048_576) hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
       hist.push(metrics)
       if (hist.length > 300) hist.splice(0, hist.length - 300)
       const tmp = file + '.tmp'

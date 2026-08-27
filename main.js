@@ -1246,7 +1246,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
 ipcMain.handle('orchestra:analyze', (_e, dir) => {
   if (!isKnownProject(dir)) return Promise.resolve({ report: 'No project selected', file: null })
   return new Promise(resolve => {
-    const read = f => { try { return fs.readFileSync(path.join(dir, f), 'utf8') } catch { return '' } }
+    const read = f => { try { const p = path.join(dir, f); if (fs.statSync(p).size > 1_048_576) return ''; return fs.readFileSync(p, 'utf8') } catch { return '' } }
     const started = read('.claude/RUN_STARTED').trim()
     execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000 }, (gitErr, gitOut) => {
       const commits = gitErr ? [] : (gitOut || '').trim().split('\n').filter(Boolean)
@@ -1363,7 +1363,8 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   if (live && live.lastDelta) return metricsSet('context:' + dir, live)
   // Read persisted telemetry if no live data
   const file = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
-  let hist = readJSON(file, [])
+  let hist = []
+  try { if (fs.statSync(file).size <= 1_048_576) hist = readJSON(file, []) } catch {}
   if (hist.length > 500) { hist = hist.slice(-500); try { writeJSON(file, hist) } catch {} }
   if (hist.length > 0) {
     const last = hist[hist.length - 1]

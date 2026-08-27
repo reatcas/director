@@ -70,7 +70,7 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('Escenario') || l.includes('Exportar') || l.includes('sesión') ||
       l.includes('Zona') || l.includes('soltar') ||
       l.includes('Cerrar') || l.includes('Copiar') || l.includes('Seleccionar') ||
-      l.includes('Refrescar')
+      l.includes('Refrescar') || l.includes('Característica') || l.includes('desarrollo')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })
