@@ -3,11 +3,11 @@
 ## MIXER BUDGET — Cycle 202 (backend BANNED C199+C200+C201 — NOT banned C202: no cat in all 3)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 3 | 0/3 |
-| security | 20 | 2 | 0/2 |
-| performance | 10 | 1 | 0/1 |
-| backend | 5 | 1 | 0/1 |
-| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 3/3 |
+| security | 20 | 2 | 2/2 |
+| performance | 10 | 1 | 1/1 |
+| backend | 5 | 1 | 1/1 |
+| frontend | 5 | 1 | 1/1 |
 | business_logic | 5 | 0 | SKIP |
 | ux_accessibility | 5 | 0 | SKIP |
 | data_db | 5 | 0 | SKIP |
