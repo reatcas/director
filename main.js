@@ -1436,6 +1436,8 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
   if (hit !== null) return hit
   const reportPath = path.join(dir, 'ORCHESTRA_REPORT.md')
   try {
+    const st = fs.statSync(reportPath)
+    if (st.size > 1_048_576) return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL)
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
     if (!lines.length) return null
     const recent = lines.slice(-10)

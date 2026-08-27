@@ -159,8 +159,9 @@ class ContextProtocol {
     for (const file of STATE_FILES) {
       const fp = path.join(dir, file)
 
-      let mtime = 0
-      try { mtime = fs.statSync(fp).mtimeMs } catch { continue }
+      let mtime = 0, fsize = 0
+      try { const st = fs.statSync(fp); mtime = st.mtimeMs; fsize = st.size } catch { continue }
+      if (fsize > 2_097_152) continue
       currMtimes[file] = mtime
 
       if (previous[file] && prevMtimes[file] === mtime) {

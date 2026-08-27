@@ -389,9 +389,9 @@
             <div id="rawLogOverlay">
               <div class="raw-bar">
                 <span>FULL LOG — PLAIN TEXT</span>
-                <button id="closeRawBtn" class="ms-copy">CLOSE</button>
-                <button id="copyRawBtn" class="ms-copy">COPY ALL</button>
-                <button id="selectAllRawBtn" class="ms-copy">SELECT ALL</button>
+                <button id="closeRawBtn" class="ms-copy" aria-label="Cerrar log completo">CLOSE</button>
+                <button id="copyRawBtn" class="ms-copy" aria-label="Copiar todo el log">COPY ALL</button>
+                <button id="selectAllRawBtn" class="ms-copy" aria-label="Seleccionar todo el log">SELECT ALL</button>
               </div>
               <pre id="rawLogContent"></pre>
             </div>
@@ -402,7 +402,7 @@
             <div class="procs-bar">
               <span class="section-icon">⚙</span>
               <span class="rack-title" style="color:var(--txt)">PROCESSES</span>
-              <button id="procsRefresh" class="ms-copy">↺</button>
+              <button id="procsRefresh" class="ms-copy" aria-label="Refrescar procesos">↺</button>
               <span id="procsCount" class="section-badge mono"></span>
             </div>
             <div id="procsList"></div>
