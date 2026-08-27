@@ -1153,6 +1153,8 @@ ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
   const fullPath = path.resolve(dir, logPath)
   if (!fullPath.startsWith(dir + path.sep) && fullPath !== dir) return ''
   try {
+    const stat = fs.statSync(fullPath)
+    if (stat.size > 1_048_576) return ''
     const content = fs.readFileSync(fullPath, 'utf8').trim()
     if (!content) return ''
     const lines = content.split('\n').filter(l => l.trim())
@@ -1330,7 +1332,8 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   if (live && live.lastDelta) return metricsSet('context:' + dir, live)
   // Read persisted telemetry if no live data
   const file = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
-  const hist = readJSON(file, [])
+  let hist = readJSON(file, [])
+  if (hist.length > 500) { hist = hist.slice(-500); try { writeJSON(file, hist) } catch {} }
   if (hist.length > 0) {
     const last = hist[hist.length - 1]
     let totalProcessed = 0, totalSaved = 0

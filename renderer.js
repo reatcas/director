@@ -410,6 +410,9 @@ async function refresh() {
     const li = document.createElement('li')
     li.className = (current === p.path ? 'sel ' : '') + (p.running ? 'live' : '')
     li.setAttribute('aria-label', `Proyecto ${esc(p.name)}${p.running ? ', activo' : ''}`)
+    li.setAttribute('tabindex', '0')
+    li.setAttribute('role', 'listitem')
+    li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(p.path) } }
     const stallMin = p.running ? getStallMinutes(p.path) : 0
     const stallBadge = stallMin >= 20 ? `<span class="stall-badge" title="${esc(String(stallMin))}min sin commits" aria-label="${esc(String(stallMin))} minutos sin commits">${esc(String(stallMin))}m</span>` : ''
     li.innerHTML = `<span class="led"></span>
