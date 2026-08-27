@@ -58,7 +58,8 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('compresión') || l.includes('contexto') || l.includes('memoria') ||
       l.includes('Mezcla') || l.includes('Blueprint') || l.includes('Notas') ||
       l.includes('conocimiento') || l.includes('Paneles') || l.includes('mezclador') ||
-      l.includes('AI') || l.includes('provider') || l.includes('model')
+      l.includes('AI') || l.includes('provider') || l.includes('model') ||
+      l.includes('Agregar') || l.includes('proyecto')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })

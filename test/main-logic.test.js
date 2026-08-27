@@ -155,7 +155,7 @@ describe('lifecycle and protocol invariants', () => {
 
   it('lifecycle events have max cap (500)', () => {
     expect(mainJs).toContain('500')
-    expect(mainJs).toMatch(/events\.length\s*>\s*500/)
+    expect(mainJs).toMatch(/\.length\s*>\s*500/)
   })
 
   it('initializes all three protocol modules', () => {

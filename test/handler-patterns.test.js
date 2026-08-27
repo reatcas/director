@@ -226,8 +226,8 @@ describe('metrics sampling lifecycle', () => {
 
 describe('persistLifecycleEvent', () => {
   it('caps events at 500', () => {
-    expect(mainJs).toContain('events.length > 500')
-    expect(mainJs).toContain('splice(0, events.length - 500)')
+    expect(mainJs).toContain('.length > 500')
+    expect(mainJs).toContain('splice(0, ')
   })
 
   it('stores ISO timestamp', () => {

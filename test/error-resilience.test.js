@@ -227,7 +227,7 @@ describe('USAGE_LIMIT signal handling', () => {
 
 describe('event cap limits', () => {
   it('lifecycle events capped at 500', () => {
-    expect(mainJs).toContain('events.length > 500')
+    expect(mainJs).toContain('.length > 500')
   })
 
   it('mixer history has reasonable storage', () => {

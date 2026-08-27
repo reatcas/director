@@ -1047,6 +1047,8 @@ ipcMain.handle('mixer:read',  (_e, dir) => {
 })
 ipcMain.handle('mixer:write', (_e, dir, focus) => {
   if (!isKnownProject(dir)) return false
+  if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
+  if (Object.values(focus).some(v => typeof v !== 'number' || v < 0 || v > 100)) return false
   const p = path.join(dir, '.claude/orchestra.json')
   const cfg = readJSON(p, { version: '2.0.0' })
   cfg.focus = focus
@@ -1116,7 +1118,7 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
 ipcMain.handle('mixer:history', (_e, dir, limit) => {
   if (!isKnownProject(dir)) return []
   const hist = readJSON(path.join(dir, '.claude/mixer-history.json'), [])
-  const n = typeof limit === 'number' && limit > 0 ? limit : 50
+  const n = typeof limit === 'number' && limit > 0 ? Math.min(limit, 500) : 50
   return hist.slice(-n)
 })
 
@@ -1269,9 +1271,11 @@ function persistLifecycleEvent(dir, type, label, message) {
     if (!_lifecycleDirReady.has(logDir)) { fs.mkdirSync(logDir, { recursive: true }); _lifecycleDirReady.add(logDir) }
     const file = path.join(logDir, 'lifecycle-events.json')
     const events = readJSON(file, [])
-    events.push({ ts: new Date().toISOString(), type, label, message })
-    if (events.length > 500) events.splice(0, events.length - 500)
-    writeJSON(file, events)
+    const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000
+    const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
+    pruned.push({ ts: new Date().toISOString(), type, label, message })
+    if (pruned.length > 500) pruned.splice(0, pruned.length - 500)
+    writeJSON(file, pruned)
   } catch {}
 }
 
@@ -1285,6 +1289,7 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
   if (!isKnownProject(dir)) return false
   if (typeof type !== 'string' || typeof label !== 'string' || typeof message !== 'string') return false
   if (type.length > 64 || label.length > 128 || message.length > 1024) return false
+  if (!/^[\w\-]+$/.test(type)) return false
   persistLifecycleEvent(dir, type, label, message)
   return true
 })
@@ -1509,7 +1514,7 @@ ipcMain.handle('system:claude-procs', () => {
 })
 
 ipcMain.handle('system:kill-proc', (_e, pid, signal = 'SIGTERM') => {
-  if (!pid || pid === process.pid) return { ok: false, err: 'invalid pid' }
+  if (typeof pid !== 'number' || !Number.isInteger(pid) || pid <= 0 || pid === process.pid) return { ok: false, err: 'invalid pid' }
   const allowed = ['SIGTERM', 'SIGKILL']
   if (!allowed.includes(signal)) return { ok: false, err: 'signal not allowed' }
   try {
