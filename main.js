@@ -1249,10 +1249,15 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
 // ─── Telemetry / Metrics IPC ──────────────────────────────────────────────────
 const _metricsCache = new Map()
 const _METRICS_TTL = 2_000
+const _METRICS_EVICT_AGE = 30_000
 function metricsGet(key) {
   const c = _metricsCache.get(key); return c && Date.now() - c.ts < _METRICS_TTL ? c.val : null
 }
 function metricsSet(key, val) { _metricsCache.set(key, { ts: Date.now(), val }); return val }
+setInterval(() => {
+  const cutoff = Date.now() - _METRICS_EVICT_AGE
+  for (const [k, v] of _metricsCache) { if (v.ts < cutoff) _metricsCache.delete(k) }
+}, _METRICS_EVICT_AGE).unref()
 
 ipcMain.handle('metrics:resource', (_e, dir) => {
   if (!isKnownProject(dir)) return null
