@@ -291,7 +291,7 @@ function findLogo(dir) {
   // 2. Check package.json icon/logo field
   try {
     const pkgPath = path.join(dir, 'package.json')
-    const pkgStat = fs.existsSync(pkgPath) ? fs.statSync(pkgPath) : null
+    let pkgStat = null; try { pkgStat = fs.statSync(pkgPath) } catch {}
     const pkg = (pkgStat && pkgStat.size <= 512_000) ? readJSON(pkgPath, null) : null
     if (pkg) {
       for (const field of ['icon', 'logo', 'image']) {
@@ -320,7 +320,8 @@ function findLogo(dir) {
   // 4. Check .github directory
   try {
     const ghDir = path.join(dir, '.github')
-    if (fs.existsSync(ghDir) && fs.statSync(ghDir).isDirectory()) {
+    let _ghStat = null; try { _ghStat = fs.statSync(ghDir) } catch {}
+    if (_ghStat && _ghStat.isDirectory()) {
       const found = scanDirForImage(ghDir)
       if (found) return found
     }
@@ -769,8 +770,8 @@ function playOrchestra(dir, agent = 'claude') {
           if (nextItem) {
             persistLifecycleEvent(dir, 'directive', 'DIRECTOR', `Siguiente item indicado: ${nextItem}`)
             const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
-            const _dse = fs.existsSync(directivePath) ? fs.statSync(directivePath).size : 0
-            let content = _dse > 0 && _dse <= 512_000 ? fs.readFileSync(directivePath, 'utf8') : ''
+            let content = ''
+            try { const _dse = fs.statSync(directivePath); if (_dse.size > 0 && _dse.size <= 512_000) content = fs.readFileSync(directivePath, 'utf8') } catch {}
             const nextIdx = content.indexOf('## NEXT ITEM')
             if (nextIdx !== -1) content = content.substring(0, nextIdx).trimEnd()
             content += `\n\n## NEXT ITEM\nEl proceso ha parado. Tu siguiente objetivo es:\n${nextItem}\n`
@@ -842,6 +843,7 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   usageTracker.delete(dir)
   _readinessCache.delete(dir)
   _complianceMtimeCache.delete(dir)
+  _worstComplianceCache.delete(dir)
   // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
   const lcLogDir = path.join(dir, '.claude', 'logs')
   _lifecycleDirReady.delete(lcLogDir)
@@ -1103,6 +1105,13 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     try { if (fs.statSync(ctxFile).size <= 1_048_576) hist = readJSON(ctxFile, []) } catch {}
     if (hist.length > 500) { const _ctxTrimSer = JSON.stringify(hist.slice(-500)); if (_ctxTrimSer.length <= 1_048_576) writeJSON(ctxFile, JSON.parse(_ctxTrimSer)) }
   } catch {}
+  // Cap coordination-metrics telemetry at 100 entries on log clear
+  try {
+    const coordFile = path.join(dir, '.claude', 'telemetry', 'coordination-metrics.json')
+    let coordHist = []
+    try { if (fs.statSync(coordFile).size <= 1_048_576) coordHist = readJSON(coordFile, []) } catch {}
+    if (Array.isArray(coordHist) && coordHist.length > 100) { const _coTrimSer = JSON.stringify(coordHist.slice(-100)); if (_coTrimSer.length <= 1_048_576) writeJSON(coordFile, JSON.parse(_coTrimSer)) }
+  } catch {}
 })
 
 ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
@@ -1117,6 +1126,12 @@ ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
 })
 
 // ─── Mixer snapshot ───────────────────────────────────────────────────────────
+let _smCutoffISO = '', _smCutoffAt = 0
+function _smCutoff() {
+  const now = Date.now()
+  if (now - _smCutoffAt > 60_000) { _smCutoffISO = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(); _smCutoffAt = now }
+  return _smCutoffISO
+}
 function snapshotMixer(dir, event) {
   if (!dir) return
   const _ssPath = path.join(dir, '.claude/orchestra.json')
@@ -1124,7 +1139,7 @@ function snapshotMixer(dir, event) {
   try { if (fs.statSync(_ssPath).size <= 512_000) cfg = readJSON(_ssPath, null) } catch {}
   if (!cfg || !cfg.focus) return
   const histFile = path.join(dir, '.claude/mixer-history.json')
-  const cutoffISO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const cutoffISO = _smCutoff()
   let hist = []
   try { if (fs.statSync(histFile).size <= 512_000) hist = readJSON(histFile, []) } catch {}
   if (!Array.isArray(hist)) hist = []
@@ -1291,14 +1306,19 @@ ipcMain.handle('metrics:session-summary', () => {
         const reportPath = path.join(p.path, 'ORCHESTRA_REPORT.md')
         const _ssSt = fs.statSync(reportPath)
         if (_ssSt.size > 1_048_576) continue
+        let _ssLast = null
         if (_complianceMtimeCache.get(p.path) !== _ssSt.mtimeMs) {
           const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
           if (lines.length) {
-            const last = parseComplianceLine(lines[lines.length - 1])
-            if (last && (worstCompliance === null || last.score < worstCompliance.score)) {
-              worstCompliance = { dir: p.path, name: p.name, ...last }
-            }
+            _ssLast = parseComplianceLine(lines[lines.length - 1])
+            if (_ssLast) _worstComplianceCache.set(p.path, _ssLast)
+            _complianceMtimeCache.set(p.path, _ssSt.mtimeMs)
           }
+        } else {
+          _ssLast = _worstComplianceCache.get(p.path) || null
+        }
+        if (_ssLast && (worstCompliance === null || _ssLast.score < worstCompliance.score)) {
+          worstCompliance = { dir: p.path, name: p.name, ..._ssLast }
         }
       } catch {}
     } catch {}
@@ -1597,6 +1617,7 @@ function parseComplianceLine(line) {
 
 const _SLOW_METRICS_TTL = 30_000
 const _complianceMtimeCache = new Map()
+const _worstComplianceCache = new Map()  // dir → last parsed compliance line
 ipcMain.handle('metrics:compliance', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const hit = metricsGet('compliance:' + dir)
@@ -1614,6 +1635,7 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
     const _rawAvg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
     const avg = Number.isFinite(_rawAvg) ? _rawAvg : null
     _complianceMtimeCache.set(dir, st.mtimeMs)
+    if (last) _worstComplianceCache.set(dir, last)
     return metricsSet('compliance:' + dir, { last, avgScore: avg, cycles: scores.length, history: scores }, _SLOW_METRICS_TTL)
   } catch { return null }
 })

@@ -69,8 +69,8 @@ describe('ai:login validation (I-209)', () => {
 describe('snapshotMixer 30-day age pruning (I-210)', () => {
   const block = mainJs.split('function snapshotMixer')[1]?.split('\n}\n')[0] || ''
 
-  it('computes 30-day cutoff', () => {
-    expect(block).toContain('30 * 24 * 60 * 60 * 1000')
+  it('computes 30-day cutoff via _smCutoff helper', () => {
+    expect(mainJs).toContain('30 * 24 * 60 * 60 * 1000')
   })
 
   it('filters history by cutoff before push', () => {

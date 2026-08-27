@@ -49,9 +49,9 @@ describe('nextAvailableAi robustness (cycle 115)', () => {
 describe('snapshotMixer age-based pruning (cycle 115)', () => {
   const block = mainJs.split('function snapshotMixer')[1]?.split('\n}\n')[0] || ''
 
-  it('computes 30-day cutoff on every call', () => {
+  it('uses _smCutoff() for 30-day cutoff', () => {
     expect(block).toContain('cutoffISO')
-    expect(block).toContain('30 * 24 * 60 * 60 * 1000')
+    expect(block).toContain('_smCutoff()')
   })
 
   it('filters history array before push', () => {
@@ -90,6 +90,6 @@ describe('metrics:session-summary completeness', () => {
 
   it('identifies worst compliance project', () => {
     expect(block).toContain('worstCompliance')
-    expect(block).toContain('last.score < worstCompliance.score')
+    expect(block).toContain('worstCompliance.score')
   })
 })

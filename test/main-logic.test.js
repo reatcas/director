@@ -232,7 +232,7 @@ describe('F-18: session summary IPC', () => {
   it('finds worst compliance across projects', () => {
     const block = mainJs.split("'metrics:session-summary'")[1]?.split('ipcMain')[0] || ''
     expect(block).toContain('worstCompliance')
-    expect(block).toContain('last.score < worstCompliance.score')
+    expect(block).toContain('worstCompliance.score')
   })
 
   it('returns structured summary object', () => {

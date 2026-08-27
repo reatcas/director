@@ -1239,6 +1239,9 @@ async function loadMixes() {
   mixes.forEach(m => {
     const card = document.createElement('div')
     card.className = 'mix-card'
+    card.setAttribute('role', 'button')
+    card.setAttribute('tabindex', '0')
+    card.setAttribute('aria-label', `Cargar mezcla ${esc(m.name)}`)
     const _mDate = m.ts && typeof m.ts === 'string' ? new Date(m.ts) : null
     const date = (_mDate && !isNaN(_mDate)) ? _mDate.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
     const ribbon = buildMixRibbon(m.focus)
@@ -2446,7 +2449,7 @@ function updateComplianceDisplay(data) {
   }
   const score = data.last ? data.last.score : data.avgScore
   if (score === null) { el.textContent = '—'; el.className = 'mm-val'; renderSparkline($('#complianceSpark'), null); return }
-  el.textContent = score + '%' + (data.cycles > 1 ? ` (${data.cycles}c)` : '')
+  el.textContent = score + '%' + (Number.isFinite(data.cycles) && data.cycles > 1 ? ` (${data.cycles}c)` : '')
   el.className = 'mm-val ' + (score >= 90 ? 'ok' : score >= 70 ? 'warn' : 'bad')
   renderSparkline($('#complianceSpark'), data.history)
 }

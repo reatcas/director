@@ -21,11 +21,11 @@ describe('persistLifecycleEvent size guard (I-321)', () => {
 
 describe('exit handler directivePath size guard (I-322)', () => {
   it('exit handler guards directivePath at 512KB', () => {
-    expect(mainJs).toContain('_dse <= 512_000')
+    expect(mainJs).toContain('_dse.size <= 512_000')
   })
 
   it('uses statSync pattern for directive read', () => {
-    expect(mainJs).toContain('_dse > 0 && _dse <= 512_000')
+    expect(mainJs).toContain('_dse.size > 0 && _dse.size <= 512_000')
   })
 })
 

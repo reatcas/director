@@ -1,27 +1,27 @@
-# Cycle 179 Plan — IMPROVEMENT MODE
+# Cycle 180 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 179 (performance BANNED: 3 consecutive)
+## MIXER BUDGET — Cycle 180 (security + quality_tests BANNED: 3 consecutive each)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
+| performance | 10 | 3 | 0/3 |
 | backend | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
-| performance | 10 | BANNED | — |
-| ux_accessibility | 5 | 0 | SKIP |
-| business_logic | 5 | 0 | SKIP |
-| data_db | 5 | 0 | SKIP |
+| ux_accessibility | 5 | 1 | 0/1 |
+| business_logic | 5 | 1 | 0/1 |
+| data_db | 5 | 1 | 0/1 |
+| security | 20 | BANNED | — |
+| quality_tests | 35 | BANNED | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] S-05 — atriles:save: description field lacks control-char guard
-2. [security] S-06 — atriles:save: icon field lacks control-char guard
-3. [backend] I-537 — mixer:saved:list: _defaultMixesCache items need object+string id type guard before merge
-4. [frontend] I-538 — loadRoadmapFreshness: clamp staleHours with Math.max(0, ...) to prevent negative display
-5. [quality_tests] T-08 — test C179: S-05 atriles description control-char guard
-6. [quality_tests] T-09 — test C179: S-06 atriles icon control-char guard
-7. [quality_tests] T-10 — test C179: I-537 _defaultMixesCache type guard + I-538 staleHours clamp
-8. [quality_tests] T-11 — test C179: atriles:save icon length guard still present + mix:saved:list merge cap
+1. [performance] P-11 — findLogo line 294: pkgStat existsSync+statSync → single statSync try/catch
+2. [performance] P-12 — findLogo line 323: ghDir existsSync+statSync → single statSync try/catch
+3. [performance] P-13 — exit handler line 772: directivePath existsSync+statSync → single statSync try/catch
+4. [backend] I-539 — metrics:session-summary: add _worstComplianceCache to fix worstCompliance gap when mtime matches
+5. [frontend] I-540 — updateComplianceDisplay: guard data.cycles with Number.isFinite before rendering
+6. [ux_accessibility] I-541 — loadMixes mix-card: add role="button" + tabindex="0" for keyboard accessibility
+7. [business_logic] I-542 — snapshotMixer: cache 30-day cutoff ISO with _smCutoff() helper (same pattern as _lcCutoff)
+8. [data_db] I-543 — orchestra:clearLog: add pruning of coordination-metrics.json (keep last 100 entries)
 
 ## Stats
-- 3664 tests at cycle start
+- 3670 tests at cycle start

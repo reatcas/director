@@ -34,7 +34,7 @@ describe('session-summary handler structure', () => {
 
   it('tracks worst compliance score', () => {
     expect(block).toContain('worstCompliance')
-    expect(block).toContain('last.score < worstCompliance.score')
+    expect(block).toContain('worstCompliance.score')
   })
 
   it('includes project name in worst compliance', () => {
