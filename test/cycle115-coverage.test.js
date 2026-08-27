@@ -33,7 +33,7 @@ describe('lifecycle:add null byte rejection (I-217)', () => {
   })
 
   it('still enforces type allowlist', () => {
-    expect(block).toContain('/^[\\w\\-]+$/')
+    expect(block).toMatch(/\/\^\[\\w\\-\]\+\$\/|_LC_TYPES/)
   })
 })
 

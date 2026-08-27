@@ -184,6 +184,20 @@ const writeJSON = (p, o) => {
   fs.renameSync(tmp, p)
 }
 
+// ─── orchestra.json read cache (2s TTL) ──────────────────────────────────────
+const _orchJsonCache = new Map()
+function readOrchJson(dir, fb = {}) {
+  const now = Date.now()
+  const hit = _orchJsonCache.get(dir)
+  if (hit && now - hit.ts < 2_000) return hit.data
+  const p = path.join(dir, '.claude/orchestra.json')
+  let data = fb
+  try { if (fs.statSync(p).size <= 512_000) data = readJSON(p, fb) } catch {}
+  _orchJsonCache.set(dir, { data, ts: now })
+  return data
+}
+function _invalidateOrchJson(dir) { _orchJsonCache.delete(dir) }
+
 // ─── PID helpers ──────────────────────────────────────────────────────────────
 function pidAlive(pid) {
   try { process.kill(pid, 0); return true } catch { return false }
@@ -341,19 +355,28 @@ function findLogo(dir) {
   return null
 }
 
+// ─── Logo cache (30s TTL — findLogo does 10+ FS ops per call) ────────────────
+const _logoCache = new Map()
+function cachedFindLogo(dir) {
+  const now = Date.now()
+  const hit = _logoCache.get(dir)
+  if (hit && now - hit.ts < 30_000) return hit.logo
+  const logo = findLogo(dir)
+  _logoCache.set(dir, { logo, ts: now })
+  return logo
+}
+
 // ─── Project info ─────────────────────────────────────────────────────────────
 function projectInfo(dir) {
   const has = f => { try { fs.statSync(path.join(dir, f)); return true } catch { return false } }
   const installed = has('run.sh') && has('.claude/commands/loop.md')
   const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
   const version = installed ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : null
-  const _piPath = path.join(dir, '.claude/orchestra.json')
-  let mixer = null
-  try { if (fs.statSync(_piPath).size <= 512_000) mixer = readJSON(_piPath, null) } catch {}
+  const mixer = readOrchJson(dir, null)
   const running = isRunning(dir)
   const usageLimited = has(USAGE_LIMIT_SIGNAL)
   const alto = has('.claude/ALTO')
-  const logo = findLogo(dir)
+  const logo = cachedFindLogo(dir)
   const hasLogs = has('.claude/logs/orchestra-stdout.log') || has('.claude/logs/orchestra.log')
   
   const startFile = path.join(dir, '.claude/RUN_STARTED')
@@ -419,10 +442,10 @@ function getClaudeUsage(dir) {
     iterCount = 0
     totalBytes = 0
     try {
-      const files = fs.readdirSync(logDir).filter(f => f.startsWith('iter-') && f.endsWith('.log'))
+      const files = fs.readdirSync(logDir, { withFileTypes: true }).filter(e => e.isFile() && e.name.startsWith('iter-') && e.name.endsWith('.log'))
       for (const f of files) {
         try {
-          const st = fs.statSync(path.join(logDir, f))
+          const st = fs.statSync(path.join(logDir, f.name))
           if (runStarted && st.mtimeMs >= runStarted) {
             iterCount++
             totalBytes += st.size
@@ -430,9 +453,7 @@ function getClaudeUsage(dir) {
         } catch {}
       }
     } catch {}
-    const _guPath = path.join(dir, '.claude/orchestra.json')
-    let _guCfg = {}
-    try { if (fs.statSync(_guPath).size <= 512_000) _guCfg = readJSON(_guPath, {}) } catch {}
+    const _guCfg = readOrchJson(dir)
     _dailyBudget = (typeof _guCfg.claudeUsageBudget === 'number' && Number.isFinite(_guCfg.claudeUsageBudget) && _guCfg.claudeUsageBudget > 0) ? _guCfg.claudeUsageBudget : 1_000_000
     usageTracker.set(dir, { runStarted, iterCount, totalBytes, lastScan: now, dailyBudget: _dailyBudget })
   }
@@ -454,9 +475,7 @@ function startMetricsSampling(dir) {
     // Sample process resources
     scheduler.sampleProcess(dir)
     // Compute context delta
-    const _smPath = path.join(dir, '.claude/orchestra.json')
-    let cfg = {}
-    try { if (fs.statSync(_smPath).size <= 512_000) cfg = readJSON(_smPath, {}) } catch {}
+    const cfg = readOrchJson(dir)
     contextProto.computeDelta(dir, cfg.focus || {})
     // Push metrics to renderer
     if (win) {
@@ -570,9 +589,7 @@ function playOrchestra(dir, agent = 'claude') {
   fs.mkdirSync(sharedMem, { recursive: true })
 
   // ── Resource allocation from mixer weights ──────────────────────────────
-  const _poPath = path.join(dir, '.claude/orchestra.json')
-  let cfg = {}
-  try { if (fs.statSync(_poPath).size <= 512_000) cfg = readJSON(_poPath, {}) } catch {}
+  const cfg = readOrchJson(dir)
   const focus = cfg.focus || {}
   const allocation = scheduler.computeAllocation(dir, focus)
 
@@ -1109,7 +1126,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const _lcClearCutoffISO = _lcCutoff()
     let events = []
     try { if (fs.statSync(lcFile).size <= 2_097_152) events = readJSON(lcFile, []) } catch {}
-    const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO)
+    let pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO)
+    if (pruned.length > 300) pruned = pruned.slice(-300)
     const _prSer = JSON.stringify(pruned)
     if (pruned.length < events.length && _prSer.length <= 2_097_152) writeJSON(lcFile, pruned)
   } catch {}
@@ -1156,9 +1174,7 @@ function _smCutoff() {
 }
 function snapshotMixer(dir, event) {
   if (!dir) return
-  const _ssPath = path.join(dir, '.claude/orchestra.json')
-  let cfg = null
-  try { if (fs.statSync(_ssPath).size <= 512_000) cfg = readJSON(_ssPath, null) } catch {}
+  const cfg = readOrchJson(dir, null)
   if (!cfg || !cfg.focus) return
   const histFile = path.join(dir, '.claude/mixer-history.json')
   const cutoffISO = _smCutoff()
@@ -1179,9 +1195,7 @@ function snapshotMixer(dir, event) {
 
 ipcMain.handle('mixer:read',  (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  const _mrPath = path.join(dir, '.claude/orchestra.json')
-  let cfg = null
-  try { if (fs.statSync(_mrPath).size <= 512_000) cfg = readJSON(_mrPath, null) } catch {}
+  let cfg = readOrchJson(dir, null)
   if (cfg && cfg.focus && typeof cfg.focus === 'object') {
     const _mrFocus = {}
     for (const k of Object.keys(cfg.focus)) { if (_VALID_CATS.has(k) && Number.isFinite(cfg.focus[k])) _mrFocus[k] = cfg.focus[k] }
@@ -1203,6 +1217,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   if (_mwSer.length <= 512_000) writeJSON(p, JSON.parse(_mwSer))
   coordinator.invalidateConflictCache()
   _metricsCache.delete('allocation:' + dir)
+  _invalidateOrchJson(dir)
   return true
 })
 
@@ -1238,6 +1253,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   }
   const p = path.join(dir, '.claude/orchestra.json')
   writeJSON(p, JSON.parse(serialized))
+  _invalidateOrchJson(dir)
   return true
 })
 
@@ -1501,7 +1517,7 @@ function persistLifecycleEvent(dir, type, label, message) {
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
     const _evMsg = typeof message === 'string' ? message.slice(0, 4096) : String(message).slice(0, 4096)
     pruned.push({ ts: new Date().toISOString(), type: _evType, label: _evLabel, message: _evMsg })
-    if (pruned.length > 500) pruned.splice(0, pruned.length - 500)
+    if (pruned.length > 300) pruned.splice(0, pruned.length - 300)
     let _lcSer = JSON.stringify(pruned)
     if (_lcSer.length > 2_097_152) {
       pruned.splice(0, pruned.length - 100)
@@ -1511,25 +1527,29 @@ function persistLifecycleEvent(dir, type, label, message) {
   } catch {}
 }
 
-ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter) => {
+ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   if (!isKnownProject(dir)) return []
   const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : 200
   const _llType = typeof typeFilter === 'string' && /^[\w\-]+$/.test(typeFilter) ? typeFilter : null
+  const _llBefore = typeof before === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : null
   const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
   if (!Array.isArray(events)) events = []
   events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string')
   const _llUnfilteredTotal = events.length
+  if (_llBefore) events = events.filter(e => e.ts < _llBefore)
   if (_llType) events = events.filter(e => e.type === _llType)
   return { events: events.slice(-_llLimit), total: events.length, unfilteredTotal: _llUnfilteredTotal }
 })
 
+const _LC_TYPES = new Set(['play', 'fine', 'kill', 'commit', 'exit', 'usage_limit', 'directive', 'auto_resume', 'error', 'note', 'cycle_close', 'feature'])
 ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
   if (!isKnownProject(dir)) return false
   if (typeof type !== 'string' || typeof label !== 'string' || typeof message !== 'string') return false
   if (type.length > 64 || label.length > 128 || message.length > 1024) return false
-  if (!/^[\w\-]+$/.test(type)) return false
+  if (label.trim().length === 0) return false
+  if (!_LC_TYPES.has(type)) return false
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(label) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(message)) return false
   persistLifecycleEvent(dir, type, label, message)
   return true
@@ -1555,9 +1575,7 @@ ipcMain.handle('metrics:resource', (_e, dir) => {
   const live = scheduler.getMetrics(dir)
   if (live && live.allocation) return metricsSet('resource:' + dir, live)
   // Compute allocation from current mixer weights on demand
-  const _cfgPath = path.join(dir, '.claude/orchestra.json')
-  let cfg = {}
-  try { if (fs.statSync(_cfgPath).size <= 512_000) cfg = readJSON(_cfgPath, {}) } catch {}
+  const cfg = readOrchJson(dir)
   if (cfg.focus) {
     const alloc = scheduler.computeAllocation(dir, cfg.focus)
     return metricsSet('resource:' + dir, { allocation: alloc, baseline: null, lastSample: null, efficiency: null, sampleCount: 0 })
@@ -1602,20 +1620,16 @@ ipcMain.handle('metrics:coordination', () => {
 
 ipcMain.handle('metrics:snapshot', (_e, dir) => {
   if (!isKnownProject(dir)) return null
-  const _snapPath = path.join(dir, '.claude/orchestra.json')
-  let cfg = {}
-  try { if (fs.statSync(_snapPath).size <= 512_000) cfg = readJSON(_snapPath, {}) } catch {}
-  return contextProto.computeDelta(dir, cfg.focus || {})
+  return contextProto.computeDelta(dir, readOrchJson(dir).focus || {})
 })
 
 ipcMain.handle('metrics:allocation', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const hit = metricsGet('allocation:' + dir)
   if (hit !== null) return hit
-  const _maPath = path.join(dir, '.claude/orchestra.json')
-  let cfg = {}
-  try { if (fs.statSync(_maPath).size <= 512_000) cfg = readJSON(_maPath, {}) } catch {}
-  return metricsSet('allocation:' + dir, scheduler.computeAllocation(dir, cfg.focus || {}))
+  const cfg = readOrchJson(dir)
+  const _maFocus = cfg.focus && typeof cfg.focus === 'object' ? Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0)) : {}
+  return metricsSet('allocation:' + dir, scheduler.computeAllocation(dir, _maFocus))
 })
 
 ipcMain.handle('metrics:claude-usage', (_e, dir) => {
@@ -2053,7 +2067,7 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
     ready: missing.length === 0,
     missing,
     hasBlueprint: true,
-    completeness: bp.completeness || 0,
+    completeness: Number.isFinite(bp.completeness) ? Math.min(100, Math.max(0, bp.completeness)) : 0,
     sessions: (bp.sessions || []).length,
     modules: (bp.modules || []).length,
     answeredFields: Object.keys(a).filter(k => typeof a[k] === 'string' && a[k].trim()).length

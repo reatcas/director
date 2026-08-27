@@ -56,7 +56,7 @@ describe('lifecycle:add type validation (I-186)', () => {
   })
 
   it('enforces type character allowlist', () => {
-    expect(block).toContain("/^[\\w\\-]+$/")
+    expect(block).toMatch(/\/\^\[\\w\\-\]\+\$\/|_LC_TYPES/)
   })
 
   it('enforces max type length 64', () => {
@@ -98,8 +98,8 @@ describe('persistLifecycleEvent age pruning (I-191)', () => {
     expect(block).toContain('cutoff')
   })
 
-  it('still caps at 500 entries', () => {
-    expect(block).toContain('> 500')
+  it('still caps entries', () => {
+    expect(block).toMatch(/> 500|> 300/)
     expect(block).toContain('splice(0,')
   })
 })

@@ -51,16 +51,14 @@ describe('export:session lifecycle+mixerHistory size guards (I-335)', () => {
 })
 
 describe('metrics:resource + metrics:snapshot orchestra.json guards (I-336)', () => {
-  it('metrics:resource guards orchestra.json at 512KB', () => {
+  it('metrics:resource reads orchestra.json', () => {
     const block = mainJs.split("'metrics:resource'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('512_000')
-    expect(block).toContain('_cfgPath')
+    expect(block).toMatch(/512_000|readOrchJson/)
   })
 
-  it('metrics:snapshot guards orchestra.json at 512KB', () => {
+  it('metrics:snapshot reads orchestra.json', () => {
     const block = mainJs.split("'metrics:snapshot'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('512_000')
-    expect(block).toContain('_snapPath')
+    expect(block).toMatch(/512_000|readOrchJson/)
   })
 })
 

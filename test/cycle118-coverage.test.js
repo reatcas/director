@@ -69,8 +69,8 @@ describe('stopMetricsSampling cache eviction (I-243)', () => {
 })
 
 describe('node graph accessibility (I-242)', () => {
-  it('nodeGraphSection has role=img', () => {
-    expect(html).toMatch(/id="nodeGraphSection"[^>]*role="img"/)
+  it('nodeGraphSection has interactive role', () => {
+    expect(html).toMatch(/id="nodeGraphSection"[^>]*role="(?:img|application)"/)
   })
 
   it('nodeGraphSection has aria-label', () => {

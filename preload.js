@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld('director', {
   mixerHistory:    (p, n) => ipcRenderer.invoke('mixer:history', p, n),
   sessionSummary:  ()     => ipcRenderer.invoke('metrics:session-summary'),
   // Lifecycle events
-  lifecycleList:       (p, limit, typeFilter)  => ipcRenderer.invoke('lifecycle:list', p, limit, typeFilter),
+  lifecycleList:       (p, limit, typeFilter, before)  => ipcRenderer.invoke('lifecycle:list', p, limit, typeFilter, before),
   lifecycleAdd:        (p, t, l, m) => ipcRenderer.invoke('lifecycle:add', p, t, l, m),
   // Telemetry / Metrics
   metricsResource:     p       => ipcRenderer.invoke('metrics:resource', p),

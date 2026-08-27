@@ -2939,9 +2939,11 @@ async function loadLifecycleTimeline() {
   }
 
   const recent = events.slice(-50)
-  if (countEl) countEl.textContent = String(total)
+  const _unfTotal = res?.unfilteredTotal ?? total
+  if (countEl) countEl.textContent = String(_unfTotal)
 
-  el.innerHTML = recent.map(ev => {
+  const _hint = _unfTotal > recent.length ? `<div class="lc-hint" aria-label="${_unfTotal - recent.length} eventos anteriores disponibles">+ ${_unfTotal - recent.length} anteriores</div>` : ''
+  el.innerHTML = _hint + recent.map(ev => {
     const d = new Date(ev.ts)
     const ts = isNaN(d.getTime()) ? ev.ts.slice(0, 16) : d.toLocaleTimeString('es', { hour12: false }) + ' ' + d.toLocaleDateString('es', { day: '2-digit', month: 'short' })
     const icon = LC_ICONS[ev.type] || '·'
@@ -3243,8 +3245,10 @@ applyTheme(getStoredTheme())
 if ($('#settingsBtn')) $('#settingsBtn').onclick = () => {
   const _sm = $('#settingsModal'); if (!_sm) return
   $('#settingsModal').hidden = false; loadSettings()
-  const _sf = _sm.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-  if (_sf) _sf.focus()
+  requestAnimationFrame(() => {
+    const _sf = _sm.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+    if (_sf) _sf.focus()
+  })
 }
 if ($('#closeSettings')) $('#closeSettings').onclick = () => { $('#settingsModal').hidden = true; const _stBtn = $('#settingsBtn'); if (_stBtn) _stBtn.focus() }
 if ($('#settingsModal')) $('#settingsModal').onclick = e => { if (e.target === $('#settingsModal')) { $('#settingsModal').hidden = true; const _stBtn = $('#settingsBtn'); if (_stBtn) _stBtn.focus() } }

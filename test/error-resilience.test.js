@@ -69,9 +69,9 @@ describe('try-catch error handling', () => {
     expect(safe).toBe(true)
   })
 
-  it('mixer:read uses readJSON with fallback', () => {
+  it('mixer:read uses readJSON or readOrchJson with fallback', () => {
     const handler = mainJs.split("'mixer:read'")[1]?.split('ipcMain.handle')[0] || ''
-    expect(handler).toContain('readJSON')
+    expect(handler).toMatch(/readJSON|readOrchJson/)
   })
 })
 

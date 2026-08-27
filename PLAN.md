@@ -1,27 +1,27 @@
-# Cycle 195 Plan — IMPROVEMENT MODE
+# Cycle 196 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 195 (performance BANNED C192+C193+C194, business_logic BANNED C192+C193+C194)
+## MIXER BUDGET — Cycle 196 (security BANNED C193+C194+C195, quality_tests BANNED C193+C194+C195)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
+| performance | 10 | 3 | 0/3 |
 | backend | 5 | 1 | 0/1 |
 | frontend | 5 | 1 | 0/1 |
-| performance | 10 | 0 | BANNED (C192+C193+C194) |
-| business_logic | 5 | 0 | BANNED (C192+C193+C194) |
-| ux_accessibility | 5 | 0 | SKIP |
-| data_db | 5 | 0 | SKIP |
+| business_logic | 5 | 1 | 0/1 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| data_db | 5 | 1 | 0/1 |
+| security | 20 | 0 | BANNED (C193+C194+C195) |
+| quality_tests | 35 | 0 | BANNED (C193+C194+C195) |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] S-29 — lifecycle:add: add label/message trim-length check (non-empty after trim)
-2. [security] S-30 — blueprint:readiness: clamp completeness with Number.isFinite guard
-3. [backend] I-574 — metrics:allocation: guard cfg.focus values as finite numbers before computeAllocation
-4. [frontend] I-573 — settingsModal: add requestAnimationFrame focus to first element on open
-5. [quality_tests] T-49 — test C195: S-29 lifecycle trim check
-6. [quality_tests] T-50 — test C195: S-30 completeness guard
-7. [quality_tests] T-51 — test C195: I-574 allocation finite guard
-8. [quality_tests] T-52 — test C195: I-573 settingsModal focus
+1. [performance] P-31 — readOrchJson(dir, fb): 2s TTL cache for orchestra.json reads across metrics handlers
+2. [performance] P-32 — getClaudeUsage iter-log scan: readdirSync withFileTypes to filter isFile() before name check
+3. [performance] P-33 — _projectInfoCache: 5s TTL Map cache for projectInfo(dir) result to reduce repeated FS work on repertoire:list polls
+4. [backend] I-575 — lifecycle:list: add `before` ISO timestamp cursor for paginated history loading
+5. [frontend] I-576 — loadLifecycleTimeline: show "+ N anteriores" hint when unfilteredTotal > events.length
+6. [business_logic] D-06 — lifecycle:add: validate type against _LC_TYPES allowlist
+7. [ux_accessibility] A-13 — #nodeGraphSection: role="img" → role="application" + tabindex="0" + aria-roledescription
+8. [data_db] DB-01 — persistLifecycleEvent: reduce max cap 500→300; update clearLog trim to match
 
 ## Stats
-- 3739 tests at cycle start
+- 3743 tests at cycle start

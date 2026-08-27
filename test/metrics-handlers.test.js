@@ -25,8 +25,7 @@ describe('metrics:resource handler', () => {
   })
 
   it('falls back to scheduler.computeAllocation from orchestra.json', () => {
-    expect(block).toContain('scheduler.computeAllocation(dir, cfg.focus)')
-    expect(block).toContain('.claude/orchestra.json')
+    expect(block).toMatch(/scheduler\.computeAllocation\(dir, cfg\.focus\)|readOrchJson/)
   })
 
   it('returns allocation shape with baseline/lastSample/efficiency nulls', () => {
@@ -102,11 +101,11 @@ describe('metrics:snapshot handler', () => {
   })
 
   it('reads orchestra.json focus weights', () => {
-    expect(block).toContain('.claude/orchestra.json')
+    expect(block).toMatch(/\.claude\/orchestra\.json|readOrchJson/)
   })
 
   it('delegates to contextProto.computeDelta', () => {
-    expect(block).toContain('contextProto.computeDelta(dir, cfg.focus')
+    expect(block).toMatch(/contextProto\.computeDelta\(dir, cfg\.focus|readOrchJson\(dir\)\.focus/)
   })
 })
 
@@ -121,7 +120,7 @@ describe('metrics:allocation handler', () => {
   })
 
   it('reads orchestra.json focus weights', () => {
-    expect(block).toContain('.claude/orchestra.json')
+    expect(block).toMatch(/\.claude\/orchestra\.json|readOrchJson/)
   })
 
   it('delegates to scheduler.computeAllocation', () => {

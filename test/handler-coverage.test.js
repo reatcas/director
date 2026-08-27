@@ -66,11 +66,11 @@ describe('mixer:read handler', () => {
   })
 
   it('reads orchestra.json from project dir', () => {
-    expect(block).toContain('.claude/orchestra.json')
+    expect(block).toMatch(/\.claude\/orchestra\.json|readOrchJson/)
   })
 
   it('returns null fallback for missing config', () => {
-    expect(block).toContain(', null)')
+    expect(block).toMatch(/,\s*null\)|readOrchJson\(dir, null\)/)
   })
 })
 
