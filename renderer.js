@@ -459,7 +459,7 @@ async function loadSessionSummary() {
   if (!el) return
   try {
     const s = await window.director.sessionSummary()
-    if (!s || typeof s !== 'object') { el.textContent = ''; return }
+    if (!s || typeof s !== 'object') { el.innerHTML = '<span class="ss-item"><span class="ss-val">—</span><span>sin datos</span></span>'; return }
     const tokK = s.totalTokens > 0 ? (s.totalTokens / 1000).toFixed(1) + 'k' : '—'
     const total = typeof s.total === 'number' ? s.total : (s.active || 0) + (s.idle || 0)
     const worstScore = s.worstCompliance?.score != null ? String(Math.round(s.worstCompliance.score)) + '%' : '—'

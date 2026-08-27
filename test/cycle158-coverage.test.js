@@ -7,8 +7,6 @@ const mainJs = fs.readFileSync(path.join(ROOT, 'main.js'), 'utf8')
 const rendererJs = fs.readFileSync(path.join(ROOT, 'renderer.js'), 'utf8')
 
 describe('allocation write size cap (I-464)', () => {
-  const block = mainJs.split('current-allocation.json')[0]?.split('\n').slice(-5).join('\n') + mainJs.split('current-allocation.json')[1]?.split('\n').slice(0, 3).join('\n') || ''
-
   it('serializes allocation via _allocSer before writing', () => {
     expect(mainJs).toContain('_allocSer')
     expect(mainJs).toContain('JSON.stringify(allocation)')

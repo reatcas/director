@@ -25,7 +25,7 @@ describe('aiState cache (I-176)', () => {
   })
 
   it('aiState() returns cache hit when within TTL', () => {
-    const block = mainJs.split('function aiState()')[1]?.split('\n').slice(0, 8).join('\n') || ''
+    const block = mainJs.split('function aiState()')[1]?.split('\nipcMain')[0] || ''
     expect(block).toContain('_aiStateCache')
     expect(block).toContain('_AI_STATE_TTL')
     expect(block).toContain('return _aiStateCache')

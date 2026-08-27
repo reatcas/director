@@ -466,7 +466,7 @@ function getClaudeUsage(dir) {
     iterCount = 0
     totalBytes = 0
     try {
-      const files = fs.readdirSync(logDir, { withFileTypes: true }).filter(e => e.isFile() && e.name.startsWith('iter-') && e.name.endsWith('.log'))
+      const files = fs.readdirSync(logDir, { withFileTypes: true }).filter(e => e.isFile() && /^iter-[\w\-.]+\.log$/.test(e.name))
       for (const f of files) {
         try {
           const st = fs.statSync(path.join(logDir, f.name))
@@ -1315,7 +1315,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   const p = path.join(dir, '.claude/orchestra.json')
   writeJSON(p, JSON.parse(serialized))
   _invalidateOrchJson(dir)
-  if (cfg.focus) { _metricsCache.delete('allocation:' + dir); _metricsCache.delete('resource:' + dir) }
+  if (cfg.focus) { _metricsCache.delete('allocation:' + dir); _metricsCache.delete('resource:' + dir); _metricsCache.delete('snapshot:' + dir) }
   return true
 })
 
@@ -1659,7 +1659,7 @@ const _metricsCache = new Map()
 const _METRICS_TTL = 2_000
 const _METRICS_EVICT_AGE = 30_000
 function metricsGet(key) {
-  const c = _metricsCache.get(key); return c && Date.now() - c.ts < (c.ttl || _METRICS_TTL) ? c.val : null
+  const c = _metricsCache.get(key); return c && Date.now() - c.ts < (c.ttl ?? _METRICS_TTL) ? c.val : null
 }
 function metricsSet(key, val, ttl = _METRICS_TTL) { _metricsCache.set(key, { ts: Date.now(), val, ttl }); return val }
 setInterval(() => {
@@ -2035,7 +2035,7 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
   const modules = bp.modules || []
   const sessions = bp.sessions || []
   const ts = new Date().toISOString()
-  const _bpInline = s => typeof s === 'string' ? s.replace(/[\r\n]+/g, ' ').slice(0, 200) : ''
+  const _bpInline = s => typeof s === 'string' ? s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').replace(/[\r\n]+/g, ' ').slice(0, 200) : ''
 
   // Generate comprehensive brief for the orchestra's first cycle
   const lines = [

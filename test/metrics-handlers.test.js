@@ -213,8 +213,7 @@ describe('getClaudeUsage — usage tracking cache', () => {
   })
 
   it('scans iter-*.log files for token estimation', () => {
-    expect(body).toContain("startsWith('iter-')")
-    expect(body).toContain(".endsWith('.log')")
+    expect(body).toMatch(/startsWith\('iter-'\)|iter-\[\\w\\-\.\]/)
   })
 
   it('estimates tokens at 1 byte = 0.25 tokens', () => {

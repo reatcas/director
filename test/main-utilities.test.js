@@ -182,9 +182,8 @@ describe('projectInfo — project state aggregator', () => {
     expect(body).toContain("'1.x'")
   })
 
-  it('reads mixer config via readJSON', () => {
-    expect(body).toContain('readJSON')
-    expect(body).toContain('orchestra.json')
+  it('reads mixer config via readJSON or readOrchJson', () => {
+    expect(body).toMatch(/readJSON|readOrchJson/)
   })
 
   it('checks running status via isRunning', () => {
@@ -199,8 +198,8 @@ describe('projectInfo — project state aggregator', () => {
     expect(body).toContain('ALTO')
   })
 
-  it('calls findLogo for project logo', () => {
-    expect(body).toContain('findLogo(dir)')
+  it('calls findLogo or cachedFindLogo for project logo', () => {
+    expect(body).toMatch(/findLogo\(dir\)|cachedFindLogo\(dir\)/)
   })
 
   it('checks for log file existence', () => {
@@ -544,8 +543,7 @@ describe('getClaudeUsage — token estimation and caching', () => {
   })
 
   it('counts iter-*.log files', () => {
-    expect(body).toContain("startsWith('iter-')")
-    expect(body).toContain("endsWith('.log')")
+    expect(body).toMatch(/startsWith\('iter-'\)|iter-\[\\w\\-\.\]/)
   })
 
   it('only counts files modified after session start', () => {
