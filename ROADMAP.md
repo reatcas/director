@@ -146,3 +146,10 @@
 - [x] **I-111** mixer-graph + three-timer-shim test coverage — 98 new tests for two zero-coverage browser modules.
 - [x] **I-112** Validate lifecycle:add dir + input types/lengths — prevent arbitrary path writes via isKnownProject guard.
 - [x] **I-113** Extend isKnownProject guard to notes:write + lifecycle:list — close remaining dir-validation gaps.
+- [x] **I-114** Add isKnownProject guard to notes:read — prevent arbitrary file reads.
+- [x] **I-115** Cache isKnownProject store reads — version counter invalidated on repertoire:add/remove.
+- [x] **I-116** Test export:session handler structure — 0-coverage handler now documented with 15 tests.
+- [x] **I-117** Test notes:read/write handler pair — validation, atomic write, lifecycle event.
+- [x] **I-118** Test isKnownProject cache — invalidation on add/remove, cachedProjects() lazy load.
+- [x] **I-119** Restore focus-visible ring on outline:none elements — #aiSelect, .chat-field, .bp-input.
+- [x] **I-120** isKnownProject guard to export:session, mixer:history, mixer:saved:* — 5 handlers secured.

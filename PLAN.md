@@ -1,14 +1,26 @@
-# Cycle 103 Plan — IMPROVEMENT MODE (security + quality_tests)
+# Cycle 104 Plan — IMPROVEMENT MODE
 
-## Budget (from mixer)
-product=30%(all done, F-01 HARNESS-blocked) security=10% quality_tests=15% backend=10% perf=5%
+## MIXER BUDGET — Cycle 104
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 1 | 0/1 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| frontend | 5 | FROZEN | — |
+Total: 7 units — IMPROVEMENT MODE (ROADMAP all done, F-01 HARNESS-blocked)
 
-## Units completed
-1. [quality_tests] I-111 — mixer-graph + three-timer-shim 98 new tests ✅
-2. [security] I-112 — validate lifecycle:add dir + input types/lengths ✅
-3. [security] I-113 — isKnownProject guard to notes:write + lifecycle:list ✅
+## Units
+1. [backend] I-114 — add isKnownProject guard to notes:read (info disclosure gap) ✅
+2. [performance] I-115 — cache isKnownProject store reads with version counter ✅
+3. [quality_tests] I-116 — test export:session handler structure (0 coverage) ✅
+4. [quality_tests] I-117 — test notes:read/write handler pair + validation ✅
+5. [quality_tests] I-118 — test isKnownProject edge cases + handler-level validation ✅
+6. [ux_accessibility] I-119 — focus-visible ring restored on outline:none elements ✅
+7. [security] I-120 — validate dir in export:session + mixer:history + mixer:saved:* ✅
 
 ## Stats
-- 2794 tests passing (was 2688 at session start)
-- +106 tests added this cycle
-- 3 security vulnerabilities closed
+- 2827 tests passing (was 2794 at cycle start)
+- +33 tests added this cycle
+- 6 more IPC handlers secured with isKnownProject
