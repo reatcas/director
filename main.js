@@ -1258,9 +1258,9 @@ const _metricsCache = new Map()
 const _METRICS_TTL = 2_000
 const _METRICS_EVICT_AGE = 30_000
 function metricsGet(key) {
-  const c = _metricsCache.get(key); return c && Date.now() - c.ts < _METRICS_TTL ? c.val : null
+  const c = _metricsCache.get(key); return c && Date.now() - c.ts < (c.ttl || _METRICS_TTL) ? c.val : null
 }
-function metricsSet(key, val) { _metricsCache.set(key, { ts: Date.now(), val }); return val }
+function metricsSet(key, val, ttl = _METRICS_TTL) { _metricsCache.set(key, { ts: Date.now(), val, ttl }); return val }
 setInterval(() => {
   const cutoff = Date.now() - _METRICS_EVICT_AGE
   for (const [k, v] of _metricsCache) { if (v.ts < cutoff) _metricsCache.delete(k) }
@@ -1351,8 +1351,11 @@ function parseComplianceLine(line) {
   return { categories, drift, tests, score, totalPlanned, totalActual }
 }
 
+const _SLOW_METRICS_TTL = 30_000
 ipcMain.handle('metrics:compliance', (_e, dir) => {
   if (!isKnownProject(dir)) return null
+  const hit = metricsGet('compliance:' + dir)
+  if (hit !== null) return hit
   const reportPath = path.join(dir, 'ORCHESTRA_REPORT.md')
   try {
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
@@ -1361,21 +1364,23 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
     const scores = recent.map(l => parseComplianceLine(l)).filter(Boolean).map(c => c.score)
     const last = parseComplianceLine(recent[recent.length - 1])
     const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
-    return { last, avgScore: avg, cycles: scores.length, history: scores }
+    return metricsSet('compliance:' + dir, { last, avgScore: avg, cycles: scores.length, history: scores }, _SLOW_METRICS_TTL)
   } catch { return null }
 })
 
 ipcMain.handle('metrics:roadmap-freshness', (_e, dir) => {
   if (!isKnownProject(dir)) return null
+  const hit = metricsGet('freshness:' + dir)
+  if (hit !== null) return hit
   const roadmapPath = path.join(dir, 'ROADMAP.md')
   if (!fs.existsSync(roadmapPath)) return { exists: false }
   const mtime = fs.statSync(roadmapPath).mtimeMs
   return new Promise(resolve => {
     execFile('git', ['-C', dir, 'log', '-1', '--format=%ct'], (err, stdout) => {
-      if (err || !stdout.trim()) return resolve({ exists: true, mtime, isStale: false })
+      if (err || !stdout.trim()) return resolve(metricsSet('freshness:' + dir, { exists: true, mtime, isStale: false }, _SLOW_METRICS_TTL))
       const lastCommitMs = parseInt(stdout.trim(), 10) * 1000
       const staleHours = Math.round((lastCommitMs - mtime) / 3_600_000)
-      resolve({ exists: true, mtime, lastCommit: lastCommitMs, staleHours, isStale: staleHours > 24 && lastCommitMs > mtime })
+      resolve(metricsSet('freshness:' + dir, { exists: true, mtime, lastCommit: lastCommitMs, staleHours, isStale: staleHours > 24 && lastCommitMs > mtime }, _SLOW_METRICS_TTL))
     })
   })
 })
