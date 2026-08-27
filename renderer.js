@@ -363,9 +363,9 @@ function updateTransportButtons() {
   const agent = $('#aiSelect')?.value
   const credit = aiCredits[agent]
   if (!p || !p.installed) {
-    if (playBtn) { playBtn.classList.add('disabled'); playBtn.innerHTML = '▶' }
-    if (fineBtn) { fineBtn.classList.add('disabled'); fineBtn.innerHTML = '◼' }
-    if (killBtn) { killBtn.classList.add('disabled'); killBtn.innerHTML = '✕' }
+    if (playBtn) { playBtn.classList.add('disabled'); playBtn.setAttribute('aria-disabled', 'true'); playBtn.innerHTML = '▶' }
+    if (fineBtn) { fineBtn.classList.add('disabled'); fineBtn.setAttribute('aria-disabled', 'true'); fineBtn.innerHTML = '◼' }
+    if (killBtn) { killBtn.classList.add('disabled'); killBtn.setAttribute('aria-disabled', 'true'); killBtn.innerHTML = '✕' }
     return
   }
 
@@ -373,13 +373,14 @@ function updateTransportButtons() {
   const isActive = p.running || orchestraState === 'interpreting' || orchestraState === 'started'
 
   if (isActive) {
-    if (playBtn) { playBtn.classList.add('disabled'); playBtn.innerHTML = '▶' }
-    if (fineBtn) { fineBtn.classList.remove('disabled'); fineBtn.innerHTML = '◼' }
-    if (killBtn) { killBtn.classList.remove('disabled'); killBtn.innerHTML = '✕' }
+    if (playBtn) { playBtn.classList.add('disabled'); playBtn.setAttribute('aria-disabled', 'true'); playBtn.innerHTML = '▶' }
+    if (fineBtn) { fineBtn.classList.remove('disabled'); fineBtn.setAttribute('aria-disabled', 'false'); fineBtn.innerHTML = '◼' }
+    if (killBtn) { killBtn.classList.remove('disabled'); killBtn.setAttribute('aria-disabled', 'false'); killBtn.innerHTML = '✕' }
   } else {
-    if (playBtn) { playBtn.classList.toggle('disabled', !agent || !credit); playBtn.innerHTML = '▶' }
-    if (fineBtn) { fineBtn.classList.add('disabled'); fineBtn.innerHTML = '◼' }
-    if (killBtn) { killBtn.classList.add('disabled'); killBtn.innerHTML = '✕' }
+    const playDisabled = !agent || !credit
+    if (playBtn) { playBtn.classList.toggle('disabled', playDisabled); playBtn.setAttribute('aria-disabled', String(playDisabled)); playBtn.innerHTML = '▶' }
+    if (fineBtn) { fineBtn.classList.add('disabled'); fineBtn.setAttribute('aria-disabled', 'true'); fineBtn.innerHTML = '◼' }
+    if (killBtn) { killBtn.classList.add('disabled'); killBtn.setAttribute('aria-disabled', 'true'); killBtn.innerHTML = '✕' }
   }
 }
 
@@ -412,6 +413,7 @@ async function refresh() {
     li.setAttribute('aria-label', `Proyecto ${esc(p.name)}${p.running ? ', activo' : ''}`)
     li.setAttribute('tabindex', '0')
     li.setAttribute('role', 'listitem')
+    if (current === p.path) li.setAttribute('aria-current', 'true')
     li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(p.path) } }
     const stallMin = p.running ? getStallMinutes(p.path) : 0
     const stallBadge = stallMin >= 20 ? `<span class="stall-badge" title="${esc(String(stallMin))}min sin commits" aria-label="${esc(String(stallMin))} minutos sin commits">${esc(String(stallMin))}m</span>` : ''
@@ -3065,16 +3067,7 @@ if ($('#atrilSaveBtn')) $('#atrilSaveBtn').onclick = async () => {
 
 // ─── Mixer Tab Switching ─────────────────────────────────────────────────────
 document.querySelectorAll('.mixer-tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.mixer-tab').forEach(x => x.classList.remove('on'))
-    document.querySelectorAll('.mixer-tab-pane').forEach(x => x.classList.remove('on'))
-    t.classList.add('on')
-    const pane = document.getElementById(t.dataset.mtab)
-    if (pane) pane.classList.add('on')
-    if (t.dataset.mtab === 'bpTab') bpLoad()
-    if (t.dataset.mtab === 'knowledgeTab') loadKnowledge('ROADMAP.md', 'knBtnRoadmap')
-    if (t.dataset.mtab === 'notesTab') loadNotes()
-  })
+  t.addEventListener('click', () => switchTab(t.dataset.mtab))
 })
 
 async function loadKnowledge(file, btnId) {

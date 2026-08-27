@@ -1074,7 +1074,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     let events = []
     try { if (fs.statSync(lcFile).size <= 2_097_152) events = readJSON(lcFile, []) } catch {}
     const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
-    if (pruned.length < events.length) writeJSON(lcFile, pruned)
+    const _prSer = JSON.stringify(pruned)
+    if (pruned.length < events.length && _prSer.length <= 2_097_152) writeJSON(lcFile, pruned)
   } catch {}
   // Cap context-metrics telemetry at 500 entries
   try {
@@ -1108,9 +1109,11 @@ function snapshotMixer(dir, event) {
   let hist = []
   try { if (fs.statSync(histFile).size <= 512_000) hist = readJSON(histFile, []) } catch {}
   hist = hist.filter(h => new Date(h.ts).getTime() >= cutoffMs)
-  hist.push({ ts: new Date().toISOString(), event, focus: { ...cfg.focus } })
+  const _ssEvent = typeof event === 'string' ? event.slice(0, 64) : 'unknown'
+  hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: { ...cfg.focus } })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
-  writeJSON(histFile, hist)
+  const _mhSer = JSON.stringify(hist)
+  if (_mhSer.length <= 512_000) writeJSON(histFile, hist)
 }
 
 ipcMain.handle('mixer:read',  (_e, dir) => {
@@ -1390,11 +1393,13 @@ function persistLifecycleEvent(dir, type, label, message) {
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
     const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000
     const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
+    const _evType = typeof type === 'string' ? type.slice(0, 64) : 'unknown'
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
     const _evMsg = typeof message === 'string' ? message.slice(0, 4096) : String(message).slice(0, 4096)
-    pruned.push({ ts: new Date().toISOString(), type, label: _evLabel, message: _evMsg })
+    pruned.push({ ts: new Date().toISOString(), type: _evType, label: _evLabel, message: _evMsg })
     if (pruned.length > 500) pruned.splice(0, pruned.length - 500)
-    writeJSON(file, pruned)
+    const _lcSer = JSON.stringify(pruned)
+    if (_lcSer.length <= 2_097_152) writeJSON(file, pruned)
   } catch {}
 }
 
