@@ -50,7 +50,7 @@ describe('aiState invalidation coverage (I-179)', () => {
   })
 
   it('invalidates cache when aiState itself detects dirty state', () => {
-    const aiBlock = mainJs.split('function aiState()')[1]?.split('\n').slice(0, 30).join('\n') || ''
+    const aiBlock = mainJs.split('function aiState()')[1]?.split('\nipcMain')[0] || ''
     expect(aiBlock).toContain('invalidateAiStateCache()')
   })
 

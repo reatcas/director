@@ -1277,6 +1277,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   coordinator.invalidateConflictCache()
   _metricsCache.delete('allocation:' + dir)
   _metricsCache.delete('resource:' + dir)
+  _metricsCache.delete('snapshot:' + dir)
   _invalidateOrchJson(dir)
   return true
 })
@@ -1358,6 +1359,7 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   if (!Array.isArray(mixes)) mixes = []
   mixes = mixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object')
   if (mixes.length >= 100) return false
+  if (mixes.some(m => m.name.trim().toLowerCase() === name.trim().toLowerCase())) return false
   mixes.push({ id: Date.now().toString(36), name: name.trim(), ts: new Date().toISOString(), focus })
   const _msSer = JSON.stringify(mixes)
   if (_msSer.length > 512_000) return false
@@ -1535,7 +1537,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
   return new Promise(resolve => {
     const read = f => { try { const p = path.join(dir, f); if (fs.statSync(p).size > 1_048_576) return ''; return fs.readFileSync(p, 'utf8') } catch { return '' } }
     const started = read('.claude/RUN_STARTED').trim().slice(0, 64)
-    execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000 }, (gitErr, gitOut) => {
+    execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000, maxBuffer: 262_144 }, (gitErr, gitOut) => {
       const commits = gitErr ? [] : (gitOut || '').trim().split('\n').filter(Boolean)
       const cat = {}
       for (const c of commits) {
@@ -1835,8 +1837,9 @@ ipcMain.handle('orchestra:version-check', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const _vcHit = metricsGet('version-check:' + dir)
   if (_vcHit !== null) return _vcHit
-  const bundled = (() => { try { const p = path.join(orchestraSrc(), '.claude/ORCHESTRA_VERSION'); return fs.statSync(p).size <= 1024 ? fs.readFileSync(p, 'utf8').trim() : null } catch { return null } })()
-  const project = (() => { try { const p = path.join(dir, '.claude/ORCHESTRA_VERSION'); return fs.statSync(p).size <= 1024 ? fs.readFileSync(p, 'utf8').trim() : null } catch { return null } })()
+  const _vcSanitize = s => s ? s.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) : null
+  const bundled = _vcSanitize((() => { try { const p = path.join(orchestraSrc(), '.claude/ORCHESTRA_VERSION'); return fs.statSync(p).size <= 1024 ? fs.readFileSync(p, 'utf8').trim() : null } catch { return null } })())
+  const project = _vcSanitize((() => { try { const p = path.join(dir, '.claude/ORCHESTRA_VERSION'); return fs.statSync(p).size <= 1024 ? fs.readFileSync(p, 'utf8').trim() : null } catch { return null } })())
   return metricsSet('version-check:' + dir, { bundled, project, needsUpgrade: !!(bundled && project && bundled !== project) }, _SLOW_METRICS_TTL)
 })
 
