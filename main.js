@@ -1604,7 +1604,12 @@ const customAtrilesFile = () => path.join(app.getPath('userData'), 'custom-atril
 
 let _atrilesCache = null
 ipcMain.handle('atriles:list', () => {
-  return _atrilesCache || (_atrilesCache = readJSON(customAtrilesFile(), []))
+  if (_atrilesCache) return _atrilesCache
+  const p = customAtrilesFile()
+  let data = []
+  try { if (fs.statSync(p).size <= 512_000) data = readJSON(p, []) } catch {}
+  _atrilesCache = data
+  return _atrilesCache
 })
 
 ipcMain.handle('atriles:save', (_e, atriles) => {
@@ -1635,6 +1640,9 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false
   if (data.answers && typeof data.answers === 'object') {
     if (Object.values(data.answers).some(v => typeof v === 'string' && v.length > 2000)) return false
+  }
+  if (data.modules && Array.isArray(data.modules)) {
+    if (data.modules.some(m => !m || typeof m !== 'object' || typeof m.name !== 'string' || m.name.length > 256)) return false
   }
   const serialized = JSON.stringify(data)
   if (serialized.length > 512_000) return false

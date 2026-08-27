@@ -76,7 +76,7 @@
         <span class="settings-label">ORCHESTRA</span>
         <div class="settings-row">
           <span class="settings-key">Caveman mode</span>
-          <label class="stg-switch"><input type="checkbox" id="stgCaveman" checked><span class="stg-slider"></span></label>
+          <label class="stg-switch"><input type="checkbox" id="stgCaveman" checked aria-label="Alternar modo caveman"><span class="stg-slider"></span></label>
         </div>
         <div class="settings-row">
           <span class="settings-key">Compact at (%)</span>
@@ -191,7 +191,7 @@
   <!-- COMMAND PALETTE (F-24) -->
   <div id="cmdPalette" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Paleta de comandos">
     <div class="modal-card" style="width:400px">
-      <input id="cmdInput" type="text" class="mix-import-field mono" placeholder="Buscar proyecto o acción…" style="width:100%;font-size:13px;padding:10px" autofocus>
+      <input id="cmdInput" type="text" class="mix-import-field mono" placeholder="Buscar proyecto o acción…" style="width:100%;font-size:13px;padding:10px" autofocus aria-label="Buscar en Paleta de comandos">
       <div id="cmdResults" style="max-height:240px;overflow-y:auto;margin-top:8px"></div>
     </div>
   </div>
@@ -461,7 +461,7 @@
           <div id="mixesHeader">
             <span class="rack-title" style="color:var(--txt)">SAVED MIXES</span>
             <div id="mixesImport">
-              <input id="mixImportInput" type="text" placeholder="Paste JSON…" class="mix-import-field mono">
+              <input id="mixImportInput" type="text" placeholder="Paste JSON…" class="mix-import-field mono" aria-label="Importar mezclas en formato JSON">
               <button id="mixImportBtn" class="tp-action" aria-label="Importar mezcla desde JSON">IMPORT</button>
             </div>
           </div>
@@ -477,7 +477,7 @@
           <div id="mixesEmpty" class="mixes-empty" hidden><span>No saved mixes yet.</span></div>
           <div id="mixerStrips" class="mixer-strips-v"></div>
           <div id="mixerFooter">
-            <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:100px">
+            <input type="text" id="mixNameInput" placeholder="Name…" class="mix-import-field mono" style="width:100px" aria-label="Nombre de mezclas personalizado">
             <button id="saveMixer" class="tp-action" aria-label="Guardar mezcla">SAVE</button>
             <button id="addAtrilBtn" class="tp-action" title="Add custom stand" aria-label="Agregar stand personalizado">+ STAND</button>
             <button id="exportMixesBtn" class="tp-action dim" title="Export all mixes to JSON" aria-label="Exportar mezclas">↥</button>
@@ -493,9 +493,9 @@
             <div id="bpReadiness" class="mono" style="display:none;font-size:9px;white-space:nowrap;padding:3px 8px;border-radius:3px;border:1px solid rgba(255,255,255,0.06)"></div>
           </div>
           <div id="bpChat" class="bp-chat">
-            <div id="bpMessages" class="bp-messages"></div>
+            <div id="bpMessages" class="bp-messages" role="log" aria-live="polite" aria-label="Respuestas de Blueprint al orquestador" aria-atomic="false"></div>
             <div class="bp-input-area">
-              <input id="bpInput" type="text" class="bp-input mono" placeholder="Type your answer…" autocomplete="off">
+              <input id="bpInput" type="text" class="bp-input mono" placeholder="Type your answer…" autocomplete="off" aria-label="Respuesta de Blueprint al orquestador">
               <button id="bpSend" class="bp-send" aria-label="Guardar respuesta de blueprint">→</button>
               <button id="bpSkip" class="bp-skip" title="Skip question" aria-label="Sin respuesta — omitir pregunta">SKIP</button>
             </div>

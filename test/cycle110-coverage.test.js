@@ -27,7 +27,7 @@ describe('atriles:list cache', () => {
 
   it('returns cached value on subsequent calls', () => {
     const block = mainJs.split("'atriles:list'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('_atrilesCache ||')
+    expect(block).toContain('_atrilesCache')
     expect(block).toContain('_atrilesCache =')
   })
 

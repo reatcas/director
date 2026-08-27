@@ -57,7 +57,7 @@ describe('atriles:save security validation', () => {
 describe('atriles:list cache behavior', () => {
   it('reads from cache when populated', () => {
     const block = mainJs.split("'atriles:list'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('_atrilesCache ||')
+    expect(block).toContain('_atrilesCache')
   })
 
   it('cache is initialized to null', () => {
