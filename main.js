@@ -800,6 +800,7 @@ ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
 })
 
 ipcMain.handle('orchestra:install', (_e, dir) => {
+  if (!isKnownProject(dir)) return null
   copyDir(orchestraSrc(), dir)
   try { fs.chmodSync(path.join(dir, 'run.sh'), 0o755) } catch {}
   const hooks = path.join(dir, '.claude/hooks')
