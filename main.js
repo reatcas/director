@@ -991,6 +991,14 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
       files.slice(0, files.length - 5).forEach(f => { try { fs.unlinkSync(path.join(claudeDir, f)) } catch {} })
     }
   } catch {}
+  // Prune lifecycle events older than 90 days
+  try {
+    const lcFile = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
+    const cutoff = Date.now() - 90 * 24 * 3_600_000
+    const events = readJSON(lcFile, [])
+    const pruned = events.filter(e => new Date(e.ts).getTime() >= cutoff)
+    if (pruned.length < events.length) writeJSON(lcFile, pruned)
+  } catch {}
 })
 
 ipcMain.handle('orchestra:tail', (_e, dir) => {
