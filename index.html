@@ -10,7 +10,7 @@
 <body>
 
   <!-- ABOUT MODAL -->
-  <div id="aboutModal" class="modal-overlay" hidden>
+  <div id="aboutModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Acerca de Director">
     <div class="modal-card about-card">
       <button id="closeAbout" class="modal-close" aria-label="Cerrar">✕</button>
       <div class="about-hero">
@@ -53,7 +53,7 @@
   </div>
 
   <!-- SETTINGS MODAL -->
-  <div id="settingsModal" class="modal-overlay" hidden>
+  <div id="settingsModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Configuración">
     <div class="modal-card" style="width:480px;max-height:80vh;overflow-y:auto">
       <button id="closeSettings" class="modal-close" aria-label="Cerrar">✕</button>
       <h2 class="modal-title" style="font-size:14px">SETTINGS</h2>
@@ -146,7 +146,7 @@
   </div>
 
   <!-- CUSTOM ATRIL MODAL -->
-  <div id="atrilModal" class="modal-overlay" hidden>
+  <div id="atrilModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Nuevo stand">
     <div class="modal-card" style="width:400px">
       <button id="closeAtrilModal" class="modal-close" aria-label="Cerrar">✕</button>
       <h2 class="modal-title" style="font-size:13px">NEW STAND</h2>
@@ -167,7 +167,7 @@
   </div>
 
   <!-- SHORTCUTS MODAL (F-24) -->
-  <div id="shortcutsModal" class="modal-overlay" hidden>
+  <div id="shortcutsModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Atajos de teclado">
     <div class="modal-card" style="width:440px;max-height:70vh;overflow-y:auto">
       <button id="closeShortcuts" class="modal-close" aria-label="Cerrar">✕</button>
       <h2 class="modal-title" style="font-size:14px">ATAJOS DE TECLADO</h2>
@@ -187,7 +187,7 @@
   </div>
 
   <!-- COMMAND PALETTE (F-24) -->
-  <div id="cmdPalette" class="modal-overlay" hidden>
+  <div id="cmdPalette" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Paleta de comandos">
     <div class="modal-card" style="width:400px">
       <input id="cmdInput" type="text" class="mix-import-field mono" placeholder="Buscar proyecto o acción…" style="width:100%;font-size:13px;padding:10px" autofocus>
       <div id="cmdResults" style="max-height:240px;overflow-y:auto;margin-top:8px"></div>

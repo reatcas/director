@@ -790,7 +790,7 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
 })
 
 ipcMain.handle('repertoire:open', (_e, dir) => {
-  if (dir && fs.existsSync(dir)) {
+  if (isKnownProject(dir) && fs.existsSync(dir)) {
     shell.openPath(dir)
     return true
   }
@@ -1150,7 +1150,9 @@ ipcMain.handle('metrics:session-summary', () => {
       }
     } catch {}
   }
-  return { active, idle, total: projects.length, totalTokens, worstCompliance }
+  const aiCredits = aiState()
+  const creditsRemaining = Object.values(aiCredits).filter(v => typeof v === 'object' && v !== null && 'credits' in v).reduce((sum, ai) => sum + (ai.credits || 0), 0)
+  return { active, idle, total: projects.length, totalTokens, worstCompliance, creditsRemaining }
 })
 
 // ─── Read iteration log summary ──────────────────────────────────────────────
@@ -1298,6 +1300,7 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
   if (typeof type !== 'string' || typeof label !== 'string' || typeof message !== 'string') return false
   if (type.length > 64 || label.length > 128 || message.length > 1024) return false
   if (!/^[\w\-]+$/.test(type)) return false
+  if (/\x00/.test(label) || /\x00/.test(message)) return false
   persistLifecycleEvent(dir, type, label, message)
   return true
 })

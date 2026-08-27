@@ -59,7 +59,10 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('Mezcla') || l.includes('Blueprint') || l.includes('Notas') ||
       l.includes('conocimiento') || l.includes('Paneles') || l.includes('mezclador') ||
       l.includes('AI') || l.includes('provider') || l.includes('model') ||
-      l.includes('Agregar') || l.includes('proyecto')
+      l.includes('Agregar') || l.includes('proyecto') ||
+      l.includes('Acerca') || l.includes('Configuración') || l.includes('stand') ||
+      l.includes('Atajos') || l.includes('teclado') || l.includes('comandos') ||
+      l.includes('Paleta') || l.includes('Repertorio')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })
