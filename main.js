@@ -902,8 +902,8 @@ ipcMain.handle('repertoire:open', (_e, dir) => {
   return false
 })
 
-const _BLOCKED_FILE_EXT = new Set(['.env', '.key', '.pem', '.cert', '.p12', '.pfx', '.secret'])
-const _BLOCKED_FILE_NAME = new Set(['.env', 'id_rsa', 'id_ed25519', 'id_ecdsa', 'id_dsa', '.htpasswd'])
+const _BLOCKED_FILE_EXT = new Set(['.env', '.key', '.pem', '.cert', '.p12', '.pfx', '.secret', '.db', '.sqlite', '.sqlite3', '.db3'])
+const _BLOCKED_FILE_NAME = new Set(['.env', 'id_rsa', 'id_ed25519', 'id_ecdsa', 'id_dsa', '.htpasswd', '.npmrc', '.yarnrc', '.netrc'])
 ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
   if (!isKnownProject(dir) || typeof subpath !== 'string' || !subpath.trim()) return null
   if (subpath.length > 4096 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(subpath)) return null
@@ -929,6 +929,7 @@ ipcMain.handle('orchestra:install', (_e, dir) => {
   const hooks = path.join(dir, '.claude/hooks')
   let _hkSt = false; try { fs.statSync(hooks); _hkSt = true } catch {}
   if (_hkSt) for (const f of fs.readdirSync(hooks)) { try { fs.chmodSync(path.join(hooks, f), 0o755) } catch {} }
+  _piStaticCache.delete(dir)
   return projectInfo(dir)
 })
 
@@ -1063,6 +1064,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   const _aisPlaySer = JSON.stringify(state)
   if (_aisPlaySer.length <= 262_144) { writeJSON(aiStateFile(), JSON.parse(_aisPlaySer)); invalidateAiStateCache() }
   _metricsCache.delete('claude-usage:' + dir)
+  _piStaticCache.delete(dir)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
   return playOrchestra(dir, agent)
 })
@@ -1544,7 +1546,7 @@ function persistLifecycleEvent(dir, type, label, message) {
 ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   if (!isKnownProject(dir)) return []
   const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : 200
-  const _llType = typeof typeFilter === 'string' && /^[\w\-]+$/.test(typeFilter) ? typeFilter : null
+  const _llType = typeof typeFilter === 'string' && typeFilter.length <= 64 && /^[\w\-]+$/.test(typeFilter) ? typeFilter : null
   const _llBefore = typeof before === 'string' && before.length <= 64 && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : null
   const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')
   let events = []

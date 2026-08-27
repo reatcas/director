@@ -3359,10 +3359,11 @@ if ($('#aboutModal')) $('#aboutModal').addEventListener('keydown', e => {
 // ─── Keyboard shortcuts (F-24) ──────────────────────────────────────────────
 if ($('#closeShortcuts')) $('#closeShortcuts').onclick = () => { $('#shortcutsModal').hidden = true }
 if ($('#shortcutsModal')) $('#shortcutsModal').onclick = e => { if (e.target === $('#shortcutsModal')) $('#shortcutsModal').hidden = true }
+let _scmPrevFocus = null
 if ($('#shortcutsModal')) $('#shortcutsModal').addEventListener('keydown', e => {
   const modal = $('#shortcutsModal')
   if (!modal || modal.hidden) return
-  if (e.key === 'Escape') { modal.hidden = true; return }
+  if (e.key === 'Escape') { modal.hidden = true; if (_scmPrevFocus) { _scmPrevFocus.focus(); _scmPrevFocus = null }; return }
   if (e.key === 'Tab') {
     const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
     if (!focusable.length) return
@@ -3479,7 +3480,7 @@ document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.key === 'p') { e.preventDefault(); const b = $('#playBtn'); if (b && current) b.click(); return }
   if (e.ctrlKey && e.key === '.') { e.preventDefault(); const b = $('#fineBtn'); if (b && current) b.click(); return }
   if (e.ctrlKey && e.key === 'k') { e.preventDefault(); const b = $('#killBtn'); if (b && current) b.click(); return }
-  if (e.key === '?') { const _scm = $('#shortcutsModal'); if (_scm) { _scm.hidden = false; requestAnimationFrame(() => { const _scf = _scm.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'); if (_scf) _scf.focus() }) }; return }
+  if (e.key === '?') { const _scm = $('#shortcutsModal'); if (_scm) { _scmPrevFocus = document.activeElement; _scm.hidden = false; requestAnimationFrame(() => { const _scf = _scm.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'); if (_scf) _scf.focus() }) }; return }
   if (e.key === ' ') { e.preventDefault(); const b = $('#playBtn'); if (b && current) b.click(); return }
   if (e.key === 'k' || e.key === 'K') { const b = $('#killBtn'); if (b && current) b.click(); return }
   if (e.key === 'e' || e.key === 'E') { const b = $('#exportBtn'); if (b && current) b.click(); return }
