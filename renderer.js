@@ -813,7 +813,7 @@ async function loadMixer() {
   <div class="strip-h-label">${label}</div>
   <div class="strip-bar-h">
     <div class="strip-bar-fill-h" style="width:${v}%"></div>
-    <input type="range" min="0" max="100" value="${v}" data-k="${k}">
+    <input type="range" min="0" max="100" value="${v}" data-k="${k}" aria-label="${esc(label)} peso" aria-valuetext="${v}%">
   </div>
   <div class="strip-h-val">${v}%</div>
 `
@@ -978,6 +978,7 @@ function rebalanceMixer(changedKey, newVal) {
     assigned += share
 
     o.inp.value = share
+    o.inp.setAttribute('aria-valuetext', share + '%')
     const fill = o.strip.querySelector('.strip-bar-fill-h')
     const valEl = o.strip.querySelector('.strip-h-val')
     if (fill) fill.style.width = share + '%'
@@ -991,6 +992,7 @@ function rebalanceMixer(changedKey, newVal) {
     const inp = s.querySelector('input[type="range"]')
     if (inp.dataset.k === changedKey) {
       inp.value = newVal
+      inp.setAttribute('aria-valuetext', newVal + '%')
       const fill = s.querySelector('.strip-bar-fill-h')
       const valEl = s.querySelector('.strip-h-val')
       if (fill) fill.style.width = newVal + '%'
