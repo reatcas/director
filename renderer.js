@@ -3222,6 +3222,19 @@ if ($('#aboutModal')) $('#aboutModal').onclick = (e) => {
 // ─── Keyboard shortcuts (F-24) ──────────────────────────────────────────────
 if ($('#closeShortcuts')) $('#closeShortcuts').onclick = () => { $('#shortcutsModal').hidden = true }
 if ($('#shortcutsModal')) $('#shortcutsModal').onclick = e => { if (e.target === $('#shortcutsModal')) $('#shortcutsModal').hidden = true }
+if ($('#shortcutsModal')) $('#shortcutsModal').addEventListener('keydown', e => {
+  const modal = $('#shortcutsModal')
+  if (!modal || modal.hidden) return
+  if (e.key === 'Escape') { modal.hidden = true; return }
+  if (e.key === 'Tab') {
+    const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    if (!focusable.length) return
+    e.preventDefault()
+    const idx = focusable.indexOf(document.activeElement)
+    const next = e.shiftKey ? (idx - 1 + focusable.length) % focusable.length : (idx + 1) % focusable.length
+    focusable[next].focus()
+  }
+})
 if ($('#cmdPalette')) $('#cmdPalette').onclick = e => { if (e.target === $('#cmdPalette')) closeCmdPalette() }
 
 let _cmdPrevFocus = null

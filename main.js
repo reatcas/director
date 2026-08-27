@@ -147,6 +147,7 @@ function sendAlert(type, title, body) {
   const key = `${type}:${title}`
   const now = Date.now()
   if (_alertCooldown.has(key) && now - _alertCooldown.get(key) < 300000) return
+  if (_alertCooldown.size >= 100) { const oldest = _alertCooldown.keys().next().value; _alertCooldown.delete(oldest) }
   _alertCooldown.set(key, now)
   if (Notification.isSupported()) {
     new Notification({ title, body, silent: false }).show()
@@ -1702,7 +1703,9 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   if (!isKnownProject(dir)) return false
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false
   if (data.answers && typeof data.answers === 'object') {
-    if (Object.values(data.answers).some(v => typeof v === 'string' && v.length > 2000)) return false
+    const _bsAnswerVals = Object.values(data.answers)
+    if (_bsAnswerVals.some(v => v !== null && typeof v === 'object')) return false
+    if (_bsAnswerVals.some(v => typeof v === 'string' && v.length > 2000)) return false
   }
   if (data.modules && Array.isArray(data.modules)) {
     if (data.modules.some(m => !m || typeof m !== 'object' || typeof m.name !== 'string' || m.name.length > 256)) return false

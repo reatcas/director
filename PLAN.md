@@ -1,24 +1,23 @@
-# Cycle 145 Plan — IMPROVEMENT MODE
+# Cycle 146 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 145
+## MIXER BUDGET — Cycle 146
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
-| backend | 5 | 1 | 0/1 |
-| frontend | 5 | 1 | 0/1 |
-| ux_accessibility | 5 | SKIP (proportional) | — |
-| business_logic | 5 | SKIP (proportional) | — |
-| data_db | 5 | SKIP (proportional) | — |
+| quality_tests | 35 | 5 | 0/5 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| business_logic | 5 | 1 | 0/1 |
+| data_db | 5 | 1 | 0/1 |
+| security | 20 | FROZEN (3rd consecutive) | — |
+| backend | 5 | FROZEN (3rd consecutive) | — |
+| frontend | 5 | FROZEN (3rd consecutive) | — |
 | performance | 10 | FROZEN (34th) | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-406 — coordination-protocol.js: add 1MB size guard on coordination-metrics.json read
-2. [security] I-407 — blueprint:readiness: guard answeredFields a[k].trim() with typeof string check
-3. [backend] I-408 — metrics:session-summary: wrap project loop per-project in try/catch for resilience
-4. [frontend] I-409 — preload.js: forward limit param in lifecycleList (missed when backend was updated)
-5-8. [quality_tests] cycle145-coverage.test.js — 4 tests
+1. [ux_accessibility] I-410 — shortcutsModal: add keyboard focus trap (Tab cycles within modal)
+2. [business_logic] I-411 — sendAlert: cap _alertCooldown Map at 100 entries to prevent unbounded growth
+3. [data_db] I-412 — blueprint:save: reject answers values that are objects/arrays
+4-8. [quality_tests] cycle146-coverage.test.js — 5 tests
 
 ## Stats
-- 3444 tests passing at cycle start
+- 3450 tests passing at cycle start
