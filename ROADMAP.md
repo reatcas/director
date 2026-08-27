@@ -168,3 +168,11 @@
 - [x] **I-133** 2s result cache for metrics:resource + metrics:context — reduce repeated polling overhead.
 - [x] **I-134** aria-live log panel + assertive live region for commit announcements.
 - [x] **I-135** Prune analysis-*.txt on clearLog (keep last 5) + cap mixer-history at 100 entries.
+- [x] **I-136** Test blueprint:readiness cache — TTL hit, miss, invalidation on save (in ipc-cache.test.js).
+- [x] **I-137** Test _metricsCache TTL — metricsGet/Set, resource+context key patterns.
+- [x] **I-138** Test orchestra:clearLog analysis file pruning — sort, keep-5, unlinkSync.
+- [x] **I-139** Test blueprint:save data validation — non-object, array, oversized, JSON round-trip.
+- [x] **I-140** isKnownProject guard on orchestra:readIterLog — replaces !dir, path traversal retained.
+- [x] **I-141** mixer:saved:save name/focus validation — string type, length ≤256, focus object check.
+- [x] **I-142** Periodic _metricsCache eviction — setInterval 30s, unref() to not block exit.
+- [x] **I-143** isKnownProject guard on orchestra:install — prevent harness copy to arbitrary dirs.
