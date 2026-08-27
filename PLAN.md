@@ -1,21 +1,21 @@
-# Cycle 164 Plan — IMPROVEMENT MODE
+# Cycle 165 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 164 (performance FROZEN; backend/frontend 2-streak allowed)
+## MIXER BUDGET — Cycle 165 (security/backend/frontend BANNED — 3+ consecutive)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 4 | 0/4 |
-| security | 20 | 2 | 0/2 |
-| backend | 5 | 1 | 0/1 |
-| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 6 | 0/6 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| business_logic | 5 | 1 | 0/1 |
+| security | 20 | BANNED | — |
+| backend | 5 | BANNED | — |
+| frontend | 5 | BANNED | — |
 | performance | 10 | FROZEN | — |
 Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 
 ## Units
-1. [security] I-486 — buildStrips: esc(label) in strip-h-label innerHTML (customAtriles name XSS)
-2. [security] I-487 — atriles:save: validate id (alphanumeric+dash ≤64) and icon (string ≤64) fields
-3. [backend] I-488 — orchestra:analyze: cap report in resolve at 4MB (matching file write cap)
-4. [frontend] I-489 — mix-card buttons: aria-label in Spanish for screen readers
-5-8. [quality_tests] cycle164-coverage.test.js — 4 tests
+1. [ux_accessibility] I-490 — #splitDividerV: tabindex + aria-valuenow/min/max + Arrow key keyboard support
+2. [business_logic] I-491 — rebalanceMixer: cap intermediate shares to prevent rounding overshoot (total > 100)
+3-8. [quality_tests] cycle165-coverage.test.js — 6 tests
 
 ## Stats
-- 3574 tests at cycle start → target 3578 (+4)
+- 3580 tests at cycle start → target 3586 (+6)

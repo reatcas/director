@@ -985,10 +985,10 @@ function rebalanceMixer(changedKey, newVal) {
     if (i === others.length - 1) {
       share = remaining - assigned
     } else if (othersTotal > 0) {
-      share = Math.round((o.cur / othersTotal) * remaining)
+      share = Math.min(Math.round((o.cur / othersTotal) * remaining), remaining - assigned)
     } else {
       // All others were 0 — distribute equally
-      share = Math.round(remaining / others.length)
+      share = Math.min(Math.round(remaining / others.length), remaining - assigned)
     }
     share = Math.max(0, share)
     assigned += share
@@ -3428,6 +3428,13 @@ document.addEventListener('keydown', (e) => {
     left.style.flex = 'none'
     left.style.width = saved + '%'
   }
+  function _setSplitPct(pct) {
+    pct = Math.max(15, Math.min(80, pct))
+    left.style.flex = 'none'
+    left.style.width = pct + '%'
+    divider.setAttribute('aria-valuenow', Math.round(pct))
+    if (window.mixerGraph && mixerGraphInited) window.mixerGraph.resize()
+  }
   let dragging = false
   divider.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault() })
   document.addEventListener('mousemove', (e) => {
@@ -3435,11 +3442,7 @@ document.addEventListener('keydown', (e) => {
     const parent = divider.parentElement
     const rect = parent.getBoundingClientRect()
     const pct = ((e.clientX - rect.left) / rect.width) * 100
-    if (pct > 15 && pct < 80) {
-      left.style.flex = 'none'
-      left.style.width = pct + '%'
-      if (window.mixerGraph && mixerGraphInited) window.mixerGraph.resize()
-    }
+    if (pct > 15 && pct < 80) _setSplitPct(pct)
   })
   document.addEventListener('mouseup', () => {
     if (dragging) {
@@ -3447,5 +3450,10 @@ document.addEventListener('keydown', (e) => {
       if (w) localStorage.setItem('director:splitHPct', w.toFixed(1))
     }
     dragging = false
+  })
+  divider.addEventListener('keydown', (e) => {
+    const cur = parseFloat(left.style.width) || 50
+    if (e.key === 'ArrowLeft') { e.preventDefault(); _setSplitPct(cur - 2); localStorage.setItem('director:splitHPct', (Math.max(15, cur - 2)).toFixed(1)) }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); _setSplitPct(cur + 2); localStorage.setItem('director:splitHPct', (Math.min(80, cur + 2)).toFixed(1)) }
   })
 })()
