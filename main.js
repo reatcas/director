@@ -426,7 +426,6 @@ function copyDir(src, dst) {
     if (e.name.includes('..') || e.name.includes(path.sep)) continue
     const s = path.join(src, e.name), d = path.join(dst, e.name)
     if (e.isDirectory()) copyDir(s, d)
-    else { let _cdEx = false; try { fs.statSync(d); _cdEx = true } catch {}; if (!_cdEx || !['CLAUDE.md', 'settings.json'].includes(e.name)) fs.copyFileSync(s, d) }
     else if (e.name === 'CLAUDE.md') { try { const _cdStat = fs.statSync(s); if (_cdStat.size <= 1_048_576) fs.appendFileSync(d, '\n\n' + fs.readFileSync(s, 'utf8')) } catch {} }
     else if (e.name === 'settings.json') {
       let a = {}, b = {}
@@ -437,6 +436,7 @@ function copyDir(src, dst) {
       const _cdMergeSer = JSON.stringify(a)
       if (_cdMergeSer.length <= 512_000) writeJSON(d, JSON.parse(_cdMergeSer))
     }
+    else { let _cdEx = false; try { fs.statSync(d); _cdEx = true } catch {}; if (!_cdEx) fs.copyFileSync(s, d) }
   }
 }
 
