@@ -246,10 +246,15 @@ window.mixerGraph = (() => {
       // Hub events flash all active links briefly
       _linkFlash = { cat: _activeCategory || HUB_ID, strength: 0.6 }
     }
+    _ensureAnimLoop()
   }
 
   // ── Animation loop ────────────────────────────────────────────────────────
   const DT = 16  // ~60fps
+
+  function _ensureAnimLoop() {
+    if (!_animId && _mounted) _animId = requestAnimationFrame(animLoop)
+  }
 
   function animLoop() {
     _t += 0.05
@@ -296,6 +301,12 @@ window.mixerGraph = (() => {
     if (_activeCategory !== null || _linkFlash.strength > 0.001) {
       throttledRefresh()
     }
+
+    // Cancel self when fully idle — resumed by _ensureAnimLoop on next event
+    const idle = _rings.length === 0 && _sparks.length === 0 &&
+                 _linkFlash.strength <= 0.001 && !_autoRotate &&
+                 _activeCategory === null
+    if (idle) { _animId = null; return }
 
     _animId = requestAnimationFrame(animLoop)
   }
@@ -364,7 +375,7 @@ window.mixerGraph = (() => {
       graph.cameraPosition({ x: 0, y: 0, z: _camDist }, { x: 0, y: 0, z: 0 }, 0)
     }, 200)
 
-    _animId = requestAnimationFrame(animLoop)
+    _ensureAnimLoop()
 
     if (window.ResizeObserver) {
       const ro = new ResizeObserver(() => {
@@ -401,6 +412,7 @@ window.mixerGraph = (() => {
       _recentPair = []
     }
     if (graph) syncLinks()
+    if (category) _ensureAnimLoop()
   }
 
   function setRotating(on) {
@@ -410,6 +422,7 @@ window.mixerGraph = (() => {
       _camAngle = 0
       graph.cameraPosition({ x: 0, y: 0, z: _camDist }, { x: 0, y: 0, z: 0 }, 800)
     }
+    if (on) _ensureAnimLoop()
   }
 
   function resize() {
