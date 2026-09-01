@@ -1117,6 +1117,7 @@ ipcMain.handle('orchestra:fine', (_e, dir) => {
   _metricsCache.delete('claude-usage:' + dir)
   _metricsCache.delete('session-summary')
   _metricsCache.delete('coordination')
+  _analyzeCache.delete(dir)
   _invalidateIsRunning(dir)
   stopWatchingResume(dir)
   persistLifecycleEvent(dir, 'fine', 'FINE', 'Cerrando último compás')

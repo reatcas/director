@@ -1714,7 +1714,8 @@ if ($('#logFilterInput')) {
     clearTimeout(_filterTimer)
     _filterTimer = setTimeout(() => {
       const q = e.target.value.toLowerCase()
-      const logEl = $('#log')
+      if (!_logEl) _logEl = $('#log')
+      const logEl = _logEl
       const countEl = $('#logFilterCount')
       if (!logEl) return
       if (!q) {
@@ -1754,8 +1755,9 @@ if ($('#logFilterInput')) {
       }
     }
   })
-  if ($('#log')) {
-    logObserver.observe($('#log'), { childList: true })
+  if (!_logEl) _logEl = $('#log')
+  if (_logEl) {
+    logObserver.observe(_logEl, { childList: true })
   }
 }
 
