@@ -634,6 +634,8 @@ body.light #nodeGraphSection {
   opacity: 1;
 }
 .ng-active-label:empty { opacity: 0; }
+body.light .ng-label { color: rgba(0,90,80,0.35); }
+body.light .ng-active-label { color: rgba(0,90,80,0.65); }
 .mg-canvas {
   width: 100%;
   height: 100%;

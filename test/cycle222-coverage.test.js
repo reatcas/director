@@ -24,7 +24,7 @@ describe('_sectionMap populated in init() (B-16)', () => {
   const initBlock = graphJs.split('function init')[1]?.split('\n  function ')[0] || ''
 
   it('init() creates new Map from sections array', () => {
-    expect(initBlock).toContain('new Map(sections.map')
+    expect(initBlock).toContain('new Map(_sections.map')
   })
 
   it('maps s[0] (key) to full section entry', () => {

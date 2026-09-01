@@ -325,8 +325,8 @@ window.mixerGraph = (() => {
     }
 
     _container = containerEl
-    _sections  = sections
-    _sectionMap = new Map(sections.map(s => [s[0], s]))
+    _sections  = sections || []
+    _sectionMap = new Map(_sections.map(s => [s[0], s]))
     _hubGlow = _activeGlow = null
     _rings = []; _sparks = []
     _gData = buildData()
@@ -454,7 +454,7 @@ window.mixerGraph = (() => {
     _pulseLayer = null; _gData = null; _mounted = false
     _activeCategory = null; _recentPair = []
     _hubGlow = null; _activeGlow = null
-    _sectionMap.clear()
+    _sections = []; _sectionMap.clear()
   }
 
   return { init, update, activate, pulse, setRotating, destroy, resize }
