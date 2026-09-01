@@ -222,7 +222,8 @@ function killProcessGroup(pid, signal = 'SIGTERM') {
 }
 
 let _projectsCache = null
-function invalidateProjectsCache() { _projectsCache = null }
+let _knownPathsSet = null  // Set<string> for O(1) isKnownProject lookup
+function invalidateProjectsCache() { _projectsCache = null; _knownPathsSet = null }
 function cachedProjects() {
   if (_projectsCache) return _projectsCache
   const _rpPath = store()
@@ -231,12 +232,14 @@ function cachedProjects() {
   if (!Array.isArray(_rpData)) _rpData = []
   _rpData = _rpData.filter(p => p && typeof p.path === 'string' && (!p.name || typeof p.name === 'string') && (!p.id || typeof p.id === 'string') && (!p.name || p.name.length <= 256) && (!p.id || p.id.length <= 64))
   _projectsCache = _rpData
+  _knownPathsSet = new Set(_rpData.map(p => p.path))
   return _projectsCache
 }
 
 function isKnownProject(dir) {
   if (!dir || typeof dir !== 'string') return false
-  return cachedProjects().some(p => p.path === dir)
+  if (!_knownPathsSet) cachedProjects()
+  return _knownPathsSet.has(dir)
 }
 
 function isRunning(dir) {

@@ -24,9 +24,9 @@ describe('isKnownProject — helper definition', () => {
     expect(body).not.toContain('readJSON(store()')
   })
 
-  it('checks p.path === dir for membership', () => {
+  it('uses _knownPathsSet.has for O(1) membership check', () => {
     const body = mainJs.split('function isKnownProject')[1]?.split('\n}')[0] || ''
-    expect(body).toContain("p.path === dir")
+    expect(body).toContain('_knownPathsSet.has(dir)')
   })
 })
 
@@ -35,8 +35,10 @@ describe('isKnownProject — project cache', () => {
     expect(mainJs).toContain('let _projectsCache = null')
   })
 
-  it('defines invalidateProjectsCache that nulls the cache', () => {
-    expect(mainJs).toContain('function invalidateProjectsCache() { _projectsCache = null }')
+  it('defines invalidateProjectsCache that nulls the cache and path set', () => {
+    expect(mainJs).toContain('function invalidateProjectsCache()')
+    expect(mainJs).toContain('_projectsCache = null')
+    expect(mainJs).toContain('_knownPathsSet = null')
   })
 
   it('defines cachedProjects that populates on first call', () => {

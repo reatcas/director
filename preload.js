@@ -4,11 +4,11 @@
 const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('director', {
   list:    ()      => ipcRenderer.invoke('repertoire:list'),
-  add:     p       => ipcRenderer.invoke('repertoire:add', p),
-  remove:  p       => ipcRenderer.invoke('repertoire:remove', p),
-  openDir: p       => ipcRenderer.invoke('repertoire:open', p),
-  readFile: (p, s) => ipcRenderer.invoke('repertoire:readFile', p, s),
-  install: p       => ipcRenderer.invoke('orchestra:install', p),
+  add:     p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:add', p) },
+  remove:  p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:remove', p) },
+  openDir: p       => { if (typeof p !== 'string' || !p) return Promise.resolve(false); return ipcRenderer.invoke('repertoire:open', p) },
+  readFile: (p, s) => { if (typeof p !== 'string' || !p) return Promise.resolve(''); return ipcRenderer.invoke('repertoire:readFile', p, s) },
+  install: p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:install', p) },
   play:    (p, a)  => {
     if (typeof a !== 'string' || a.length === 0 || a.length > 64) return Promise.resolve({ ok: false, err: 'invalid agent' })
     return ipcRenderer.invoke('orchestra:play', p, a)
@@ -120,7 +120,7 @@ contextBridge.exposeInMainWorld('director', {
   },
   alertsRead:         ()       => ipcRenderer.invoke('alerts:read'),
   // Session export (F-23)
-  exportSession:      dir      => ipcRenderer.invoke('export:session', dir),
+  exportSession:      dir      => { if (typeof dir !== 'string' || !dir) return Promise.resolve(null); return ipcRenderer.invoke('export:session', dir) },
   // Operator notes (F-25)
   notesRead:          dir      => { if (typeof dir !== 'string' || !dir) return Promise.resolve(null); return ipcRenderer.invoke('notes:read', dir) },
   notesWrite:         (dir, c) => {

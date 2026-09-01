@@ -154,6 +154,8 @@ let aiCredits = {}
 let _mmAllocEl, _mmMemEl, _mmTokensEl, _mmComprEl, _mmInstEl, _mmAiUsageEl, _mmBurnEl, _mmComplianceEl, _mmRoadmapEl
 let _compressionPanelEl, _compressionStatsEl, _compressionHistEl
 let _complianceSparkEl = null
+let _usageBarEl = null
+let _usageBarFillEl = null
 
 function formatReset(iso) {
   if (!iso) return '—'
@@ -2246,9 +2248,10 @@ let lastTelemetryUsage = null;
 
 function updateAiUsageDisplay(creditData, telemetryUsage) {
   if (telemetryUsage !== undefined) lastTelemetryUsage = telemetryUsage;
-  
+
   const valEl  = _mmAiUsageEl || $('#mmAiUsageVal')
-  const barEl  = $('#usageBarFill')
+  if (!_usageBarFillEl) _usageBarFillEl = $('#usageBarFill')
+  const barEl  = _usageBarFillEl
   if (!valEl) return
 
   if (!creditData) {
@@ -2285,7 +2288,8 @@ function updateAiUsageDisplay(creditData, telemetryUsage) {
     valEl.className = 'mm-val'
   }
 
-  const progressEl = $('#usageBarProgress')
+  if (!_usageBarEl) _usageBarEl = $('#usageBarProgress')
+  const progressEl = _usageBarEl
   if (progressEl) progressEl.setAttribute('aria-valuenow', String(Math.min(100, Math.max(0, pct))))
   if (barEl) {
     barEl.style.width = Math.min(100, Math.max(0, pct)) + '%'
