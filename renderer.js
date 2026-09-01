@@ -937,6 +937,8 @@ function activateMixerStand(category) {
   if (standSparkInterval) { clearInterval(standSparkInterval); standSparkInterval = null }
   activeStand = null
   if (window.mixerGraph) window.mixerGraph.activate(category || null)
+  const _ngLbl = $('#ngActiveLabel')
+  if (_ngLbl) { const _ngSec = category ? SECTIONS.find(s => s[0] === category) : null; _ngLbl.textContent = _ngSec ? _ngSec[1] : '' }
   if (!category) return
 
   const strip = document.querySelector(`#mixerStrips .strip-h[data-key="${category}"]`)

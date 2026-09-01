@@ -225,6 +225,9 @@ window.mixerGraph = (() => {
     if (!graph || !_mounted) return
     const cfg = PULSE_CFG[eventType]
     if (!cfg) return
+    if (category !== null && category !== undefined) {
+      if (typeof category !== 'string' || category.length > 64) category = null
+    }
 
     const targetId = cfg.target === 'hub' ? HUB_ID : (category || HUB_ID)
     const pos = nodePos(targetId) || (targetId === HUB_ID ? { x: 0, y: 0 } : null)
@@ -403,6 +406,9 @@ window.mixerGraph = (() => {
   }
 
   function activate(category) {
+    if (category !== null && category !== undefined) {
+      if (typeof category !== 'string' || category.length > 64) return
+    }
     const prev = _activeCategory
     _activeCategory = category
     _activeGlow = null
