@@ -227,7 +227,7 @@ class ResourceScheduler {
       memUtilization: Math.round(memUtil * 1000) / 10, // percentage with 1 decimal
       cpuNormalized:  Math.round(cpuNorm * 1000) / 10,
       nice:           allocation.nice,
-      loadAvg1:       os.loadavg()[0]
+      loadAvg1:       this.systemSnapshot().loadAvg1
     }
 
     const history = this.samples.get(dir) || []

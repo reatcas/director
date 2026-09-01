@@ -198,6 +198,7 @@ class CoordinationProtocol {
     if (lock && lock.holder === dir) {
       const heldMs = lock.grantedAt ? Date.now() - new Date(lock.grantedAt).getTime() : null
       this.locks.delete(resource)
+      this._cachedConflicts = null
       this._logEvent('lock_released', dir, { resource, heldMs })
       return true
     }

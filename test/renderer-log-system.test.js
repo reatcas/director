@@ -147,7 +147,7 @@ describe('clock system — session timer', () => {
   it('setStatus updates clockStatus element', () => {
     const body = rendererJs.split('function setStatus')[1]?.split('\n// ─')[0] || ''
     expect(body).toContain("$('#clockStatus')")
-    expect(body).toContain('el.textContent = text')
+    expect(body).toContain('_clockStatusEl.textContent = text')
   })
 })
 

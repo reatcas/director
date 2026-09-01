@@ -155,6 +155,8 @@ let _mmAllocEl, _mmMemEl, _mmTokensEl, _mmComprEl, _mmInstEl, _mmAiUsageEl, _mmB
 let _compressionPanelEl, _compressionStatsEl, _compressionHistEl
 let _complianceSparkEl = null
 let _aiSelectEl = null
+let _clockStatusEl = null
+let _pstatusEl = null
 let _usageBarEl = null
 let _usageBarFillEl = null
 
@@ -320,8 +322,8 @@ function stopClock() {
 }
 
 function setStatus(text) {
-  const el = $('#clockStatus')
-  if (el) el.textContent = text
+  if (!_clockStatusEl) _clockStatusEl = $('#clockStatus')
+  if (_clockStatusEl) _clockStatusEl.textContent = text
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -601,12 +603,12 @@ function paint() {
     }
   }
 
-  const statusEl = $('#pstatus')
-  if (statusEl) {
-    statusEl.textContent = p.running
+  if (!_pstatusEl) _pstatusEl = $('#pstatus')
+  if (_pstatusEl) {
+    _pstatusEl.textContent = p.running
       ? '● INTERPRETING — v' + p.version
       : p.installed ? 'SILENT — v' + p.version : 'NO ORCHESTRA'
-    statusEl.className = 'tp-status' + (p.running ? ' live' : '')
+    _pstatusEl.className = 'tp-status' + (p.running ? ' live' : '')
   }
 
   if ($('#installBtn')) $('#installBtn').hidden = p.installed
@@ -672,9 +674,10 @@ if ($('#removeBtn')) $('#removeBtn').onclick = async () => {
   if ($('#mixesList')) $('#mixesList').innerHTML = ''
   if (window.mixerGraph) { window.mixerGraph.destroy(); mixerGraphInited = false }
   if ($('#pname')) $('#pname').textContent = '—'
-  if ($('#pstatus')) {
-    $('#pstatus').textContent = 'no project'
-    $('#pstatus').className = 'tp-status'
+  if (!_pstatusEl) _pstatusEl = $('#pstatus')
+  if (_pstatusEl) {
+    _pstatusEl.textContent = 'no project'
+    _pstatusEl.className = 'tp-status'
   }
   if ($('#pbadge')) { $('#pbadge').innerHTML = ''; $('#pbadge').style.background = '' }
   refresh()
@@ -769,9 +772,10 @@ if ($('#fineBtn')) $('#fineBtn').onclick = async () => {
   const _lrFine = document.getElementById('a11y-live')
   if (_lrFine) { _lrFine.textContent = ''; requestAnimationFrame(() => { _lrFine.textContent = 'Cerrando último compás' }) }
   await window.director.fine(current)
-  if ($('#pstatus')) {
-    $('#pstatus').textContent = 'CLOSING LAST MEASURE…'
-    $('#pstatus').className = 'tp-status'
+  if (!_pstatusEl) _pstatusEl = $('#pstatus')
+  if (_pstatusEl) {
+    _pstatusEl.textContent = 'CLOSING LAST MEASURE…'
+    _pstatusEl.className = 'tp-status'
   }
   setStatus('FINE')
 }

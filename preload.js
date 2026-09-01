@@ -32,30 +32,36 @@ contextBridge.exposeInMainWorld('director', {
   clearLog: p      => { if (typeof p !== 'string' || !p) return Promise.resolve(false); return ipcRenderer.invoke('orchestra:clearLog', p) },
   mixerRead:  p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('mixer:read', p) },
   mixerWrite: (p, f)  => {
+    if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:write', p, f)
   },
   configWrite: (p, c) => {
+    if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (!c || typeof c !== 'object' || Array.isArray(c)) return Promise.resolve(false)
     return ipcRenderer.invoke('orchestra:writeConfig', p, c)
   },
   analyze:    p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:analyze', p) },
   readIterLog: (p, l)  => {
+    if (typeof p !== 'string' || !p) return Promise.resolve('')
     if (typeof l !== 'string' || !l.trim()) return Promise.resolve('')
     return ipcRenderer.invoke('orchestra:readIterLog', p, l)
   },
   // Saved mixes
   mixerSavedList:   p           => { if (typeof p !== 'string' || !p) return Promise.resolve([]); return ipcRenderer.invoke('mixer:saved:list', p) },
   mixerSavedSave:   (p, n, f)   => {
+    if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (typeof n !== 'string' || n.length === 0 || n.length > 256) return Promise.resolve(false)
     if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:saved:save', p, n, f)
   },
   mixerSavedDelete: (p, id)     => {
+    if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (typeof id !== 'string' || id.length === 0 || id.length > 64 || !/^[0-9a-z]+$/.test(id)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:saved:delete', p, id)
   },
   mixerSavedExport: (p, id)     => {
+    if (typeof p !== 'string' || !p) return Promise.resolve(null)
     if (typeof id !== 'string' || id.length === 0 || id.length > 64 || !/^[0-9a-z]+$/.test(id)) return Promise.resolve(null)
     return ipcRenderer.invoke('mixer:saved:export', p, id)
   },
@@ -100,6 +106,7 @@ contextBridge.exposeInMainWorld('director', {
   // Blueprint / Discovery
   blueprintLoad:      p        => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:load', p) },
   blueprintSave:      (p, d)   => {
+    if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (!d || typeof d !== 'object' || Array.isArray(d)) return Promise.resolve(false)
     try { if (JSON.stringify(d).length > 524288) return Promise.resolve(false) } catch { return Promise.resolve(false) }
     return ipcRenderer.invoke('blueprint:save', p, d)
@@ -126,6 +133,7 @@ contextBridge.exposeInMainWorld('director', {
   // Operator notes (F-25)
   notesRead:          dir      => { if (typeof dir !== 'string' || !dir) return Promise.resolve(null); return ipcRenderer.invoke('notes:read', dir) },
   notesWrite:         (dir, c) => {
+    if (typeof dir !== 'string' || !dir) return Promise.resolve(false)
     if (typeof c !== 'string' || c.length > 50000) return Promise.resolve(false)
     return ipcRenderer.invoke('notes:write', dir, c)
   },

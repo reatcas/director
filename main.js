@@ -2079,6 +2079,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
   const p = blueprintFile(dir)
   fs.mkdirSync(path.dirname(p), { recursive: true })
   writeJSON(p, JSON.parse(serialized))
+  _blueprintCache.delete(dir)
   _readinessCache.delete(dir)
   return true
 })
