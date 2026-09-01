@@ -56,18 +56,18 @@ contextBridge.exposeInMainWorld('director', {
   // Saved mixes
   mixerSavedList:   p           => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve([]); return ipcRenderer.invoke('mixer:saved:list', p) },
   mixerSavedSave:   (p, n, f)   => {
-    if (typeof p !== 'string' || !p) return Promise.resolve(false)
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false)
     if (typeof n !== 'string' || n.length === 0 || n.length > 256) return Promise.resolve(false)
     if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:saved:save', p, n, f)
   },
   mixerSavedDelete: (p, id)     => {
-    if (typeof p !== 'string' || !p) return Promise.resolve(false)
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false)
     if (typeof id !== 'string' || id.length === 0 || id.length > 64 || !/^[0-9a-z]+$/.test(id)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:saved:delete', p, id)
   },
   mixerSavedExport: (p, id)     => {
-    if (typeof p !== 'string' || !p) return Promise.resolve(null)
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null)
     if (typeof id !== 'string' || id.length === 0 || id.length > 64 || !/^[0-9a-z]+$/.test(id)) return Promise.resolve(null)
     return ipcRenderer.invoke('mixer:saved:export', p, id)
   },
@@ -113,13 +113,13 @@ contextBridge.exposeInMainWorld('director', {
   // Blueprint / Discovery
   blueprintLoad:      p        => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:load', p) },
   blueprintSave:      (p, d)   => {
-    if (typeof p !== 'string' || !p) return Promise.resolve(false)
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false)
     if (!d || typeof d !== 'object' || Array.isArray(d)) return Promise.resolve(false)
     try { if (JSON.stringify(d).length > 524288) return Promise.resolve(false) } catch { return Promise.resolve(false) }
     return ipcRenderer.invoke('blueprint:save', p, d)
   },
-  blueprintGenerate:  p        => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:generate-brief', p) },
-  blueprintReadiness: p        => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:readiness', p) },
+  blueprintGenerate:  p        => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:generate-brief', p) },
+  blueprintReadiness: p        => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:readiness', p) },
   // Custom Atriles (app-wide)
   atrilesList:        ()       => ipcRenderer.invoke('atriles:list'),
   atrilesSave:        a        => {
@@ -139,7 +139,7 @@ contextBridge.exposeInMainWorld('director', {
   },
   alertsRead:         ()       => ipcRenderer.invoke('alerts:read'),
   // Session export (F-23)
-  exportSession:      dir      => { if (typeof dir !== 'string' || !dir) return Promise.resolve(null); return ipcRenderer.invoke('export:session', dir) },
+  exportSession:      dir      => { if (typeof dir !== 'string' || !dir || dir.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('export:session', dir) },
   // Operator notes (F-25)
   notesRead:          dir      => { if (typeof dir !== 'string' || !dir || dir.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('notes:read', dir) },
   notesWrite:         (dir, c) => {

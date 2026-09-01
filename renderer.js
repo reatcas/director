@@ -1446,7 +1446,8 @@ let usageEntry = null
 let retryCount = 0
 
 function addUsageEntry(message) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
 
   if (usageEntry && usageEntry.parentNode) {
@@ -1546,7 +1547,8 @@ function addCycleEntry(text) {
 
 // Add an error entry
 function addErrorEntry(text) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] [ERROR] ${text}`)

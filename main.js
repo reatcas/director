@@ -1714,6 +1714,7 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(label) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(message)) return false
   persistLifecycleEvent(dir, type, label, message)
   for (const k of _metricsCache.keys()) { if (k.startsWith('lc:' + dir + ':')) _metricsCache.delete(k) }
+  _metricsCache.delete('session-summary')
   return true
 })
 
