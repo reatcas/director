@@ -631,7 +631,9 @@ body.light #nodeGraphSection {
   pointer-events: none;
   z-index: 10;
   transition: opacity 0.3s;
+  opacity: 1;
 }
+.ng-active-label:empty { opacity: 0; }
 .mg-canvas {
   width: 100%;
   height: 100%;

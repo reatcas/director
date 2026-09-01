@@ -13,6 +13,7 @@ window.mixerGraph = (() => {
 
   // ── State ────────────────────────────────────────────────────────────────
   let graph = null, _container = null, _sections = [], _focus = {}
+  let _sectionMap = new Map()        // key → section entry, O(1) lookup in hot paths
   let _activeCategory = null, _recentPair = [], _gData = null, _mounted = false
   let _animId = null, _t = 0
   let _hubGlow = null, _activeGlow = null
@@ -95,7 +96,7 @@ window.mixerGraph = (() => {
       if (flashing) return `rgba(255,255,255,${(_linkFlash.strength * 0.35).toFixed(2)})`
       return 'rgba(255,255,255,0.05)'
     }
-    const s = _sections.find(s => s[0] === tgt)
+    const s = _sectionMap.get(tgt)
     const hex = (s ? s[2] : HUB_COLOR).replace('#', '')
     const r = parseInt(hex.slice(0,2),16)||0
     const g = parseInt(hex.slice(2,4),16)||0
@@ -235,7 +236,7 @@ window.mixerGraph = (() => {
 
     const color = cfg.color || (() => {
       if (targetId === HUB_ID) return HUB_COLOR
-      const s = _sections.find(s => s[0] === targetId)
+      const s = _sectionMap.get(targetId)
       return s ? s[2] : HUB_COLOR
     })()
 
@@ -325,6 +326,7 @@ window.mixerGraph = (() => {
 
     _container = containerEl
     _sections  = sections
+    _sectionMap = new Map(sections.map(s => [s[0], s]))
     _hubGlow = _activeGlow = null
     _rings = []; _sparks = []
     _gData = buildData()
@@ -348,7 +350,7 @@ window.mixerGraph = (() => {
       .linkDirectionalParticleWidth(link => link._active ? 2.2 : 0)
       .linkDirectionalParticleColor(link => {
         const tgt = typeof link.target === 'object' ? link.target.id : link.target
-        const s   = _sections.find(s => s[0] === tgt)
+        const s   = _sectionMap.get(tgt)
         return s ? s[2] : HUB_COLOR
       })
 
@@ -398,7 +400,7 @@ window.mixerGraph = (() => {
     for (const node of _gData.nodes) {
       if (node.id === HUB_ID) continue
       node.weight = _focus[node.id] ?? 0
-      const sec = _sections.find(s => s[0] === node.id)
+      const sec = _sectionMap.get(node.id)
       node.label = sec ? `${sec[1]} ${node.weight}%` : node.id
     }
     graph.nodeVal(nodeVal).nodeColor(nodeColor)
@@ -452,6 +454,7 @@ window.mixerGraph = (() => {
     _pulseLayer = null; _gData = null; _mounted = false
     _activeCategory = null; _recentPair = []
     _hubGlow = null; _activeGlow = null
+    _sectionMap.clear()
   }
 
   return { init, update, activate, pulse, setRotating, destroy, resize }
