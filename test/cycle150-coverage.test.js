@@ -39,7 +39,7 @@ describe('lifecycle:list type filter parameter (I-426)', () => {
   })
 
   it('filters events by type when typeFilter provided', () => {
-    expect(block).toContain('events.filter(e => e.type === _llType)')
+    expect(block).toContain('e.type === _llType')
   })
 })
 

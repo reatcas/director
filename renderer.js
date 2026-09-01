@@ -1571,7 +1571,8 @@ function addErrorEntry(text) {
 
 // Add a Claude prose/milestone message entry
 function addClaudeMessageEntry(text) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] [CLAUDE] ${text}`)
@@ -1594,7 +1595,8 @@ function addClaudeMessageEntry(text) {
 
 // Add a conclusion/summary entry with error detection
 function addConclusionEntry(text, issues) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] [CONCLUSION] ${text}`)

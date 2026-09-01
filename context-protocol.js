@@ -184,7 +184,7 @@ class ContextProtocol {
 
       const fileHash = this._hash(content)
       const sections = this._splitSections(content)
-      const fileTokens = sections.reduce((s, sec) => s + sec.tokens, 0)
+      let fileTokens = 0; for (const sec of sections) fileTokens += sec.tokens
       totalTokens += fileTokens
 
       current[file] = { hash: fileHash, tokens: fileTokens, sections }

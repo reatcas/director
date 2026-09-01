@@ -26,10 +26,12 @@ contextBridge.exposeInMainWorld('director', {
   },
   aiLogin:   id     => {
     if (typeof id !== 'string' || id.length === 0 || id.length > 64) return Promise.resolve({ ok: false, msg: 'Unknown provider' })
+    if (!new Set(['claude', 'agy', 'codex', 'aider']).has(id)) return Promise.resolve({ ok: false, msg: 'Unknown provider' })
     return ipcRenderer.invoke('ai:login', id)
   },
   aiAuthStatus: id  => {
     if (typeof id !== 'string' || id.length === 0 || id.length > 64) return Promise.resolve({ loggedIn: false })
+    if (!new Set(['claude', 'agy', 'codex', 'aider']).has(id)) return Promise.resolve({ loggedIn: false })
     return ipcRenderer.invoke('ai:auth-status', id)
   },
   fine:    p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:fine', p) },
@@ -50,7 +52,7 @@ contextBridge.exposeInMainWorld('director', {
   analyze:    p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:analyze', p) },
   readIterLog: (p, l)  => {
     if (typeof p !== 'string' || !p) return Promise.resolve('')
-    if (typeof l !== 'string' || !l.trim()) return Promise.resolve('')
+    if (typeof l !== 'string' || !l.trim() || l.length > 512) return Promise.resolve('')
     return ipcRenderer.invoke('orchestra:readIterLog', p, l)
   },
   // Saved mixes
