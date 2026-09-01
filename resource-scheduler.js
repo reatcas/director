@@ -349,7 +349,7 @@ class ResourceScheduler {
 
   getSampleHistory(dir, limit) {
     const history = this.samples.get(dir) || []
-    return limit ? history.slice(-limit) : history
+    return (limit && limit < history.length) ? history.slice(-limit) : history
   }
 
   getActiveDirectories() {

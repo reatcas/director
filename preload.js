@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('director', {
   aiCredits: ()     => ipcRenderer.invoke('ai:credits'),
   aiSelect:  id     => {
     if (typeof id !== 'string' || id.length === 0 || id.length > 64) return Promise.resolve({ ok: false, error: 'Unknown AI' })
+    if (!new Set(['claude', 'agy', 'codex', 'aider']).has(id)) return Promise.resolve({ ok: false, error: 'Unknown AI' })
     return ipcRenderer.invoke('ai:select', id)
   },
   aiLogin:   id     => {
@@ -80,6 +81,7 @@ contextBridge.exposeInMainWorld('director', {
   lifecycleAdd:        (p, t, l, m) => {
     if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (typeof t !== 'string' || t.length > 64) return Promise.resolve(false)
+    if (!new Set(['play','fine','kill','commit','exit','usage_limit','directive','auto_resume','error','note','cycle_close','feature']).has(t)) return Promise.resolve(false)
     if (typeof l !== 'string' || l.length > 128 || l.trim().length === 0) return Promise.resolve(false)
     if (typeof m !== 'string' || m.length > 1024) return Promise.resolve(false)
     return ipcRenderer.invoke('lifecycle:add', p, t, l, m)
@@ -120,6 +122,7 @@ contextBridge.exposeInMainWorld('director', {
     if (!a || typeof a !== 'object' || !Array.isArray(a)) return Promise.resolve(false)
     if (a.length > 200) return Promise.resolve(false)
     if (a.some(el => !el || typeof el !== 'object' || Array.isArray(el))) return Promise.resolve(false)
+    if (a.some(el => typeof el.name !== 'string' || el.name.length === 0 || el.name.length > 256)) return Promise.resolve(false)
     return ipcRenderer.invoke('atriles:save', a)
   },
   // Alert notifications (F-22)

@@ -216,12 +216,12 @@
     </div>
     <div id="aiControl" class="ai-control">
       <button id="smartModelToggle" class="smart-model-toggle" title="Smart Model — auto-selects models by task complexity" aria-label="Alternar Smart Model">
-        <span class="smt-icon">⚡</span><span class="smt-label">SMART</span>
+        <span class="smt-icon" aria-hidden="true">⚡</span><span class="smt-label">SMART</span>
       </button>
       <div id="manualModelWrap" class="manual-model-wrap">
         <label for="aiSelect">AI</label>
         <div class="ai-select-wrap">
-          <span class="ai-icon" id="aiIconMain">✦</span>
+          <span class="ai-icon" id="aiIconMain" aria-hidden="true">✦</span>
           <select id="aiSelect" aria-label="AI provider">
             <option value="claude">Claude (Anthropic)</option>
             <option value="agy">Antigravity</option>
@@ -230,7 +230,7 @@
           </select>
         </div>
         <div class="ai-select-wrap" style="display:none;">
-          <span class="ai-icon" id="aiIconModel">✦</span>
+          <span class="ai-icon" id="aiIconModel" aria-hidden="true">✦</span>
           <select id="modelSelect" aria-label="AI model" style="margin-left:5px;">
           </select>
         </div>
@@ -532,7 +532,7 @@
       <!-- NODE GRAPH (bottom of mix panel) -->
       <div id="nodeGraphSection" class="ng-section" role="img" tabindex="0" aria-label="Grafo de nodos del mixer — visualización 3D de pesos de categorías" aria-description="Use el panel de mezcla para ajustar los pesos. La categoría activa se muestra en la esquina superior derecha.">
         <div id="mixerGraphCanvas" class="mg-canvas" aria-hidden="true"></div>
-        <div class="ng-label">⟡ NODE GRAPH</div>
+        <div class="ng-label" aria-hidden="true">⟡ NODE GRAPH</div>
         <span id="ngActiveLabel" class="ng-active-label" aria-live="polite" aria-atomic="true"></span>
       </div>
 

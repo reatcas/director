@@ -1167,6 +1167,7 @@ ipcMain.handle('orchestra:hotReload', (_e) => {
 
 ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   if (!isKnownProject(dir)) return
+  _analyzeCache.delete(dir)
   const stdoutLog = path.join(dir, '.claude/logs/orchestra-stdout.log')
   const masterLog = path.join(dir, '.claude/logs/orchestra.log')
   try { fs.writeFileSync(stdoutLog, '') } catch {}

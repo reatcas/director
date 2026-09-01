@@ -159,6 +159,7 @@ let _clockStatusEl = null
 let _pstatusEl = null
 let _pnameEl = null
 let _ppathEl = null
+let _pbadgeEl = null
 let _usageBarEl = null
 let _usageBarFillEl = null
 
@@ -591,19 +592,19 @@ function paint() {
   if (_pnameEl) _pnameEl.textContent = p.name
   if (!_ppathEl) _ppathEl = $('#ppath')
   if (_ppathEl) _ppathEl.textContent = p.path
-  const badge = $('#pbadge')
-  if (badge) {
+  if (!_pbadgeEl) _pbadgeEl = $('#pbadge')
+  if (_pbadgeEl) {
     if (p.logo) {
-      badge.innerHTML = ''
-      badge.style.background = 'transparent'
+      _pbadgeEl.innerHTML = ''
+      _pbadgeEl.style.background = 'transparent'
       const img = document.createElement('img')
       img.src = 'local-img://' + encodeURIComponent(p.logo)
       img.alt = p.name
       img.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:inherit'
-      badge.appendChild(img)
+      _pbadgeEl.appendChild(img)
     } else {
-      badge.innerHTML = `<span id="pbadgeText">${initials(esc(p.name))}</span>`
-      badge.style.background = `hsl(${hue(p.name)} 45% var(--badge-l, 30%))`
+      _pbadgeEl.innerHTML = `<span id="pbadgeText">${initials(esc(p.name))}</span>`
+      _pbadgeEl.style.background = `hsl(${hue(p.name)} 45% var(--badge-l, 30%))`
     }
   }
 
@@ -684,7 +685,8 @@ if ($('#removeBtn')) $('#removeBtn').onclick = async () => {
     _pstatusEl.textContent = 'no project'
     _pstatusEl.className = 'tp-status'
   }
-  if ($('#pbadge')) { $('#pbadge').innerHTML = ''; $('#pbadge').style.background = '' }
+  if (!_pbadgeEl) _pbadgeEl = $('#pbadge')
+  if (_pbadgeEl) { _pbadgeEl.innerHTML = ''; _pbadgeEl.style.background = '' }
   refresh()
 }
 if ($('#installBtn')) $('#installBtn').onclick = async () => { await window.director.install(current); refresh() }

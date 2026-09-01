@@ -40,6 +40,7 @@ class CoordinationProtocol {
     this._cachedConflicts = null   // cached detectConflicts result
     this._totalMemMB = Math.floor(os.totalmem() / 1048576)  // constant at runtime
     this._coordTelDirReady = new Set()  // dirs with telemetry dir already created
+    this._lastPersistEvCount = 0   // event count at last telemetry write (BL-26)
   }
 
   // ─── Instance registration ─────────────────────────────────────────────
@@ -344,6 +345,7 @@ class CoordinationProtocol {
 
   persistTelemetry(dir) {
     if (this.events.length === 0 && this.conflictLog.length === 0) return
+    if (this.events.length === this._lastPersistEvCount) return
 
     try {
       const telDir = path.join(dir, '.claude', 'telemetry')
@@ -362,7 +364,7 @@ class CoordinationProtocol {
       if (hist.length > 300) hist.splice(0, hist.length - 300)
       const tmp = file + '.tmp'
       const _coSer = JSON.stringify(hist)
-      if (_coSer.length <= 1_048_576) { fs.writeFileSync(tmp, _coSer); fs.renameSync(tmp, file) }
+      if (_coSer.length <= 1_048_576) { fs.writeFileSync(tmp, _coSer); fs.renameSync(tmp, file); this._lastPersistEvCount = this.events.length }
     } catch {}
   }
 
