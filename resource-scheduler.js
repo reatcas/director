@@ -27,6 +27,7 @@ class ResourceScheduler {
     this.samples     = new Map()      // dir → time-series of resource samples
     this.efficiency  = new Map()      // dir → computed efficiency metrics
     this._cpuCache   = null           // cached { count, model }
+    this._telDirReady = new Set()     // dirs with telemetry dir already created
   }
 
   // ─── System resource snapshot ────────────────────────────────────────────
@@ -297,7 +298,7 @@ class ResourceScheduler {
 
     try {
       const telDir = path.join(dir, '.claude', 'telemetry')
-      fs.mkdirSync(telDir, { recursive: true })
+      if (!this._telDirReady.has(dir)) { fs.mkdirSync(telDir, { recursive: true }); this._telDirReady.add(dir) }
 
       const file = path.join(telDir, 'resource-metrics.json')
       let hist = []
@@ -349,6 +350,7 @@ class ResourceScheduler {
     this.baselines.delete(dir)
     this.samples.delete(dir)
     this.efficiency.delete(dir)
+    this._telDirReady.delete(dir)
   }
 }
 

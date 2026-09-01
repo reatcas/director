@@ -236,11 +236,13 @@ class CoordinationProtocol {
           const combinedMemMB = infoA.memBudgetMB + infoB.memBudgetMB
           const memPressure = combinedMemMB / this._totalMemMB
 
+          const _csRounded = Math.round(contentionScore * 100) / 100
           conflicts.push({
             instanceA: dirA,
             instanceB: dirB,
             overlappingCategories: overlapping,
-            contentionScore: Math.round(contentionScore * 100) / 100,
+            contentionScore: _csRounded,
+            severity: _csRounded > 0.5 ? 'high' : _csRounded > 0.25 ? 'medium' : 'low',
             combinedMemoryMB: combinedMemMB,
             memoryPressure: Math.round(memPressure * 1000) / 10,
             recommendation: contentionScore > 0.5

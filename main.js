@@ -1205,6 +1205,13 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     try { if (fs.statSync(coordFile).size <= 1_048_576) coordHist = readJSON(coordFile, []) } catch {}
     if (Array.isArray(coordHist) && coordHist.length > 100) { const _coTrimSer = JSON.stringify(coordHist.slice(-100)); if (_coTrimSer.length <= 1_048_576) writeJSON(coordFile, JSON.parse(_coTrimSer)) }
   } catch {}
+  // Cap resource-metrics telemetry at 300 entries on log clear (mirrors persistTelemetry cap)
+  try {
+    const rsFile = path.join(dir, '.claude', 'telemetry', 'resource-metrics.json')
+    let rsHist = []
+    try { if (fs.statSync(rsFile).size <= 1_048_576) rsHist = readJSON(rsFile, []) } catch {}
+    if (Array.isArray(rsHist) && rsHist.length > 300) { const _rsTrimSer = JSON.stringify(rsHist.slice(-300)); if (_rsTrimSer.length <= 1_048_576) writeJSON(rsFile, JSON.parse(_rsTrimSer)) }
+  } catch {}
   _metricsCache.delete('snapshot:' + dir)
   _metricsCache.delete('context:' + dir)
   _metricsCache.delete('claude-usage:' + dir)
