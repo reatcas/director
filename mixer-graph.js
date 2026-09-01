@@ -425,6 +425,7 @@ window.mixerGraph = (() => {
       if (typeof category !== 'string' || category.length > 64) return
     }
     const prev = _activeCategory
+    if (category === prev) return
     _activeCategory = category
     _activeGlow = null
     if (category && category !== prev) {

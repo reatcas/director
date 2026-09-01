@@ -948,6 +948,7 @@ function activateMixerStand(category) {
       } catch {}
     }
     _ngLbl.textContent = _ngTxt
+    _ngLbl.style.color = _ngSec ? _ngSec[2] : ''
   }
   if (!category) return
 
