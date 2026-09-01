@@ -1412,7 +1412,8 @@ function addActionEntry(type, label, message) {
 
 // Add interpreting state (animated waveform entry)
 function addInterpretingEntry() {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] [INTERPRETING] Orchestra running...`)
@@ -1479,7 +1480,8 @@ function addUsageEntry(message) {
 
 // Add a feature-start entry (▸ ▶ unit — goal)
 function addFeatureEntry(text) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] ${text}`)

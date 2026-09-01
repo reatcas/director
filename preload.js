@@ -12,7 +12,7 @@ contextBridge.exposeInMainWorld('director', {
     if (s !== undefined && (typeof s !== 'string' || s.length > 512)) return Promise.resolve('')
     return ipcRenderer.invoke('repertoire:readFile', p, s)
   },
-  install: p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:install', p) },
+  install: p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:install', p) },
   play:    (p, a)  => {
     if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false, err: 'invalid path' })
     if (typeof a !== 'string' || a.length === 0 || a.length > 64) return Promise.resolve({ ok: false, err: 'invalid agent' })
@@ -54,7 +54,7 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('orchestra:readIterLog', p, l)
   },
   // Saved mixes
-  mixerSavedList:   p           => { if (typeof p !== 'string' || !p) return Promise.resolve([]); return ipcRenderer.invoke('mixer:saved:list', p) },
+  mixerSavedList:   p           => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve([]); return ipcRenderer.invoke('mixer:saved:list', p) },
   mixerSavedSave:   (p, n, f)   => {
     if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (typeof n !== 'string' || n.length === 0 || n.length > 256) return Promise.resolve(false)
@@ -72,11 +72,11 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('mixer:saved:export', p, id)
   },
   // Mixer history (F-17) + Session summary (F-18)
-  mixerHistory:    (p, n) => { if (typeof p !== 'string' || !p) return Promise.resolve([]); return ipcRenderer.invoke('mixer:history', p, Number.isInteger(n) && n > 0 && n <= 100 ? n : undefined) },
+  mixerHistory:    (p, n) => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve([]); return ipcRenderer.invoke('mixer:history', p, Number.isInteger(n) && n > 0 && n <= 100 ? n : undefined) },
   sessionSummary:  ()     => ipcRenderer.invoke('metrics:session-summary'),
   // Lifecycle events
   lifecycleList:       (p, limit, typeFilter, before)  => {
-    if (typeof p !== 'string' || !p) return Promise.resolve({ events: [], total: 0 })
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ events: [], total: 0 })
     const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : undefined
     const _llType = typeof typeFilter === 'string' && typeFilter.length > 0 && typeFilter.length <= 64 && /^[\w\-]+$/.test(typeFilter) ? typeFilter : undefined
     const _llBefore = typeof before === 'string' && before.length <= 64 && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : undefined
@@ -95,8 +95,8 @@ contextBridge.exposeInMainWorld('director', {
   metricsContext:      p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:context', p) },
   metricsCoordination: ()      => ipcRenderer.invoke('metrics:coordination'),
   metricsSnapshot:     p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:snapshot', p) },
-  metricsAllocation:   p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:allocation', p) },
-  claudeUsage:         p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:claude-usage', p) },
+  metricsAllocation:   p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:allocation', p) },
+  claudeUsage:         p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:claude-usage', p) },
   // System process monitor
   systemProcs:   ()        => ipcRenderer.invoke('system:claude-procs'),
   systemKill:    (pid, sig) => {
@@ -105,8 +105,8 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('system:kill-proc', pid, sig)
   },
   // Compliance & health metrics
-  complianceMetrics:   p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:compliance', p) },
-  roadmapFreshness:    p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:roadmap-freshness', p) },
+  complianceMetrics:   p  => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:compliance', p) },
+  roadmapFreshness:    p  => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:roadmap-freshness', p) },
   // Orchestra version management
   orchestraVersionCheck: p  => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:version-check', p) },
   orchestraUpgrade:      p  => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:upgrade', p) },
