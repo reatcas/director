@@ -26,11 +26,11 @@ contextBridge.exposeInMainWorld('director', {
     if (typeof id !== 'string' || id.length === 0 || id.length > 64) return Promise.resolve({ loggedIn: false })
     return ipcRenderer.invoke('ai:auth-status', id)
   },
-  fine:    p       => ipcRenderer.invoke('orchestra:fine', p),
-  kill:    p       => ipcRenderer.invoke('orchestra:kill', p),
+  fine:    p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:fine', p) },
+  kill:    p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:kill', p) },
   tail:    (p, lines) => ipcRenderer.invoke('orchestra:tail', p, Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400),
-  clearLog: p      => ipcRenderer.invoke('orchestra:clearLog', p),
-  mixerRead:  p       => ipcRenderer.invoke('mixer:read', p),
+  clearLog: p      => { if (typeof p !== 'string' || !p) return Promise.resolve(false); return ipcRenderer.invoke('orchestra:clearLog', p) },
+  mixerRead:  p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('mixer:read', p) },
   mixerWrite: (p, f)  => {
     if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:write', p, f)
@@ -39,7 +39,7 @@ contextBridge.exposeInMainWorld('director', {
     if (!c || typeof c !== 'object' || Array.isArray(c)) return Promise.resolve(false)
     return ipcRenderer.invoke('orchestra:writeConfig', p, c)
   },
-  analyze:    p       => ipcRenderer.invoke('orchestra:analyze', p),
+  analyze:    p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:analyze', p) },
   readIterLog: (p, l)  => {
     if (typeof l !== 'string' || !l.trim()) return Promise.resolve('')
     return ipcRenderer.invoke('orchestra:readIterLog', p, l)

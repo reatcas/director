@@ -279,7 +279,7 @@ class CoordinationProtocol {
 
     this._logEvent('rebalance', 'system', {
       instanceCount: entries.length,
-      priorities: entries.map(([d, i]) => ({ dir: d, priority: i.priority, rank: i.rank }))
+      priorities: entries.map(([d, i]) => ({ dir: d, priority: i.priority, priorityTier: i.priorityTier, rank: i.rank }))
     })
   }
 

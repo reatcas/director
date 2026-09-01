@@ -2369,10 +2369,12 @@ function updateAllocInspector(allocation) {
 // ─── Token Burn Rate (F-19) ───────────────────────────────────────────────────
 const _burnHistory = []
 let _prevBurnTokens = 0
+let _burnSparkEl = null
 
 function updateBurnRate(usage) {
   const valEl = _mmBurnEl || $('#mmBurnVal')
-  const sparkEl = $('#burnSpark')
+  if (!_burnSparkEl) _burnSparkEl = $('#burnSpark')
+  const sparkEl = _burnSparkEl
   if (!valEl) return
 
   if (!usage || !usage.tokensEstimated) {
