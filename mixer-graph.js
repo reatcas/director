@@ -172,10 +172,17 @@ window.mixerGraph = (() => {
     return { x: n.x, y: n.y }
   }
 
+  const _MAX_RINGS = 20
+  const _MAX_SPARKS = 50
+
   function emitRing(x, y, color, maxScale, duration) {
     if (!window.THREE || !_pulseLayer) return
     const tex = makeGlowTexture(color)
     if (!tex) return
+    if (_rings.length >= _MAX_RINGS) {
+      const old = _rings.shift()
+      _pulseLayer.remove(old.sp); old.mat.dispose()
+    }
     const mat = new THREE.SpriteMaterial({
       map: tex, transparent: true,
       blending: THREE.AdditiveBlending, depthWrite: false, opacity: 1,
@@ -192,6 +199,10 @@ window.mixerGraph = (() => {
     const tex = makeGlowTexture(color)
     if (!tex) return
     for (let i = 0; i < count; i++) {
+      if (_sparks.length >= _MAX_SPARKS) {
+        const old = _sparks.shift()
+        _pulseLayer.remove(old.sp); old.mat.dispose()
+      }
       const angle = Math.random() * Math.PI * 2
       const speed = 1.5 + Math.random() * 4
       const mat = new THREE.SpriteMaterial({

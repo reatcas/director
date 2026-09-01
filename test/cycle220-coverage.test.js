@@ -189,10 +189,10 @@ describe('3-column layout DOM structure (style 1cb1a75)', () => {
     expect(cssStr).toContain('display: none')
   })
 
-  it('#nodeGraphSection has application role', () => {
-    expect(htmlStr).toContain('role="application"')
+  it('#nodeGraphSection has img role (visual-only 3D component)', () => {
+    expect(htmlStr).toContain('role="img"')
     const ngBlock = htmlStr.split('id="nodeGraphSection"')[1]?.split('>')[0] || ''
-    expect(ngBlock).toContain('role="application"')
+    expect(ngBlock).toContain('role="img"')
   })
 
   it('#nodeGraphSection has tabindex for keyboard focus', () => {
