@@ -1224,6 +1224,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   _metricsCache.delete('snapshot:' + dir)
   _metricsCache.delete('context:' + dir)
   _metricsCache.delete('claude-usage:' + dir)
+  _metricsCache.delete('compliance:' + dir)
+  _metricsCache.delete('freshness:' + dir)
   _metricsCache.delete('session-summary')
   usageTracker.delete(dir)
   for (const k of _metricsCache.keys()) { if (k.startsWith('lc:' + dir + ':')) _metricsCache.delete(k) }

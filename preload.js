@@ -45,7 +45,7 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('orchestra:readIterLog', p, l)
   },
   // Saved mixes
-  mixerSavedList:   p           => ipcRenderer.invoke('mixer:saved:list', p),
+  mixerSavedList:   p           => { if (typeof p !== 'string' || !p) return Promise.resolve([]); return ipcRenderer.invoke('mixer:saved:list', p) },
   mixerSavedSave:   (p, n, f)   => {
     if (typeof n !== 'string' || n.length === 0 || n.length > 256) return Promise.resolve(false)
     if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
@@ -60,16 +60,18 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('mixer:saved:export', p, id)
   },
   // Mixer history (F-17) + Session summary (F-18)
-  mixerHistory:    (p, n) => ipcRenderer.invoke('mixer:history', p, Number.isInteger(n) && n > 0 && n <= 100 ? n : undefined),
+  mixerHistory:    (p, n) => { if (typeof p !== 'string' || !p) return Promise.resolve([]); return ipcRenderer.invoke('mixer:history', p, Number.isInteger(n) && n > 0 && n <= 100 ? n : undefined) },
   sessionSummary:  ()     => ipcRenderer.invoke('metrics:session-summary'),
   // Lifecycle events
   lifecycleList:       (p, limit, typeFilter, before)  => {
+    if (typeof p !== 'string' || !p) return Promise.resolve({ events: [], total: 0 })
     const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : undefined
     const _llType = typeof typeFilter === 'string' && typeFilter.length > 0 && typeFilter.length <= 64 && /^[\w\-]+$/.test(typeFilter) ? typeFilter : undefined
     const _llBefore = typeof before === 'string' && before.length <= 64 && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : undefined
     return ipcRenderer.invoke('lifecycle:list', p, _llLimit, _llType, _llBefore)
   },
   lifecycleAdd:        (p, t, l, m) => {
+    if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (typeof t !== 'string' || t.length > 64) return Promise.resolve(false)
     if (typeof l !== 'string' || l.length > 128 || l.trim().length === 0) return Promise.resolve(false)
     if (typeof m !== 'string' || m.length > 1024) return Promise.resolve(false)

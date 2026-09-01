@@ -1,3 +1,35 @@
+# Cycle 246 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 246 (performance+ux_accessibility BANNED: C243+C244+C245 consecutive)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 4 | 0/4 |
+| security | 20 | 2 | 0/2 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| performance | 10 | 0 | BAN (C243+C244+C245 consecutive) |
+| ux_accessibility | 5 | 0 | BAN (C243+C244+C245 consecutive) |
+| business_logic | 5 | 0 | SKIP (done C244) |
+| data_db | 5 | 0 | SKIP (done C243) |
+| product | 10 | 0 | SKIP (F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (performance+ux_accessibility BANNED)
+
+## Units
+1. [quality_tests] T-152 — cycle246-coverage.test.js: S-92 add/remove/openDir string guards source
+2. [quality_tests] T-153 — cycle246-coverage.test.js: S-93 readFile/install/exportSession string guards source
+3. [quality_tests] T-154 — cycle246-coverage.test.js: P-75 _knownPathsSet isKnownProject + F-27 _usageBarEl/_usageBarFillEl cached refs
+4. [quality_tests] T-155 — cycle246-coverage.test.js: A-41 role=status+aria-live on mmAllocVal/mmMemVal/mmTokensVal
+5. [security] S-94 — preload.js `mixerSavedList(p)`+`mixerHistory(p,n)`: typeof string guard for p per ADR-007
+6. [security] S-95 — preload.js `lifecycleList(p,...)`+`lifecycleAdd(p,...)`: typeof string guard for p per ADR-007
+7. [backend] B-29 — main.js `orchestra:clearLog`: add compliance+freshness cache eviction for that dir
+8. [frontend] F-28 — renderer.js: add module-level _aiSelectEl cached ref (queried in 4 locations)
+
+## Stats
+- 4412 tests at cycle open → TBD at close
+
+---
 # Cycle 245 Plan — IMPROVEMENT MODE
 
 ## MIXER BUDGET — Cycle 245 (business_logic BANNED: C242+C243+C244 consecutive)
@@ -27,7 +59,9 @@ Total: 8 units — IMPROVEMENT MODE (business_logic BANNED)
 8. [ux_accessibility] A-41 — index.html: add role=status+aria-live=polite to mmAllocVal+mmMemVal+mmTokensVal
 
 ## Stats
-- 4397 tests at cycle open → TBD at close
+- 4397 tests at cycle open → 4412 at close
+
+▸ ◼ Cycle 245 cerrado — COMPLIANCE quality_tests:3/3 security:2/2 performance:1/1 frontend:1/1 ux_accessibility:1/1 DRIFT:none TESTS:green
 
 ---
 # Cycle 244 Plan — IMPROVEMENT MODE

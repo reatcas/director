@@ -154,6 +154,7 @@ let aiCredits = {}
 let _mmAllocEl, _mmMemEl, _mmTokensEl, _mmComprEl, _mmInstEl, _mmAiUsageEl, _mmBurnEl, _mmComplianceEl, _mmRoadmapEl
 let _compressionPanelEl, _compressionStatsEl, _compressionHistEl
 let _complianceSparkEl = null
+let _aiSelectEl = null
 let _usageBarEl = null
 let _usageBarFillEl = null
 
@@ -173,7 +174,8 @@ async function loadAiCredits() {
   updateAiControl()
 }
 function updateAiControl() {
-  const id = $('#aiSelect')?.value
+  if (!_aiSelectEl) _aiSelectEl = $('#aiSelect')
+  const id = _aiSelectEl?.value
   const credit = aiCredits[id]
   if ($('#aiCreditStatus')) {
     $('#aiCreditStatus').textContent = credit 
@@ -2250,6 +2252,7 @@ function updateAiUsageDisplay(creditData, telemetryUsage) {
   if (telemetryUsage !== undefined) lastTelemetryUsage = telemetryUsage;
 
   const valEl  = _mmAiUsageEl || $('#mmAiUsageVal')
+  if (!_aiSelectEl) _aiSelectEl = $('#aiSelect')
   if (!_usageBarFillEl) _usageBarFillEl = $('#usageBarFill')
   const barEl  = _usageBarFillEl
   if (!valEl) return
@@ -2260,7 +2263,7 @@ function updateAiUsageDisplay(creditData, telemetryUsage) {
     return
   }
 
-  const id = $('#aiSelect')?.value
+  const id = _aiSelectEl?.value
   let pct = 0
   let isExhausted = creditData.credits <= 0
   
