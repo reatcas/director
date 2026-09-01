@@ -4,9 +4,9 @@
 const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('director', {
   list:    ()      => ipcRenderer.invoke('repertoire:list'),
-  add:     p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:add', p) },
-  remove:  p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:remove', p) },
-  openDir: p       => { if (typeof p !== 'string' || !p) return Promise.resolve(false); return ipcRenderer.invoke('repertoire:open', p) },
+  add:     p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:add', p) },
+  remove:  p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:remove', p) },
+  openDir: p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false); return ipcRenderer.invoke('repertoire:open', p) },
   readFile: (p, s) => {
     if (typeof p !== 'string' || !p) return Promise.resolve('')
     if (s !== undefined && (typeof s !== 'string' || s.length > 512)) return Promise.resolve('')
@@ -38,12 +38,12 @@ contextBridge.exposeInMainWorld('director', {
   clearLog: p      => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false); return ipcRenderer.invoke('orchestra:clearLog', p) },
   mixerRead:  p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('mixer:read', p) },
   mixerWrite: (p, f)  => {
-    if (typeof p !== 'string' || !p) return Promise.resolve(false)
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false)
     if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:write', p, f)
   },
   configWrite: (p, c) => {
-    if (typeof p !== 'string' || !p) return Promise.resolve(false)
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false)
     if (!c || typeof c !== 'object' || Array.isArray(c)) return Promise.resolve(false)
     return ipcRenderer.invoke('orchestra:writeConfig', p, c)
   },
@@ -92,9 +92,9 @@ contextBridge.exposeInMainWorld('director', {
   },
   // Telemetry / Metrics
   metricsResource:     p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:resource', p) },
-  metricsContext:      p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:context', p) },
+  metricsContext:      p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:context', p) },
   metricsCoordination: ()      => ipcRenderer.invoke('metrics:coordination'),
-  metricsSnapshot:     p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:snapshot', p) },
+  metricsSnapshot:     p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('metrics:snapshot', p) },
   metricsAllocation:   p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:allocation', p) },
   claudeUsage:         p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:claude-usage', p) },
   // System process monitor
@@ -111,7 +111,7 @@ contextBridge.exposeInMainWorld('director', {
   orchestraVersionCheck: p  => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:version-check', p) },
   orchestraUpgrade:      p  => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:upgrade', p) },
   // Blueprint / Discovery
-  blueprintLoad:      p        => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:load', p) },
+  blueprintLoad:      p        => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:load', p) },
   blueprintSave:      (p, d)   => {
     if (typeof p !== 'string' || !p) return Promise.resolve(false)
     if (!d || typeof d !== 'object' || Array.isArray(d)) return Promise.resolve(false)
@@ -141,9 +141,9 @@ contextBridge.exposeInMainWorld('director', {
   // Session export (F-23)
   exportSession:      dir      => { if (typeof dir !== 'string' || !dir) return Promise.resolve(null); return ipcRenderer.invoke('export:session', dir) },
   // Operator notes (F-25)
-  notesRead:          dir      => { if (typeof dir !== 'string' || !dir) return Promise.resolve(null); return ipcRenderer.invoke('notes:read', dir) },
+  notesRead:          dir      => { if (typeof dir !== 'string' || !dir || dir.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('notes:read', dir) },
   notesWrite:         (dir, c) => {
-    if (typeof dir !== 'string' || !dir) return Promise.resolve(false)
+    if (typeof dir !== 'string' || !dir || dir.length > 4096) return Promise.resolve(false)
     if (typeof c !== 'string' || c.length > 50000) return Promise.resolve(false)
     return ipcRenderer.invoke('notes:write', dir, c)
   },

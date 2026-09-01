@@ -260,7 +260,7 @@
       <button id="openFolderBtn" class="tp-action" hidden aria-label="Abrir carpeta del proyecto">OPEN DIR</button>
       <button id="installBtn" class="tp-action warn" hidden aria-label="Instalar orquesta">INSTALL</button>
       <button id="upgradeBtn" class="tp-action upgrade" hidden aria-label="Actualizar orquesta">UPDATE</button>
-      <span id="upgradeVer" class="tp-path mono" style="display:none"></span>
+      <span id="upgradeVer" class="tp-path mono" style="display:none" aria-live="polite" aria-label="Versión de orquesta disponible"></span>
       <span id="ppath" class="tp-path mono" aria-live="polite" aria-label="Ruta del proyecto"></span>
       <button id="exportBtn" class="tp-action" hidden aria-label="Exportar sesión">EXPORT</button>
       <button id="removeBtn" class="tp-action dim" aria-label="Eliminar proyecto">REMOVE</button>
@@ -499,7 +499,7 @@
           <div style="padding:6px 10px;display:flex;gap:4px">
             <button id="bpNewSession" class="tp-action" aria-label="Agregar nueva sesión al blueprint">+ SESSION</button>
             <button id="bpGenerate" class="tp-action upgrade" disabled aria-label="Exportar brief generado">GENERATE BRIEF</button>
-            <span id="bpCompleteness" class="section-badge mono" style="margin-left:auto"></span>
+            <span id="bpCompleteness" class="section-badge mono" style="margin-left:auto" aria-live="polite" aria-label="Panel de completitud del blueprint"></span>
           </div>
         </div>
 

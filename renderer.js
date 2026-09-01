@@ -1372,7 +1372,8 @@ function timeStamp() {
 
 // Add a lifecycle action entry (play, fine, kill, exit, resume)
 function addActionEntry(type, label, message) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
 
   const ACTIONS = {
@@ -1521,7 +1522,8 @@ function addFeatureEntry(text) {
 
 // Add a cycle status line (▸ prefixed digests)
 function addCycleEntry(text) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] ${text}`)

@@ -1152,6 +1152,7 @@ ipcMain.handle('orchestra:kill', (_e, dir) => {
   _metricsCache.delete('session-summary')
   _metricsCache.delete('resource:' + dir)
   _metricsCache.delete('coordination')
+  _analyzeCache.delete(dir)
   _invalidateIsRunning(dir)
   stopTailing(dir)
   stopWatchingResume(dir)

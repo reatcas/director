@@ -287,11 +287,12 @@ class CoordinationProtocol {
     let totalInverse = 0
     const inversePriorities = entries.map(([, info]) => { const inv = 101 - info.priority; totalInverse += inv; return inv })
     totalInverse = totalInverse || 1
-    entries.forEach(([dir, info], idx) => {
+    for (let idx = 0; idx < entries.length; idx++) {
+      const [, info] = entries[idx]
       info.rank = idx + 1
       info.totalInstances = entries.length
       info.resourceShare = Math.round((inversePriorities[idx] / totalInverse) * 1000) / 1000
-    })
+    }
 
     this._logEvent('rebalance', 'system', {
       instanceCount: entries.length,
