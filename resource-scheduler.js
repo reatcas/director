@@ -28,6 +28,8 @@ class ResourceScheduler {
     this.efficiency  = new Map()      // dir → computed efficiency metrics
     this._cpuCache   = null           // cached { count, model }
     this._telDirReady = new Set()     // dirs with telemetry dir already created
+    this._sysSnapCache = null         // cached systemSnapshot result (1s TTL)
+    this._sysSnapTs    = 0            // timestamp of last systemSnapshot cache fill
   }
 
   // ─── System resource snapshot ────────────────────────────────────────────
@@ -36,7 +38,9 @@ class ResourceScheduler {
       const cpus = os.cpus()
       this._cpuCache = { count: cpus.length, model: cpus[0] ? cpus[0].model : 'unknown' }
     }
-    return {
+    const now = Date.now()
+    if (this._sysSnapCache && now - this._sysSnapTs < 1000) return this._sysSnapCache
+    this._sysSnapCache = {
       cpuCount:     this._cpuCache.count,
       cpuModel:     this._cpuCache.model,
       totalMemMB:   Math.floor(os.totalmem() / 1048576),
@@ -46,6 +50,8 @@ class ResourceScheduler {
       platform:     process.platform,
       timestamp:    new Date().toISOString()
     }
+    this._sysSnapTs = now
+    return this._sysSnapCache
   }
 
   // ─── Compute allocation from focus weights ──────────────────────────────

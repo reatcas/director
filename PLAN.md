@@ -1,3 +1,35 @@
+# Cycle 247 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 247 (security+frontend BANNED: C244+C245+C246 consecutive)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 4 | 0/4 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| business_logic | 5 | 1 | 0/1 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| security | 20 | 0 | BAN (C244+C245+C246 consecutive) |
+| frontend | 5 | 0 | BAN (C244+C245+C246 consecutive) |
+| data_db | 5 | 0 | SKIP (done C243) |
+| product | 10 | 0 | SKIP (F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (security+frontend BANNED)
+
+## Units
+1. [quality_tests] T-156 — cycle247-coverage.test.js: S-94 mixerSavedList/mixerHistory p guard source
+2. [quality_tests] T-157 — cycle247-coverage.test.js: S-95 lifecycleList/lifecycleAdd p guard source
+3. [quality_tests] T-158 — cycle247-coverage.test.js: B-29 clearLog compliance+freshness cache eviction source
+4. [quality_tests] T-159 — cycle247-coverage.test.js: F-28 _aiSelectEl cached ref source
+5. [performance] P-76 — resource-scheduler.js `systemSnapshot`: add 1s TTL cache for OS syscalls (freemem/loadavg)
+6. [backend] B-30 — main.js `blueprint:load`: add 30s TTL cache to avoid re-reading BLUEPRINT.md on every call
+7. [business_logic] BL-23 — coordination-protocol.js `acquireLock`: call invalidateConflictCache() on successful lock grant
+8. [ux_accessibility] A-42 — index.html: add role=status+aria-live=polite to remaining mm-val elements (compression/instances/compliance/roadmap/burn)
+
+## Stats
+- 4428 tests at cycle open → TBD at close
+
+---
 # Cycle 246 Plan — IMPROVEMENT MODE
 
 ## MIXER BUDGET — Cycle 246 (performance+ux_accessibility BANNED: C243+C244+C245 consecutive)
@@ -27,7 +59,9 @@ Total: 8 units — IMPROVEMENT MODE (performance+ux_accessibility BANNED)
 8. [frontend] F-28 — renderer.js: add module-level _aiSelectEl cached ref (queried in 4 locations)
 
 ## Stats
-- 4412 tests at cycle open → TBD at close
+- 4412 tests at cycle open → 4428 at close
+
+▸ ◼ Cycle 246 cerrado — COMPLIANCE quality_tests:4/4 security:2/2 backend:1/1 frontend:1/1 DRIFT:none TESTS:green
 
 ---
 # Cycle 245 Plan — IMPROVEMENT MODE

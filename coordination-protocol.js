@@ -133,6 +133,7 @@ class CoordinationProtocol {
         grantedAt: new Date().toISOString()
       })
       this._logEvent('lock_acquired', dir, { resource })
+      this._cachedConflicts = null
       return { acquired: true }
     }
 

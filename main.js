@@ -2022,12 +2022,18 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
 
 // ─── Blueprint / Discovery Interview ─────────────────────────────────────────
 const blueprintFile = (dir) => path.join(dir, '.claude', 'blueprint.json')
+const _blueprintCache = new Map()  // dir → { data, ts }
+const _BLUEPRINT_TTL  = 30_000
 
 ipcMain.handle('blueprint:load', (_e, dir) => {
   if (!isKnownProject(dir)) return null
+  const _bpHit = _blueprintCache.get(dir)
+  if (_bpHit && Date.now() - _bpHit.ts < _BLUEPRINT_TTL) return _bpHit.data
   const bpPath = blueprintFile(dir)
   try { if (fs.statSync(bpPath).size > 512_000) return null } catch {}
-  return readJSON(bpPath, null)
+  const data = readJSON(bpPath, null)
+  _blueprintCache.set(dir, { data, ts: Date.now() })
+  return data
 })
 
 ipcMain.handle('blueprint:save', (_e, dir, data) => {
