@@ -1,20 +1,17 @@
-# Cycle 229 Plan — IMPROVEMENT MODE
+# Cycle 230 Plan — IMPROVEMENT MODE
 
-## MIXER BUDGET — Cycle 229 (F-01 HARNESS-blocked, ALL other ROADMAP done)
+## MIXER BUDGET — Cycle 230 (F-01 HARNESS-blocked, quality_tests BANNED: 4 consecutive C226-C229)
 | Cat | Peso | Units | Estado |
 |-----|------|-------|--------|
-| quality_tests | 35 | 1 | 0/1 |
-| security | 20 | 0 | SKIP |
-| ux_accessibility | 5 | 1 | 0/1 |
-| business_logic | 5 | 1 | 0/1 |
-| performance | 10 | 0 | SKIP |
+| security | 20 | 1 | 0/1 |
+| performance | 10 | 1 | 0/1 |
+| quality_tests | 35 | 0 | SKIP (category ban ≥3 consecutive) |
 | product | 10 | 0 | SKIP (HARNESS-blocked) |
-Total: 3 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
+Total: 2 units — IMPROVEMENT MODE, tests bundled into implementation commits
 
 ## Units
-1. [ux_accessibility] A-32 — strip range inputs: focus→activateMixerStand(k), blur→activateMixerStand(null) — keyboard users get graph-node activation while tabbing through mixer
-2. [business_logic] BL-11 — destroy() resets `_autoRotate`, `_camAngle`, `_linkFlash` — stale state persists across destroy+reinit, rotation carries over unexpectedly
-3. [quality_tests] T-119 — cycle229-coverage.test.js: A-32 focus/blur handlers, BL-11 destroy completeness
+1. [performance] P-64 — mixer-graph.js: `_nodeMap = new Map()` for O(1) `nodePos()` lookup, replacing O(n) `_gData.nodes.find()` — follows _sectionMap pattern from B-16
+2. [security] S-70 — preload.js: defense-in-depth type guards on `notesWrite` (content string ≤50000) and `mixerSavedSave` (name string, focus object) per ADR-007
 
 ## Stats
-- 4183 tests at cycle open
+- 4198 tests at cycle open

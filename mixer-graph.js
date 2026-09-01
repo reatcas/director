@@ -14,6 +14,7 @@ window.mixerGraph = (() => {
   // ── State ────────────────────────────────────────────────────────────────
   let graph = null, _container = null, _sections = [], _focus = {}
   let _sectionMap = new Map()        // key → section entry, O(1) lookup in hot paths
+  let _nodeMap    = new Map()        // node id → node object, O(1) lookup in nodePos()
   let _activeCategory = null, _recentPair = [], _gData = null, _mounted = false
   let _animId = null, _t = 0
   let _hubGlow = null, _activeGlow = null
@@ -166,8 +167,7 @@ window.mixerGraph = (() => {
 
   // ── Pulse effects ─────────────────────────────────────────────────────────
   function nodePos(id) {
-    if (!_gData) return null
-    const n = _gData.nodes.find(n => n.id === id)
+    const n = _nodeMap.get(id)
     if (!n || n.x === undefined) return null
     return { x: n.x, y: n.y }
   }
@@ -343,6 +343,7 @@ window.mixerGraph = (() => {
     _hubGlow = _activeGlow = null
     _rings = []; _sparks = []
     _gData = buildData()
+    _nodeMap = new Map(_gData.nodes.map(n => [n.id, n]))
     _mounted = true
 
     const w = containerEl.clientWidth  || 500
@@ -468,7 +469,7 @@ window.mixerGraph = (() => {
     _pulseLayer = null; _gData = null; _mounted = false
     _activeCategory = null; _recentPair = []
     _hubGlow = null; _activeGlow = null
-    _sections = []; _sectionMap.clear()
+    _sections = []; _sectionMap.clear(); _nodeMap.clear()
     _lastRefresh = 0
     _autoRotate = false; _camAngle = 0; _linkFlash = { cat: null, strength: 0 }
   }

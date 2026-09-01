@@ -25,7 +25,11 @@ contextBridge.exposeInMainWorld('director', {
   readIterLog: (p, l)  => ipcRenderer.invoke('orchestra:readIterLog', p, l),
   // Saved mixes
   mixerSavedList:   p           => ipcRenderer.invoke('mixer:saved:list', p),
-  mixerSavedSave:   (p, n, f)   => ipcRenderer.invoke('mixer:saved:save', p, n, f),
+  mixerSavedSave:   (p, n, f)   => {
+    if (typeof n !== 'string' || n.length === 0 || n.length > 256) return Promise.resolve(false)
+    if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
+    return ipcRenderer.invoke('mixer:saved:save', p, n, f)
+  },
   mixerSavedDelete: (p, id)     => ipcRenderer.invoke('mixer:saved:delete', p, id),
   mixerSavedExport: (p, id)     => ipcRenderer.invoke('mixer:saved:export', p, id),
   // Mixer history (F-17) + Session summary (F-18)
@@ -69,7 +73,10 @@ contextBridge.exposeInMainWorld('director', {
   exportSession:      dir      => ipcRenderer.invoke('export:session', dir),
   // Operator notes (F-25)
   notesRead:          dir      => ipcRenderer.invoke('notes:read', dir),
-  notesWrite:         (dir, c) => ipcRenderer.invoke('notes:write', dir, c),
+  notesWrite:         (dir, c) => {
+    if (typeof c !== 'string' || c.length > 50000) return Promise.resolve(false)
+    return ipcRenderer.invoke('notes:write', dir, c)
+  },
   // Events
   onLine:        cb => ipcRenderer.on('orchestra:line',        (_e, d) => cb(d)),
   onExit:        cb => ipcRenderer.on('orchestra:exit',        (_e, d) => cb(d)),
