@@ -50,8 +50,8 @@ describe('lifecycle:add evicts lc: cache entries (I-591)', () => {
 describe('metrics:session-summary clamps creditsRemaining (BL-09)', () => {
   const block = mainJs.split("'metrics:session-summary'")[1]?.split('\nipcMain')[0] || ''
 
-  it('wraps creditsRemaining sum in Math.max(0, ...)', () => {
-    expect(block).toContain('Math.max(0,')
+  it('clamps creditsRemaining to >= 0', () => {
+    expect(block).toContain('creditsRemaining < 0')
     expect(block).toContain('creditsRemaining')
   })
 })

@@ -325,12 +325,13 @@ class ResourceScheduler {
 
   // ─── Public API ─────────────────────────────────────────────────────────
   getMetrics(dir) {
+    const _gmSamples = this.samples.get(dir) || []
     return {
       allocation:  this.allocations.get(dir) || null,
       baseline:    this.baselines.get(dir) || null,
-      lastSample:  (this.samples.get(dir) || []).slice(-1)[0] || null,
+      lastSample:  _gmSamples.length > 0 ? _gmSamples[_gmSamples.length - 1] : null,
       efficiency:  this.efficiency.get(dir) || null,
-      sampleCount: (this.samples.get(dir) || []).length
+      sampleCount: _gmSamples.length
     }
   }
 

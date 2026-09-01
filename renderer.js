@@ -1843,7 +1843,8 @@ function addIterationEndEntry(num, exitCode) {
 
 // Sleep/backoff entry
 function addSleepEntry(seconds, backoff) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   const s = parseInt(seconds, 10)
@@ -1868,7 +1869,8 @@ function addSleepEntry(seconds, backoff) {
 
 // Summary entry — shows what an iteration accomplished
 function addSummaryEntry(text) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] [RESULT] ${text.replace(/<br>/g, ' | ')}`)

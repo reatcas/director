@@ -46,7 +46,7 @@ describe('metrics:session-summary creditsRemaining (I-218)', () => {
   })
 
   it('sums credits across all providers', () => {
-    expect(block).toContain('.reduce(')
+    expect(block).toContain('creditsRemaining +=')
     expect(block).toContain('credits')
   })
 

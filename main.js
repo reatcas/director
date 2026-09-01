@@ -1382,6 +1382,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   const validDefaults = _defaultMixesCache.filter(p => p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^[0-9a-z_\-]+$/.test(p.id) && p.id.length <= 64 && typeof p.name === 'string' && p.name.length > 0 && p.name.length <= 256 && p.focus && typeof p.focus === 'object' && !Array.isArray(p.focus))
   const merged = [...validDefaults.filter(p => !existingIds.has(p.id)), ...userMixes]
   const _slResult = merged.slice(0, 200)
+  if (_savedMixesCache.size >= 100) _savedMixesCache.delete(_savedMixesCache.keys().next().value)
   _savedMixesCache.set(dir, _slResult)
   return _slResult
 })
@@ -1487,7 +1488,7 @@ ipcMain.handle('metrics:session-summary', () => {
     } catch {}
   }
   const aiCredits = aiState()
-  const creditsRemaining = Math.max(0, Object.values(aiCredits).filter(v => typeof v === 'object' && v !== null && 'credits' in v).reduce((sum, ai) => sum + (ai.credits || 0), 0))
+  let creditsRemaining = 0; for (const v of Object.values(aiCredits)) { if (typeof v === 'object' && v !== null && 'credits' in v) creditsRemaining += (v.credits || 0) }; if (creditsRemaining < 0) creditsRemaining = 0
   return metricsSet('session-summary', { active, idle, total: projects.length, totalTokens, worstCompliance, creditsRemaining }, _SLOW_METRICS_TTL)
 })
 
@@ -1746,6 +1747,9 @@ setInterval(() => {
   for (const [k, v] of _piStaticCache) { if (now - v.ts > 30_000) _piStaticCache.delete(k) }
   for (const [k, v] of _isRunningCache) { if (now - v.ts > 1_000) _isRunningCache.delete(k) }
   for (const [k, v] of _readinessCache) { if (now - v.ts > 10_000) _readinessCache.delete(k) }
+  for (const [k, v] of _notesCache) { if (now - v.ts > _NOTES_TTL) _notesCache.delete(k) }
+  for (const [k, v] of _blueprintCache) { if (now - v.ts > _BLUEPRINT_TTL) _blueprintCache.delete(k) }
+  for (const [k, v] of _analyzeCache) { if (now - v.ts > _ANALYZE_TTL) _analyzeCache.delete(k) }
 }, _METRICS_EVICT_AGE).unref()
 
 ipcMain.handle('metrics:resource', (_e, dir) => {
