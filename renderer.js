@@ -645,7 +645,7 @@ if ($('#clearLogBtn')) {
   $('#clearLogBtn').onclick = async () => {
     if (!current) return
     logCache.set(current, '')
-    if ($('#log')) $('#log').innerHTML = ''
+    if (!_logEl) _logEl = $('#log'); if (_logEl) _logEl.innerHTML = ''
     await window.director.clearLog(current)
     _prevBurnTokens = 0; _burnHistory.length = 0
   }
@@ -676,7 +676,7 @@ if ($('#removeBtn')) $('#removeBtn').onclick = async () => {
   setStatus('IDLE')
   setOrchestraState('idle')
   const _ncCounter = $('#notesCharCount'); if (_ncCounter) _ncCounter.textContent = ''
-  if ($('#log')) $('#log').innerHTML = ''
+  if (!_logEl) _logEl = $('#log'); if (_logEl) _logEl.innerHTML = ''
   if ($('#mixerStrips')) $('#mixerStrips').innerHTML = ''
   if ($('#mixesList')) $('#mixesList').innerHTML = ''
   if (window.mixerGraph) { window.mixerGraph.destroy(); mixerGraphInited = false }

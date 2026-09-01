@@ -551,7 +551,7 @@ describe('auto-scroll and log controls', () => {
 
   it('clear log clears cache and DOM', () => {
     expect(rendererJs).toContain("logCache.set(current, '')")
-    expect(rendererJs).toContain("$('#log').innerHTML = ''")
+    expect(rendererJs).toContain("_logEl.innerHTML = ''")
   })
 
   it('auto-scroll toggle changes button color', () => {

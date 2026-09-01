@@ -197,7 +197,7 @@ function readOrchJson(dir, fb = {}) {
       const _parsed = readJSON(p, null)
       if (_parsed !== null && typeof _parsed === 'object' && !Array.isArray(_parsed)) {
         data = _parsed
-        _orchJsonCache.set(dir, { data, ts: now })
+        if (_orchJsonCache.size >= 200) _orchJsonCache.delete(_orchJsonCache.keys().next().value); _orchJsonCache.set(dir, { data, ts: now })
       }
     }
   } catch {}
@@ -378,9 +378,9 @@ function cachedFindLogo(dir) {
   const now = Date.now()
   const hit = _logoCache.get(dir)
   if (hit && now - hit.ts < 30_000) return hit.logo
-  if (!fs.existsSync(dir)) { _logoCache.set(dir, { logo: null, ts: now }); return null }
+  if (!fs.existsSync(dir)) { if (_logoCache.size >= 100) _logoCache.delete(_logoCache.keys().next().value); _logoCache.set(dir, { logo: null, ts: now }); return null }
   const logo = findLogo(dir)
-  _logoCache.set(dir, { logo, ts: now })
+  if (_logoCache.size >= 100) _logoCache.delete(_logoCache.keys().next().value); _logoCache.set(dir, { logo, ts: now })
   return logo
 }
 
@@ -398,7 +398,7 @@ function projectInfo(dir) {
     const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
     version = installed ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : null
     hasLogs = _stat('.claude/logs/orchestra-stdout.log') || _stat('.claude/logs/orchestra.log')
-    _piStaticCache.set(dir, { installed, version, hasLogs, ts: now })
+    if (_piStaticCache.size >= 100) _piStaticCache.delete(_piStaticCache.keys().next().value); _piStaticCache.set(dir, { installed, version, hasLogs, ts: now })
   }
   const has = f => { try { fs.statSync(path.join(dir, f)); return true } catch { return false } }
   const mixer = readOrchJson(dir, null)
@@ -1280,7 +1280,7 @@ function snapshotMixer(dir, event) {
   if (!Array.isArray(hist)) hist = []
   hist = hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && h.ts >= cutoffISO && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
   const _ssEvent = typeof event === 'string' ? event.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) : 'unknown'
-  const _ssFocus = Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
+  const _ssFocus = {}; for (const [k, v] of Object.entries(cfg.focus)) { if (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100) _ssFocus[k] = v }
   if (Object.keys(_ssFocus).length === 0) return
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
   const _sortedJson = o => JSON.stringify(Object.fromEntries(Object.keys(o).sort().map(k => [k, o[k]])))
@@ -1763,8 +1763,9 @@ ipcMain.handle('metrics:resource', (_e, dir) => {
   if (live && live.allocation) return metricsSet('resource:' + dir, live)
   // Compute allocation from current mixer weights on demand
   const cfg = readOrchJson(dir)
-  if (cfg.focus) {
-    const alloc = scheduler.computeAllocation(dir, cfg.focus)
+  if (cfg.focus && typeof cfg.focus === 'object') {
+    const _mrFocus = {}; for (const [k, v] of Object.entries(cfg.focus)) { if (typeof v === 'number' && Number.isFinite(v) && v >= 0) _mrFocus[k] = v }
+    const alloc = scheduler.computeAllocation(dir, _mrFocus)
     return metricsSet('resource:' + dir, { allocation: alloc, baseline: null, lastSample: null, efficiency: null, sampleCount: 0 }, _SLOW_METRICS_TTL)
   }
   return live
@@ -2287,7 +2288,7 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
     modules: (bp.modules || []).length,
     answeredFields: Object.keys(a).filter(k => typeof a[k] === 'string' && a[k].trim()).length
   }
-  _readinessCache.set(dir, { ts: now, val })
+  if (_readinessCache.size >= 100) _readinessCache.delete(_readinessCache.keys().next().value); _readinessCache.set(dir, { ts: now, val })
   return val
 })
 
