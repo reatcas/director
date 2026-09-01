@@ -215,6 +215,7 @@ class CoordinationProtocol {
   // which causes resource contention.
   detectConflicts() {
     if (this._cachedConflicts) return this._cachedConflicts
+    if (this.instances.size < 2) return []
 
     const entries = Array.from(this.instances.entries())
     const conflicts = []

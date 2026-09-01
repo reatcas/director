@@ -1094,6 +1094,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   _metricsCache.delete('snapshot:' + dir)
   _metricsCache.delete('coordination')
   _piStaticCache.delete(dir)
+  _analyzeCache.delete(dir)
   _invalidateIsRunning(dir)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
   const _playResult = playOrchestra(dir, agent)

@@ -396,7 +396,7 @@ describe('trimLog — log entry limiting', () => {
 
   it('caps DOM entries at 300', () => {
     expect(body).toContain('childElementCount > 300')
-    expect(body).toContain('removeChild(logEl.firstChild)')
+    expect(body).toContain('removeChild(_logEl.firstChild)')
   })
 
   it('caps rawLogBuffer at 2000', () => {
@@ -546,7 +546,7 @@ describe('log filter — search and observer', () => {
 describe('auto-scroll and log controls', () => {
   it('scrollLog respects autoScrollEnabled flag', () => {
     expect(rendererJs).toContain('autoScrollEnabled')
-    expect(rendererJs).toContain('scrollTop = l.scrollHeight')
+    expect(rendererJs).toContain('scrollTop = _logEl.scrollHeight')
   })
 
   it('clear log clears cache and DOM', () => {

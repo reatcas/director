@@ -162,6 +162,8 @@ let _ppathEl = null
 let _pbadgeEl = null
 let _usageBarEl = null
 let _usageBarFillEl = null
+let _logEl = null
+let _upgradeBtnEl = null
 
 function formatReset(iso) {
   if (!iso) return '—'
@@ -657,8 +659,8 @@ if ($('#autoScrollBtn')) {
 let _batchingLog = false
 function scrollLog() {
   if (_batchingLog) return
-  const l = $('#log')
-  if(l && autoScrollEnabled) l.scrollTop = l.scrollHeight
+  if (!_logEl) _logEl = $('#log')
+  if (_logEl && autoScrollEnabled) _logEl.scrollTop = _logEl.scrollHeight
 }
 
 // ─── Button handlers ──────────────────────────────────────────────────────────
@@ -699,8 +701,9 @@ if ($('#exportBtn')) $('#exportBtn').onclick = async () => {
   if (btn) { btn.textContent = 'EXPORT'; btn.disabled = false }
   showToast(r.ok ? `Exportado: ${r.path}` : 'Exportación cancelada')
 }
-if ($('#upgradeBtn')) $('#upgradeBtn').onclick = async () => {
-  const btn = $('#upgradeBtn')
+if (!_upgradeBtnEl) _upgradeBtnEl = $('#upgradeBtn')
+if (_upgradeBtnEl) _upgradeBtnEl.onclick = async () => {
+  const btn = _upgradeBtnEl
   if (btn) { btn.textContent = '…'; btn.disabled = true }
   const result = await window.director.orchestraUpgrade(current)
   if (result && result.ok) {
@@ -1652,8 +1655,8 @@ function addNormalLine(text) {
 }
 
 function trimLog() {
-  const logEl = $('#log')
-  if (logEl && logEl.childElementCount > 300) logEl.removeChild(logEl.firstChild)
+  if (!_logEl) _logEl = $('#log')
+  if (_logEl && _logEl.childElementCount > 300) _logEl.removeChild(_logEl.firstChild)
   if (rawLogBuffer.length > 2000) rawLogBuffer.splice(0, rawLogBuffer.length - 2000)
 }
 

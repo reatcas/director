@@ -305,9 +305,10 @@ class ContextProtocol {
       // Retention factor: S-curve centered at share=0.25 — memoized per share‰
       // High-share categories (>40%) retain ~90%+ context
       // Low-share categories (<15%) retain only ~20% context
-      const _shareKey = Math.round(share * 1000)
+      const _clampedShare = Math.min(1, Math.max(0, share))
+      const _shareKey = Math.round(_clampedShare * 1000)
       let retention = this._retentionCache.get(_shareKey)
-      if (retention === undefined) { retention = 0.10 + 0.85 / (1 + Math.exp(-14 * (share - 0.25))); this._retentionCache.set(_shareKey, retention) }
+      if (retention === undefined) { retention = 0.10 + 0.85 / (1 + Math.exp(-14 * (_clampedShare - 0.25))); this._retentionCache.set(_shareKey, retention) }
       const retentionPct = Math.round(retention * 100)
 
       if (retention < 0.7) {
