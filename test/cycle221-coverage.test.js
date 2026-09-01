@@ -159,7 +159,7 @@ describe('activateMixerStand() updates #ngActiveLabel (A-27)', () => {
   })
 
   it('clears label when category is null', () => {
-    expect(block).toContain("'' ")
+    expect(block).toContain(": ''")
   })
 
   it('#ngActiveLabel update happens before early return on no category', () => {

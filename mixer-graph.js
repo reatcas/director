@@ -133,7 +133,8 @@ window.mixerGraph = (() => {
     }
     if (_recentPair.length === 2) {
       const [a, b] = _recentPair
-      links.push({ id: `x→${a}→${b}`, source: a, target: b, _active: true, _particles: 3, _cross: true })
+      if ((_focus[a] ?? 0) > 0 && (_focus[b] ?? 0) > 0)
+        links.push({ id: `x→${a}→${b}`, source: a, target: b, _active: true, _particles: 3, _cross: true })
     }
     return { nodes, links }
   }
@@ -149,7 +150,8 @@ window.mixerGraph = (() => {
     _gData.links = _gData.links.filter(l => !l._cross)
     if (_recentPair.length === 2) {
       const [a, b] = _recentPair
-      _gData.links.push({ id: `x→${a}→${b}`, source: a, target: b, _active: true, _particles: 3, _cross: true })
+      if ((_focus[a] ?? 0) > 0 && (_focus[b] ?? 0) > 0)
+        _gData.links.push({ id: `x→${a}→${b}`, source: a, target: b, _active: true, _particles: 3, _cross: true })
     }
     throttledRefresh()
   }

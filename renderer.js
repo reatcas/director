@@ -938,7 +938,15 @@ function activateMixerStand(category) {
   activeStand = null
   if (window.mixerGraph) window.mixerGraph.activate(category || null)
   const _ngLbl = $('#ngActiveLabel')
-  if (_ngLbl) { const _ngSec = category ? SECTIONS.find(s => s[0] === category) : null; _ngLbl.textContent = _ngSec ? _ngSec[1] : '' }
+  if (_ngLbl) {
+    const _ngSec = category ? SECTIONS.find(s => s[0] === category) : null
+    let _ngTxt = _ngSec ? _ngSec[1] : ''
+    if (_ngSec && category) {
+      const _ngSlider = document.querySelector(`#mixerStrips input[data-k="${category}"]`)
+      if (_ngSlider) _ngTxt += ' ' + _ngSlider.value + '%'
+    }
+    _ngLbl.textContent = _ngTxt
+  }
   if (!category) return
 
   const strip = document.querySelector(`#mixerStrips .strip-h[data-key="${category}"]`)
