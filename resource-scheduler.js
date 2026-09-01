@@ -30,6 +30,7 @@ class ResourceScheduler {
     this._telDirReady = new Set()     // dirs with telemetry dir already created
     this._sysSnapCache = null         // cached systemSnapshot result (1s TTL)
     this._sysSnapTs    = 0            // timestamp of last systemSnapshot cache fill
+    this._retentionCurveCache = new Map()  // Math.round(share*1000) → retention factor
   }
 
   // ─── System resource snapshot ────────────────────────────────────────────
@@ -130,8 +131,13 @@ class ResourceScheduler {
   // The inflection point at 0.3 prevents low-weight categories from
   // consuming disproportionate context.
   _retentionCurve(share) {
-    // Sigmoid: 0.1 + 0.85 / (1 + e^(-12*(share - 0.3)))
-    return 0.10 + 0.85 / (1 + Math.exp(-12 * (share - 0.3)))
+    const _key = Math.round(share * 1000)
+    let _val = this._retentionCurveCache.get(_key)
+    if (_val === undefined) {
+      _val = 0.10 + 0.85 / (1 + Math.exp(-12 * (share - 0.3)))
+      this._retentionCurveCache.set(_key, _val)
+    }
+    return _val
   }
 
   _defaultAllocation(dir, sys) {
