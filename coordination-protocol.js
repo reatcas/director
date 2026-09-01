@@ -140,6 +140,13 @@ class CoordinationProtocol {
       return { acquired: true, reentrant: true }
     }
 
+    // Stale lock: holder unregistered — auto-reclaim and grant
+    if (!this.instances.has(existing.holder)) {
+      this.locks.set(resource, { holder: dir, priority: requester.priority, grantedAt: new Date().toISOString() })
+      this._logEvent('lock_stale_reclaimed', dir, { resource, staleHolder: existing.holder })
+      return { acquired: true, staleReclaimed: true }
+    }
+
     // Contention — compare priorities (lower number = higher priority)
     if (requester.priority < existing.priority) {
       // Preemption: requester has higher priority
@@ -269,8 +276,9 @@ class CoordinationProtocol {
     // Sort by priority (ascending = highest priority first)
     entries.sort((a, b) => a[1].priority - b[1].priority)
 
-    const inversePriorities = entries.map(([, info]) => 101 - info.priority)
-    const totalInverse = inversePriorities.reduce((s, v) => s + v, 0) || 1
+    let totalInverse = 0
+    const inversePriorities = entries.map(([, info]) => { const inv = 101 - info.priority; totalInverse += inv; return inv })
+    totalInverse = totalInverse || 1
     entries.forEach(([dir, info], idx) => {
       info.rank = idx + 1
       info.totalInstances = entries.length

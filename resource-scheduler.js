@@ -302,7 +302,7 @@ class ResourceScheduler {
 
       const file = path.join(telDir, 'resource-metrics.json')
       let hist = []
-      try { if (fs.statSync(file).size <= 1_048_576) hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
+      try { if (fs.statSync(file).size <= 1_048_576) { const _rsHist = JSON.parse(fs.readFileSync(file, 'utf8')); if (Array.isArray(_rsHist)) hist = _rsHist } } catch {}
       hist.push(eff)
       if (hist.length > 500) hist.splice(0, hist.length - 500)
       const tmp = file + '.tmp'
