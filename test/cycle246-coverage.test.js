@@ -38,7 +38,7 @@ describe('preload openDir string guard (S-92)', () => {
 
 describe('preload readFile string guard (S-93)', () => {
   it('readFile validates p as non-empty string', () => {
-    const block = preloadJs.split('readFile:')[1]?.split('\n')[0] || ''
+    const block = preloadJs.split('readFile:')[1]?.split('install:')[0] || ''
     expect(block).toContain("typeof p !== 'string'")
     expect(block).toContain('Promise.resolve(')
   })

@@ -290,6 +290,7 @@ class ContextProtocol {
     const fw = focusWeights || {}
     const totalWeight = Object.values(fw).reduce((a, b) => a + b, 0)
     if (totalWeight === 0) return { actions: [], tokensSaved: 0, summary: {} }
+    if (!snapshot || Object.keys(snapshot).length === 0) return { actions: [], tokensSaved: 0, summary: {} }
 
     const actions = []
     let tokensSaved = 0

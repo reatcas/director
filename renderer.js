@@ -1616,8 +1616,9 @@ function addConclusionEntry(text, issues) {
 let currentGroup = null
 
 function addNormalLine(text) {
-  const logEl = $('#log')
-  if (!logEl) return
+  if (!_logEl) _logEl = $('#log')
+  if (!_logEl) return
+  const logEl = _logEl
   rawLogBuffer.push(text)
 
   // Append to existing group

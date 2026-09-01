@@ -7,7 +7,11 @@ contextBridge.exposeInMainWorld('director', {
   add:     p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:add', p) },
   remove:  p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:remove', p) },
   openDir: p       => { if (typeof p !== 'string' || !p) return Promise.resolve(false); return ipcRenderer.invoke('repertoire:open', p) },
-  readFile: (p, s) => { if (typeof p !== 'string' || !p) return Promise.resolve(''); return ipcRenderer.invoke('repertoire:readFile', p, s) },
+  readFile: (p, s) => {
+    if (typeof p !== 'string' || !p) return Promise.resolve('')
+    if (s !== undefined && (typeof s !== 'string' || s.length > 512)) return Promise.resolve('')
+    return ipcRenderer.invoke('repertoire:readFile', p, s)
+  },
   install: p       => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:install', p) },
   play:    (p, a)  => {
     if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false, err: 'invalid path' })
@@ -104,8 +108,8 @@ contextBridge.exposeInMainWorld('director', {
   complianceMetrics:   p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:compliance', p) },
   roadmapFreshness:    p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:roadmap-freshness', p) },
   // Orchestra version management
-  orchestraVersionCheck: p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:version-check', p) },
-  orchestraUpgrade:      p  => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:upgrade', p) },
+  orchestraVersionCheck: p  => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:version-check', p) },
+  orchestraUpgrade:      p  => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:upgrade', p) },
   // Blueprint / Discovery
   blueprintLoad:      p        => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:load', p) },
   blueprintSave:      (p, d)   => {
