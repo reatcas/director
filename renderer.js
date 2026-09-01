@@ -2133,6 +2133,7 @@ async function loadLifecycleHistory() {
   const events = res?.events ?? (Array.isArray(res) ? res : [])
   if (!events || events.length === 0) return
 
+  if (!_logEl) _logEl = $('#log')
   // Show last 80 events as compact entries
   const recent = events.slice(-80)
   for (const ev of recent) {
@@ -2142,7 +2143,7 @@ async function loadLifecycleHistory() {
     rawLogBuffer.push(`[${ev.ts}] [${ev.label}] ${ev.message}`)
 
     // Render as a compact history entry
-    const logEl = $('#log')
+    const logEl = _logEl
     if (!logEl) continue
 
     const HISTORY_STYLES = {
@@ -2178,7 +2179,7 @@ async function loadLifecycleHistory() {
   }
 
   // Add separator between history and live
-  const logEl = $('#log')
+  const logEl = _logEl
   if (logEl && recent.length > 0) {
     const sep = document.createElement('div')
     sep.style.cssText = 'text-align:center;padding:6px;font:700 8px var(--sans);letter-spacing:2px;color:var(--dim2);border-top:1px solid rgba(255,255,255,0.04);margin:4px 0'

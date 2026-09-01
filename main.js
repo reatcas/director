@@ -1117,6 +1117,9 @@ ipcMain.handle('orchestra:fine', (_e, dir) => {
   _metricsCache.delete('claude-usage:' + dir)
   _metricsCache.delete('session-summary')
   _metricsCache.delete('coordination')
+  _metricsCache.delete('resource:' + dir)
+  _metricsCache.delete('allocation:' + dir)
+  _metricsCache.delete('snapshot:' + dir)
   _analyzeCache.delete(dir)
   _invalidateIsRunning(dir)
   stopWatchingResume(dir)
@@ -1475,8 +1478,8 @@ ipcMain.handle('metrics:session-summary', () => {
           const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
           if (lines.length) {
             _ssLast = parseComplianceLine(lines[lines.length - 1])
-            if (_ssLast) _worstComplianceCache.set(p.path, _ssLast)
-            _complianceMtimeCache.set(p.path, _ssSt.mtimeMs)
+            if (_ssLast) { if (_worstComplianceCache.size >= 200) _worstComplianceCache.delete(_worstComplianceCache.keys().next().value); _worstComplianceCache.set(p.path, _ssLast) }
+            if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(p.path, _ssSt.mtimeMs)
           }
         } else {
           _ssLast = _worstComplianceCache.get(p.path) || null
@@ -1818,7 +1821,8 @@ ipcMain.handle('metrics:allocation', (_e, dir) => {
   const hit = metricsGet('allocation:' + dir)
   if (hit !== null) return hit
   const cfg = readOrchJson(dir)
-  const _maFocus = cfg.focus && typeof cfg.focus === 'object' ? Object.fromEntries(Object.entries(cfg.focus).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0)) : {}
+  const _maFocus = {}
+  if (cfg.focus && typeof cfg.focus === 'object') { for (const [k, v] of Object.entries(cfg.focus)) { if (typeof v === 'number' && Number.isFinite(v) && v >= 0) _maFocus[k] = v } }
   return metricsSet('allocation:' + dir, scheduler.computeAllocation(dir, _maFocus), _SLOW_METRICS_TTL)
 })
 
@@ -1866,14 +1870,14 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
   if (hit !== null && lastMtime === st.mtimeMs) return hit
   try {
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
-    if (!lines.length) { _complianceMtimeCache.set(dir, st.mtimeMs); return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL) }
+    if (!lines.length) { if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(dir, st.mtimeMs); return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL) }
     const recent = lines.slice(-10)
     const scores = recent.map(l => parseComplianceLine(l)).filter(Boolean).map(c => c.score).filter(s => s !== null)
     const last = parseComplianceLine(recent[recent.length - 1])
     const _rawAvg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
     const avg = Number.isFinite(_rawAvg) ? _rawAvg : null
-    _complianceMtimeCache.set(dir, st.mtimeMs)
-    if (last) _worstComplianceCache.set(dir, last)
+    if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(dir, st.mtimeMs)
+    if (last) { if (_worstComplianceCache.size >= 200) _worstComplianceCache.delete(_worstComplianceCache.keys().next().value); _worstComplianceCache.set(dir, last) }
     return metricsSet('compliance:' + dir, { last, avgScore: avg, cycles: scores.length, history: scores }, _SLOW_METRICS_TTL)
   } catch { return null }
 })
