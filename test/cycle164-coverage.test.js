@@ -30,7 +30,7 @@ describe('orchestra:analyze report cap in resolve (I-488)', () => {
 
   it('caps report at 4MB in resolve using _reportCapped', () => {
     expect(block).toContain('_reportCapped')
-    expect(block).toContain('resolve({ report: _reportCapped')
+    expect(block).toContain('report: _reportCapped')
   })
 })
 

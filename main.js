@@ -1573,8 +1573,13 @@ ipcMain.handle('export:session', async (_e, dir) => {
 })
 
 // ─── Analysis ─────────────────────────────────────────────────────────────────
+const _analyzeCache = new Map()  // dir → { result, ts }
+const _ANALYZE_TTL  = 60_000
+
 ipcMain.handle('orchestra:analyze', (_e, dir) => {
   if (!isKnownProject(dir)) return Promise.resolve({ report: 'No project selected', file: null })
+  const _anHit = _analyzeCache.get(dir)
+  if (_anHit && Date.now() - _anHit.ts < _ANALYZE_TTL) return Promise.resolve(_anHit.result)
   return new Promise(resolve => {
     const read = f => { try { const p = path.join(dir, f); if (fs.statSync(p).size > 1_048_576) return ''; return fs.readFileSync(p, 'utf8') } catch { return '' } }
     const started = read('.claude/RUN_STARTED').trim().slice(0, 64)
@@ -1626,7 +1631,9 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         const _anFiles = fs.readdirSync(_clDir).filter(f => /^analysis-\d+\.txt$/.test(f)).sort()
         if (_anFiles.length > 10) _anFiles.slice(0, _anFiles.length - 10).forEach(f => { try { fs.unlinkSync(path.join(_clDir, f)) } catch {} })
       } catch {}
-      resolve({ report: _reportCapped, file: outFile })
+      const _anResult = { report: _reportCapped, file: outFile }
+      _analyzeCache.set(dir, { result: _anResult, ts: Date.now() })
+      resolve(_anResult)
     })
   })
 })

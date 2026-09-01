@@ -158,6 +158,7 @@ let _aiSelectEl = null
 let _clockStatusEl = null
 let _pstatusEl = null
 let _pnameEl = null
+let _ppathEl = null
 let _usageBarEl = null
 let _usageBarFillEl = null
 
@@ -588,7 +589,8 @@ function paint() {
   const p = proj(); if (!p) return
   if (!_pnameEl) _pnameEl = $('#pname')
   if (_pnameEl) _pnameEl.textContent = p.name
-  const ppath = $('#ppath'); if(ppath) ppath.textContent = p.path
+  if (!_ppathEl) _ppathEl = $('#ppath')
+  if (_ppathEl) _ppathEl.textContent = p.path
   const badge = $('#pbadge')
   if (badge) {
     if (p.logo) {

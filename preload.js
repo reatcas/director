@@ -94,7 +94,7 @@ contextBridge.exposeInMainWorld('director', {
   // System process monitor
   systemProcs:   ()        => ipcRenderer.invoke('system:claude-procs'),
   systemKill:    (pid, sig) => {
-    if (!Number.isInteger(pid) || pid <= 0) return Promise.resolve(false)
+    if (!Number.isInteger(pid) || pid <= 0 || pid > 4_194_304) return Promise.resolve(false)
     if (typeof sig !== 'string' || !['SIGTERM', 'SIGKILL'].includes(sig)) return Promise.resolve(false)
     return ipcRenderer.invoke('system:kill-proc', pid, sig)
   },
@@ -118,6 +118,8 @@ contextBridge.exposeInMainWorld('director', {
   atrilesList:        ()       => ipcRenderer.invoke('atriles:list'),
   atrilesSave:        a        => {
     if (!a || typeof a !== 'object' || !Array.isArray(a)) return Promise.resolve(false)
+    if (a.length > 200) return Promise.resolve(false)
+    if (a.some(el => !el || typeof el !== 'object' || Array.isArray(el))) return Promise.resolve(false)
     return ipcRenderer.invoke('atriles:save', a)
   },
   // Alert notifications (F-22)

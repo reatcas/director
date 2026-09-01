@@ -188,7 +188,8 @@ describe('orchestra:analyze handler', () => {
   })
 
   it('resolves with capped report and file', () => {
-    expect(block).toContain('resolve({ report: _reportCapped, file: outFile })')
+    expect(block).toContain('report: _reportCapped')
+    expect(block).toContain('file: outFile')
   })
 
   it('includes mixer-history in report', () => {
