@@ -1691,8 +1691,8 @@ setInterval(() => {
   const cutoff = now - _METRICS_EVICT_AGE
   for (const [k, v] of _metricsCache) { if (v.ts < cutoff) _metricsCache.delete(k) }
   if (_metricsCache.size > _METRICS_CACHE_MAX) {
-    const sorted = [..._metricsCache.entries()].sort((a, b) => a[1].ts - b[1].ts)
-    for (let i = 0; i < sorted.length - _METRICS_CACHE_TRIM; i++) _metricsCache.delete(sorted[i][0])
+    let _toEvict = _metricsCache.size - _METRICS_CACHE_TRIM
+    for (const k of _metricsCache.keys()) { if (_toEvict-- <= 0) break; _metricsCache.delete(k) }
   }
   for (const [k, v] of _orchJsonCache) { if (now - v.ts > 10_000) _orchJsonCache.delete(k) }
   for (const [k, v] of _logoCache) { if (now - v.ts > 60_000) _logoCache.delete(k) }

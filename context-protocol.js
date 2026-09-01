@@ -50,6 +50,7 @@ class ContextProtocol {
     this.aggregated     = new Map()   // dir → running aggregated metrics
     this._mtimes        = new Map()   // dir → { file → mtimeMs }
     this._tokenCache    = new Map()   // sectionHash → tokenCount (cross-project, max 10k)
+    this._aggRunning    = new Map()   // dir → { processed, saved, len } for O(1) incremental update
   }
 
   // ─── Content hashing ────────────────────────────────────────────────────
@@ -330,17 +331,26 @@ class ContextProtocol {
   }
 
   // ─── Aggregated metrics ─────────────────────────────────────────────────
+  // Incremental running sum: O(1) typical case (no shift), O(n) only when hist shifts
   _updateAggregated(dir) {
     const hist = this.deltaHistory.get(dir) || []
     if (hist.length === 0) return
 
-    let totalProcessed = 0, totalSaved = 0
+    const running = this._aggRunning.get(dir) || { processed: 0, saved: 0, len: 0 }
+    const newest = hist[hist.length - 1]
+    let totalProcessed, totalSaved
 
-    for (const entry of hist) {
-      totalProcessed += entry.metrics.totalTokens
-      totalSaved     += entry.metrics.totalTokensSaved
+    if (hist.length === running.len + 1) {
+      // Common case: one entry appended, no shift
+      totalProcessed = running.processed + newest.metrics.totalTokens
+      totalSaved     = running.saved + newest.metrics.totalTokensSaved
+    } else {
+      // Full recompute: first call, shift occurred, or reset
+      totalProcessed = 0; totalSaved = 0
+      for (const entry of hist) { totalProcessed += entry.metrics.totalTokens; totalSaved += entry.metrics.totalTokensSaved }
     }
 
+    this._aggRunning.set(dir, { processed: totalProcessed, saved: totalSaved, len: hist.length })
     this.aggregated.set(dir, {
       cycles:                hist.length,
       totalTokensProcessed:  totalProcessed,

@@ -159,16 +159,18 @@ class CoordinationProtocol {
       return { acquired: true, preempted: existing.holder, conflict }
     }
 
-    // Lower priority — denied
+    // Lower priority or tie — denied
+    const _denyReason = requester.priority === existing.priority ? 'tie' : 'lower_priority'
     this._logEvent('lock_denied', dir, {
       resource,
       holder:         existing.holder,
       holderPriority: existing.priority,
-      myPriority:     requester.priority
+      myPriority:     requester.priority,
+      reason:         _denyReason
     })
     return {
       acquired: false,
-      reason:   'lower_priority',
+      reason:   _denyReason,
       holder:   existing.holder,
       waitRecommended: true
     }

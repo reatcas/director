@@ -189,7 +189,7 @@ describe('CoordinationProtocol', () => {
       coord.acquireLock('/a', 'gpu:0')
       const result = coord.acquireLock('/b', 'gpu:0')
       expect(result.acquired).toBe(false)
-      expect(result.reason).toBe('lower_priority')
+      expect(result.reason).toBe('tie')
     })
 
     it('rejects unregistered instance', () => {

@@ -54,6 +54,8 @@ describe('metrics:session-summary per-project outer try/catch (I-408)', () => {
 describe('preload lifecycleList forwards limit param (I-409)', () => {
   it('lifecycleList passes limit to IPC invoke', () => {
     expect(preloadJs).toContain('lifecycleList')
-    expect(preloadJs).toMatch(/lifecycleList.*limit.*lifecycle:list.*limit/)
+    expect(preloadJs).toContain("'lifecycle:list'")
+    const block = preloadJs.split('lifecycleList')[1]?.split('\n  }')[0] || ''
+    expect(block).toContain('limit')
   })
 })

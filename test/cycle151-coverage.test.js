@@ -26,7 +26,10 @@ describe('orchestra:readIterLog control char check (I-429)', () => {
 
 describe('preload lifecycleList typeFilter forwarding (I-430)', () => {
   it('passes typeFilter as third argument to lifecycle:list', () => {
-    expect(preloadJs).toMatch(/lifecycleList.*ipcRenderer\.invoke\('lifecycle:list', p, limit, typeFilter/)
+    expect(preloadJs).toContain('lifecycleList')
+    expect(preloadJs).toContain("'lifecycle:list'")
+    const block = preloadJs.split('lifecycleList')[1]?.split('\n  }')[0] || ''
+    expect(block).toContain('typeFilter')
   })
 })
 

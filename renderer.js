@@ -150,6 +150,9 @@ let projects = []
 const logCache = new Map()
 let aiCredits = {}
 
+// Cached metrics strip element refs — static DOM, looked up once at DOMContentLoaded
+let _mmAllocEl, _mmMemEl, _mmTokensEl, _mmComprEl, _mmInstEl, _mmAiUsageEl, _mmBurnEl, _mmComplianceEl, _mmRoadmapEl
+
 function formatReset(iso) {
   if (!iso) return '—'
   const _frD = new Date(iso)
@@ -1641,18 +1644,32 @@ if ($('#copyLogBtn')) $('#copyLogBtn').onclick = () => {
   showToast('Full log copied to clipboard')
 }
 
-// Raw log overlay toggle
-if ($('#toggleRawBtn')) $('#toggleRawBtn').onclick = () => {
+// Raw log overlay toggle — A-36: role=dialog focus management
+let _rawLogPrevFocus = null
+function openRawLog() {
   const overlay = $('#rawLogOverlay')
   if (!overlay) return
   const rawPre = $('#rawLogContent')
   if (rawPre) rawPre.textContent = rawLogBuffer.join('\n')
+  _rawLogPrevFocus = document.activeElement
   overlay.classList.add('on')
+  overlay.setAttribute('aria-hidden', 'false')
+  const closeBtn = $('#closeRawBtn')
+  if (closeBtn) closeBtn.focus()
 }
-if ($('#closeRawBtn')) $('#closeRawBtn').onclick = () => {
+function closeRawLog() {
   const overlay = $('#rawLogOverlay')
-  if (overlay) overlay.classList.remove('on')
+  if (!overlay) return
+  overlay.classList.remove('on')
+  overlay.setAttribute('aria-hidden', 'true')
+  if (_rawLogPrevFocus && _rawLogPrevFocus.focus) _rawLogPrevFocus.focus()
+  _rawLogPrevFocus = null
 }
+if ($('#toggleRawBtn')) $('#toggleRawBtn').onclick = openRawLog
+if ($('#closeRawBtn')) $('#closeRawBtn').onclick = closeRawLog
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#rawLogOverlay')?.classList.contains('on')) { e.stopPropagation(); closeRawLog() }
+}, true)
 if ($('#copyRawBtn')) $('#copyRawBtn').onclick = () => {
   navigator.clipboard.writeText(rawLogBuffer.join('\n'))
   showToast('Full log copied to clipboard')
@@ -2137,11 +2154,17 @@ async function loadLifecycleHistory() {
 function updateMetricsDisplay(data) {
   if (!data) return
 
-  const allocEl   = $('#mmAllocVal')
-  const memEl     = $('#mmMemVal')
-  const tokensEl  = $('#mmTokensVal')
-  const comprEl   = $('#mmCompressionVal')
-  const instEl    = $('#mmInstancesVal')
+  if (!_mmAllocEl) {
+    _mmAllocEl = $('#mmAllocVal'); _mmMemEl = $('#mmMemVal'); _mmTokensEl = $('#mmTokensVal')
+    _mmComprEl = $('#mmCompressionVal'); _mmInstEl = $('#mmInstancesVal')
+    _mmAiUsageEl = $('#mmAiUsageVal'); _mmBurnEl = $('#mmBurnVal')
+    _mmComplianceEl = $('#mmComplianceVal'); _mmRoadmapEl = $('#mmRoadmapVal')
+  }
+  const allocEl   = _mmAllocEl
+  const memEl     = _mmMemEl
+  const tokensEl  = _mmTokensEl
+  const comprEl   = _mmComprEl
+  const instEl    = _mmInstEl
 
   // Resource allocation
   if (data.resource && data.resource.allocation) {
@@ -2220,7 +2243,7 @@ let lastTelemetryUsage = null;
 function updateAiUsageDisplay(creditData, telemetryUsage) {
   if (telemetryUsage !== undefined) lastTelemetryUsage = telemetryUsage;
   
-  const valEl  = $('#mmAiUsageVal')
+  const valEl  = _mmAiUsageEl || $('#mmAiUsageVal')
   const barEl  = $('#usageBarFill')
   if (!valEl) return
 
@@ -2345,7 +2368,7 @@ const _burnHistory = []
 let _prevBurnTokens = 0
 
 function updateBurnRate(usage) {
-  const valEl = $('#mmBurnVal')
+  const valEl = _mmBurnEl || $('#mmBurnVal')
   const sparkEl = $('#burnSpark')
   if (!valEl) return
 
@@ -2467,7 +2490,7 @@ function renderSparkline(svgEl, scores) {
 }
 
 function updateComplianceDisplay(data) {
-  const el = $('#mmComplianceVal')
+  const el = _mmComplianceEl || $('#mmComplianceVal')
   if (!el) return
   if (!data || data.last === null) {
     el.textContent = '—'; el.className = 'mm-val'
@@ -2507,7 +2530,7 @@ async function loadCompliance() {
 
 async function loadRoadmapFreshness() {
   if (!current) return
-  const el = $('#mmRoadmapVal')
+  const el = _mmRoadmapEl || $('#mmRoadmapVal')
   if (!el) return
   const data = await window.director.roadmapFreshness(current)
   const fsEl = $('#featureStrip')

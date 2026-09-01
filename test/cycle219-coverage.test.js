@@ -53,7 +53,7 @@ describe('_metricsCache periodic sweep has 500-entry size cap (S-66)', () => {
     expect(mainJs).toContain('_METRICS_CACHE_TRIM')
     const sizeBlock = mainJs.split('_metricsCache.size > _METRICS_CACHE_MAX')[1] || ''
     expect(sizeBlock).toContain('_METRICS_CACHE_TRIM')
-    expect(sizeBlock).toContain('.sort(')
+    expect(sizeBlock).toContain('_metricsCache.delete(k)')
   })
 })
 

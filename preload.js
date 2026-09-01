@@ -33,13 +33,24 @@ contextBridge.exposeInMainWorld('director', {
     if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:saved:save', p, n, f)
   },
-  mixerSavedDelete: (p, id)     => ipcRenderer.invoke('mixer:saved:delete', p, id),
-  mixerSavedExport: (p, id)     => ipcRenderer.invoke('mixer:saved:export', p, id),
+  mixerSavedDelete: (p, id)     => {
+    if (typeof id !== 'string' || id.length === 0 || id.length > 64 || !/^[0-9a-z]+$/.test(id)) return Promise.resolve(false)
+    return ipcRenderer.invoke('mixer:saved:delete', p, id)
+  },
+  mixerSavedExport: (p, id)     => {
+    if (typeof id !== 'string' || id.length === 0 || id.length > 64 || !/^[0-9a-z]+$/.test(id)) return Promise.resolve(null)
+    return ipcRenderer.invoke('mixer:saved:export', p, id)
+  },
   // Mixer history (F-17) + Session summary (F-18)
   mixerHistory:    (p, n) => ipcRenderer.invoke('mixer:history', p, n),
   sessionSummary:  ()     => ipcRenderer.invoke('metrics:session-summary'),
   // Lifecycle events
-  lifecycleList:       (p, limit, typeFilter, before)  => ipcRenderer.invoke('lifecycle:list', p, limit, typeFilter, before),
+  lifecycleList:       (p, limit, typeFilter, before)  => {
+    const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : undefined
+    const _llType = typeof typeFilter === 'string' && typeFilter.length > 0 && typeFilter.length <= 64 && /^[\w\-]+$/.test(typeFilter) ? typeFilter : undefined
+    const _llBefore = typeof before === 'string' && before.length <= 64 && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : undefined
+    return ipcRenderer.invoke('lifecycle:list', p, _llLimit, _llType, _llBefore)
+  },
   lifecycleAdd:        (p, t, l, m) => {
     if (typeof t !== 'string' || t.length > 64) return Promise.resolve(false)
     if (typeof l !== 'string' || l.length > 128 || l.trim().length === 0) return Promise.resolve(false)
@@ -68,7 +79,11 @@ contextBridge.exposeInMainWorld('director', {
   orchestraUpgrade:      p  => ipcRenderer.invoke('orchestra:upgrade', p),
   // Blueprint / Discovery
   blueprintLoad:      p        => ipcRenderer.invoke('blueprint:load', p),
-  blueprintSave:      (p, d)   => ipcRenderer.invoke('blueprint:save', p, d),
+  blueprintSave:      (p, d)   => {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return Promise.resolve(false)
+    try { if (JSON.stringify(d).length > 524288) return Promise.resolve(false) } catch { return Promise.resolve(false) }
+    return ipcRenderer.invoke('blueprint:save', p, d)
+  },
   blueprintGenerate:  p        => ipcRenderer.invoke('blueprint:generate-brief', p),
   blueprintReadiness: p        => ipcRenderer.invoke('blueprint:readiness', p),
   // Custom Atriles (app-wide)
