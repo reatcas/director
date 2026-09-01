@@ -2258,6 +2258,8 @@ function updateAiUsageDisplay(creditData, telemetryUsage) {
     valEl.className = 'mm-val'
   }
 
+  const progressEl = $('#usageBarProgress')
+  if (progressEl) progressEl.setAttribute('aria-valuenow', String(Math.min(100, Math.max(0, pct))))
   if (barEl) {
     barEl.style.width = Math.min(100, Math.max(0, pct)) + '%'
     barEl.className = 'usage-bar-fill'

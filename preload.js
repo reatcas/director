@@ -37,7 +37,12 @@ contextBridge.exposeInMainWorld('director', {
   sessionSummary:  ()     => ipcRenderer.invoke('metrics:session-summary'),
   // Lifecycle events
   lifecycleList:       (p, limit, typeFilter, before)  => ipcRenderer.invoke('lifecycle:list', p, limit, typeFilter, before),
-  lifecycleAdd:        (p, t, l, m) => ipcRenderer.invoke('lifecycle:add', p, t, l, m),
+  lifecycleAdd:        (p, t, l, m) => {
+    if (typeof t !== 'string' || t.length > 64) return Promise.resolve(false)
+    if (typeof l !== 'string' || l.length > 128 || l.trim().length === 0) return Promise.resolve(false)
+    if (typeof m !== 'string' || m.length > 1024) return Promise.resolve(false)
+    return ipcRenderer.invoke('lifecycle:add', p, t, l, m)
+  },
   // Telemetry / Metrics
   metricsResource:     p       => ipcRenderer.invoke('metrics:resource', p),
   metricsContext:      p       => ipcRenderer.invoke('metrics:context', p),

@@ -1535,7 +1535,9 @@ ipcMain.handle('export:session', async (_e, dir) => {
     filters: [{ name: 'JSON', extensions: ['json'] }]
   })
   if (result.canceled) return { ok: false }
-  fs.writeFileSync(result.filePath, serialized)
+  const _expTmp = result.filePath + '.tmp'
+  fs.writeFileSync(_expTmp, serialized)
+  fs.renameSync(_expTmp, result.filePath)
   return { ok: true, path: result.filePath }
   } finally { _exportSessionBusy = false }
 })
@@ -1587,7 +1589,9 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
       const outFile = path.join(dir, '.claude', `analysis-${Date.now()}.txt`)
       const _reportCapped = report.length > 4_194_304 ? report.slice(0, 4_194_304) : report
       try {
-        fs.writeFileSync(outFile, _reportCapped)
+        const _anTmp = outFile + '.tmp'
+        fs.writeFileSync(_anTmp, _reportCapped)
+        fs.renameSync(_anTmp, outFile)
         const _clDir = path.join(dir, '.claude')
         const _anFiles = fs.readdirSync(_clDir).filter(f => /^analysis-\d+\.txt$/.test(f)).sort()
         if (_anFiles.length > 10) _anFiles.slice(0, _anFiles.length - 10).forEach(f => { try { fs.unlinkSync(path.join(_clDir, f)) } catch {} })

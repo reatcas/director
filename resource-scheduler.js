@@ -206,7 +206,7 @@ class ResourceScheduler {
     const rssMB   = rssKB / 1024
     const elapsed = (Date.now() - baseline.startTime) / 1000
     const memUtil  = allocation.memBudgetMB > 0 ? rssMB / allocation.memBudgetMB : 0
-    const cpuCount = os.cpus().length || 1
+    const cpuCount = (this._cpuCache ? this._cpuCache.count : os.cpus().length) || 1
     const cpuNorm  = cpuPct / (cpuCount * 100)
 
     const sample = {

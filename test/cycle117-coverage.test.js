@@ -68,8 +68,8 @@ describe('export:session serialization order (cycle 117)', () => {
     expect(serIdx).toBeLessThan(dialogIdx)
   })
 
-  it('writes serialized (not re-serialized) to file', () => {
-    expect(block).toContain('writeFileSync(result.filePath, serialized)')
+  it('writes serialized (not re-serialized) to tmp file', () => {
+    expect(block).toContain('writeFileSync(_expTmp, serialized)')
   })
 })
 
