@@ -903,6 +903,10 @@ async function loadMixer() {
       debouncedMixerGraph()
       debouncedMixerSave()
     })
+    inp.addEventListener('focus', () => activateMixerStand(k))
+    inp.addEventListener('blur', () => {
+      if (!document.querySelector('#mixerStrips input:focus')) activateMixerStand(null)
+    })
   }
   // Update aurora colors from the freshly built strips
   setTimeout(updateSmartAuroraColors, 50)

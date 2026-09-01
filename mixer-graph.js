@@ -470,6 +470,7 @@ window.mixerGraph = (() => {
     _hubGlow = null; _activeGlow = null
     _sections = []; _sectionMap.clear()
     _lastRefresh = 0
+    _autoRotate = false; _camAngle = 0; _linkFlash = { cat: null, strength: 0 }
   }
 
   return { init, update, activate, pulse, setRotating, destroy, resize }
