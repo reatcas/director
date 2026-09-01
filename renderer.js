@@ -877,7 +877,7 @@ async function loadMixer() {
     strip.style.setProperty('--strip-color', color)
     strip.dataset.key = k
     strip.innerHTML = `
-  <div class="strip-h-icon">${svg}</div>
+  <div class="strip-h-icon" aria-hidden="true">${svg}</div>
   <div class="strip-h-label">${esc(label)}</div>
   <div class="strip-bar-h">
     <div class="strip-bar-fill-h" style="width:${v}%"></div>
