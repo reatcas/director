@@ -51,6 +51,7 @@ class ContextProtocol {
     this._mtimes        = new Map()   // dir → { file → mtimeMs }
     this._tokenCache    = new Map()   // sectionHash → tokenCount (cross-project, max 10k)
     this._aggRunning    = new Map()   // dir → { processed, saved, len } for O(1) incremental update
+    this._cpTelDirReady = new Set()   // dirs with telemetry dir already created
   }
 
   // ─── Content hashing ────────────────────────────────────────────────────
@@ -368,7 +369,7 @@ class ContextProtocol {
   _persist(dir, metrics) {
     try {
       const telDir = path.join(dir, '.claude', 'telemetry')
-      fs.mkdirSync(telDir, { recursive: true })
+      if (!this._cpTelDirReady.has(dir)) { fs.mkdirSync(telDir, { recursive: true }); this._cpTelDirReady.add(dir) }
       const file = path.join(telDir, 'context-metrics.json')
       let hist = []
       try { if (fs.statSync(file).size <= 1_048_576) hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
@@ -399,6 +400,8 @@ class ContextProtocol {
     this.deltaHistory.delete(dir)
     this.aggregated.delete(dir)
     this._mtimes.delete(dir)
+    this._aggRunning.delete(dir)
+    this._cpTelDirReady.delete(dir)
   }
 }
 

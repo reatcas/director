@@ -9,9 +9,15 @@ contextBridge.exposeInMainWorld('director', {
   openDir: p       => ipcRenderer.invoke('repertoire:open', p),
   readFile: (p, s) => ipcRenderer.invoke('repertoire:readFile', p, s),
   install: p       => ipcRenderer.invoke('orchestra:install', p),
-  play:    (p, a)  => ipcRenderer.invoke('orchestra:play', p, a),
+  play:    (p, a)  => {
+    if (typeof a !== 'string' || a.length === 0 || a.length > 64) return Promise.resolve({ ok: false, err: 'invalid agent' })
+    return ipcRenderer.invoke('orchestra:play', p, a)
+  },
   aiCredits: ()     => ipcRenderer.invoke('ai:credits'),
-  aiSelect:  id     => ipcRenderer.invoke('ai:select', id),
+  aiSelect:  id     => {
+    if (typeof id !== 'string' || id.length === 0 || id.length > 64) return Promise.resolve({ ok: false, error: 'Unknown AI' })
+    return ipcRenderer.invoke('ai:select', id)
+  },
   aiLogin:   id     => ipcRenderer.invoke('ai:login', id),
   aiAuthStatus: id  => ipcRenderer.invoke('ai:auth-status', id),
   fine:    p       => ipcRenderer.invoke('orchestra:fine', p),
@@ -19,7 +25,10 @@ contextBridge.exposeInMainWorld('director', {
   tail:    (p, lines) => ipcRenderer.invoke('orchestra:tail', p, Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400),
   clearLog: p      => ipcRenderer.invoke('orchestra:clearLog', p),
   mixerRead:  p       => ipcRenderer.invoke('mixer:read', p),
-  mixerWrite: (p, f)  => ipcRenderer.invoke('mixer:write', p, f),
+  mixerWrite: (p, f)  => {
+    if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
+    return ipcRenderer.invoke('mixer:write', p, f)
+  },
   configWrite: (p, c) => {
     if (!c || typeof c !== 'object' || Array.isArray(c)) return Promise.resolve(false)
     return ipcRenderer.invoke('orchestra:writeConfig', p, c)

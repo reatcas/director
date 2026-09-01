@@ -299,11 +299,15 @@ class CoordinationProtocol {
 
   // ─── Public API ─────────────────────────────────────────────────────────
   getStatus() {
+    const conflicts = this.detectConflicts()
+    const _csvSummary = { high: 0, medium: 0, low: 0 }
+    for (const c of conflicts) { if (c.severity === 'high') _csvSummary.high++; else if (c.severity === 'medium') _csvSummary.medium++; else _csvSummary.low++ }
     return {
       activeInstances:  this.instances.size,
       instances:        Object.fromEntries(
         Array.from(this.instances).map(([d, i]) => [d, {
           priority:     i.priority,
+          priorityTier: i.priorityTier,
           rank:         i.rank,
           status:       i.status,
           avgIntensity: i.avgIntensity,
@@ -311,10 +315,11 @@ class CoordinationProtocol {
           registeredAt: i.registeredAt
         }])
       ),
-      activeLocks:      Object.fromEntries(this.locks),
-      conflicts:        this.detectConflicts(),
-      recentEvents:     this.events.slice(-20),
-      conflictHistory:  this.conflictLog.slice(-10)
+      activeLocks:             Object.fromEntries(this.locks),
+      conflicts,
+      conflictSeveritySummary: _csvSummary,
+      recentEvents:            this.events.slice(-20),
+      conflictHistory:         this.conflictLog.slice(-10)
     }
   }
 

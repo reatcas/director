@@ -1086,6 +1086,9 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
   if (!state[agent]) return { ok: false, err: 'Select an AI developer first' }
   _metricsCache.delete('claude-usage:' + dir)
   _metricsCache.delete('version-check:' + dir)
+  _metricsCache.delete('allocation:' + dir)
+  _metricsCache.delete('resource:' + dir)
+  _metricsCache.delete('snapshot:' + dir)
   _piStaticCache.delete(dir)
   _invalidateIsRunning(dir)
   persistLifecycleEvent(dir, 'play', 'BATUTA', 'Orden de interpretar')
