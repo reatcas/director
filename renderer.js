@@ -524,8 +524,8 @@ async function open(dir) {
   _prevBurnTokens = 0; _burnHistory.length = 0
   await refresh()
 
-  const logEl = $('#log')
-  if (logEl) logEl.innerHTML = ''
+  if (!_logEl) _logEl = $('#log')
+  if (_logEl) _logEl.innerHTML = ''
   currentGroup = null
   usageEntry = null
   retryCount = 0

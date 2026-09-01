@@ -81,7 +81,7 @@ describe('metrics:compliance handler', () => {
 
   it('calculates average score', () => {
     const handler = mainJs.split("'metrics:compliance'")[1]?.split('})')[0] || ''
-    expect(handler).toContain('scores.reduce')
+    expect(handler).toContain('_rawSum')
     expect(handler).toContain('scores.length')
   })
 

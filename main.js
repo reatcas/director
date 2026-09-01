@@ -1527,7 +1527,7 @@ ipcMain.handle('notes:read', (_e, dir) => {
     const st = fs.statSync(p)
     if (st.size > 102_400) return ''
     const data = fs.readFileSync(p, 'utf8')
-    _notesCache.set(dir, { data, ts: Date.now() })
+    if (_notesCache.size >= 100) _notesCache.delete(_notesCache.keys().next().value); _notesCache.set(dir, { data, ts: Date.now() })
     return data
   } catch { return '' }
 })
@@ -1646,7 +1646,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         if (_anFiles.length > 10) _anFiles.slice(0, _anFiles.length - 10).forEach(f => { try { fs.unlinkSync(path.join(_clDir, f)) } catch {} })
       } catch {}
       const _anResult = { report: _reportCapped, file: outFile }
-      _analyzeCache.set(dir, { result: _anResult, ts: Date.now() })
+      if (_analyzeCache.size >= 100) _analyzeCache.delete(_analyzeCache.keys().next().value); _analyzeCache.set(dir, { result: _anResult, ts: Date.now() })
       resolve(_anResult)
     })
   })
@@ -1874,7 +1874,8 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
     const recent = lines.slice(-10)
     const scores = recent.map(l => parseComplianceLine(l)).filter(Boolean).map(c => c.score).filter(s => s !== null)
     const last = parseComplianceLine(recent[recent.length - 1])
-    const _rawAvg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
+    let _rawSum = 0; for (const s of scores) _rawSum += s
+    const _rawAvg = scores.length ? Math.round(_rawSum / scores.length) : null
     const avg = Number.isFinite(_rawAvg) ? _rawAvg : null
     if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(dir, st.mtimeMs)
     if (last) { if (_worstComplianceCache.size >= 200) _worstComplianceCache.delete(_worstComplianceCache.keys().next().value); _worstComplianceCache.set(dir, last) }
@@ -2065,7 +2066,7 @@ ipcMain.handle('blueprint:load', (_e, dir) => {
   const bpPath = blueprintFile(dir)
   try { if (fs.statSync(bpPath).size > 512_000) return null } catch {}
   const data = readJSON(bpPath, null)
-  _blueprintCache.set(dir, { data, ts: Date.now() })
+  if (_blueprintCache.size >= 100) _blueprintCache.delete(_blueprintCache.keys().next().value); _blueprintCache.set(dir, { data, ts: Date.now() })
   return data
 })
 
