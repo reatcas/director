@@ -49,6 +49,7 @@ class ContextProtocol {
     this.deltaHistory   = new Map()   // dir → delta entries (max 100)
     this.aggregated     = new Map()   // dir → running aggregated metrics
     this._mtimes        = new Map()   // dir → { file → mtimeMs }
+    this._tokenCache    = new Map()   // sectionHash → tokenCount (cross-project, max 10k)
   }
 
   // ─── Content hashing ────────────────────────────────────────────────────
@@ -98,36 +99,36 @@ class ContextProtocol {
     const lines = content.split('\n')
     let currentTitle = '_preamble'
     let currentLines = []
+    const titleCount = new Map()  // track duplicate titles within this file
+
+    const _pushSection = () => {
+      if (currentLines.length === 0) return
+      const body = currentLines.join('\n')
+      const hash = this._hash(body)
+      let tokens = this._tokenCache.get(hash)
+      if (tokens === undefined) {
+        tokens = this._estimateTokens(body)
+        if (this._tokenCache.size >= 10_000) this._tokenCache.delete(this._tokenCache.keys().next().value)
+        this._tokenCache.set(hash, tokens)
+      }
+      sections.push({ title: currentTitle, body, hash, tokens })
+    }
 
     for (const line of lines) {
       const headerMatch = line.match(/^(#{1,4})\s+(.+)/)
       if (headerMatch) {
-        if (currentLines.length > 0) {
-          const body = currentLines.join('\n')
-          sections.push({
-            title:  currentTitle,
-            body,
-            hash:   this._hash(body),
-            tokens: this._estimateTokens(body)
-          })
-        }
-        currentTitle = headerMatch[2].trim()
+        _pushSection()
+        const rawTitle = headerMatch[2].trim()
+        const count = titleCount.get(rawTitle) || 0
+        titleCount.set(rawTitle, count + 1)
+        currentTitle = count === 0 ? rawTitle : `${rawTitle}_${count}`
         currentLines = [line]
       } else {
         currentLines.push(line)
       }
     }
 
-    if (currentLines.length > 0) {
-      const body = currentLines.join('\n')
-      sections.push({
-        title:  currentTitle,
-        body,
-        hash:   this._hash(body),
-        tokens: this._estimateTokens(body)
-      })
-    }
-
+    _pushSection()
     return sections
   }
 
