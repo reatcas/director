@@ -942,14 +942,17 @@ function activateMixerStand(category) {
     const _ngSec = category ? SECTIONS.find(s => s[0] === category) : null
     let _ngTxt = _ngSec ? _ngSec[1] : ''
     if (_ngSec && category) {
-      const _ngSlider = document.querySelector(`#mixerStrips input[data-k="${category}"]`)
-      if (_ngSlider) _ngTxt += ' ' + _ngSlider.value + '%'
+      try {
+        const _ngSlider = document.querySelector(`#mixerStrips input[data-k="${category}"]`)
+        if (_ngSlider) _ngTxt += ' ' + _ngSlider.value + '%'
+      } catch {}
     }
     _ngLbl.textContent = _ngTxt
   }
   if (!category) return
 
-  const strip = document.querySelector(`#mixerStrips .strip-h[data-key="${category}"]`)
+  let strip = null
+  try { strip = document.querySelector(`#mixerStrips .strip-h[data-key="${category}"]`) } catch {}
   if (!strip || strip.classList.contains('off')) return
 
   strip.classList.add('stand-active')

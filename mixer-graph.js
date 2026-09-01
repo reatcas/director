@@ -468,6 +468,7 @@ window.mixerGraph = (() => {
     _activeCategory = null; _recentPair = []
     _hubGlow = null; _activeGlow = null
     _sections = []; _sectionMap.clear()
+    _lastRefresh = 0
   }
 
   return { init, update, activate, pulse, setRotating, destroy, resize }
