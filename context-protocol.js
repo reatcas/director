@@ -52,6 +52,7 @@ class ContextProtocol {
     this._tokenCache    = new Map()   // sectionHash → tokenCount (cross-project, max 10k)
     this._aggRunning    = new Map()   // dir → { processed, saved, len } for O(1) incremental update
     this._cpTelDirReady = new Set()   // dirs with telemetry dir already created
+    this._retentionCache = new Map()  // share‰ → retention factor (sigmoid memoization)
   }
 
   // ─── Content hashing ────────────────────────────────────────────────────
@@ -301,10 +302,12 @@ class ContextProtocol {
         : (fw[category] || 0)
       const share    = weight / totalWeight
 
-      // Retention factor: S-curve centered at share=0.25
+      // Retention factor: S-curve centered at share=0.25 — memoized per share‰
       // High-share categories (>40%) retain ~90%+ context
       // Low-share categories (<15%) retain only ~20% context
-      const retention = 0.10 + 0.85 / (1 + Math.exp(-14 * (share - 0.25)))
+      const _shareKey = Math.round(share * 1000)
+      let retention = this._retentionCache.get(_shareKey)
+      if (retention === undefined) { retention = 0.10 + 0.85 / (1 + Math.exp(-14 * (share - 0.25))); this._retentionCache.set(_shareKey, retention) }
       const retentionPct = Math.round(retention * 100)
 
       if (retention < 0.7) {

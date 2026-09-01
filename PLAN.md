@@ -1,3 +1,35 @@
+# Cycle 244 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 244 (quality_tests BANNED: C241+C242+C243 consecutive)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 3 | 0/3 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 1 | 0/1 |
+| ux_accessibility | 5 | 1 | 0/1 |
+| quality_tests | 35 | 0 | BAN (C241+C242+C243 consecutive) |
+| data_db | 5 | 0 | SKIP (done C243) |
+| product | 10 | 0 | SKIP (F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (quality_tests BANNED)
+
+## Units
+1. [security] S-89 — preload.js `metricsResource(p)`+`metricsContext(p)`+`metricsSnapshot(p)`+`metricsAllocation(p)`: typeof string guard per ADR-007
+2. [security] S-90 — preload.js `claudeUsage(p)`+`complianceMetrics(p)`+`roadmapFreshness(p)`: typeof string guard per ADR-007
+3. [security] S-91 — preload.js `blueprintLoad(p)`+`blueprintGenerate(p)`+`blueprintReadiness(p)`+`notesRead(p)`: typeof string guard per ADR-007
+4. [performance] P-74 — coordination-protocol.js `_computePriority`: replace .filter() with manual counter (eliminates intermediate array)
+5. [backend] B-28 — main.js `orchestra:fine`+`orchestra:kill`: add _metricsCache.delete('coordination') eviction on stop
+6. [frontend] F-26 — renderer.js: add module-level _complianceSparkEl cached ref
+7. [business_logic] BL-22 — context-protocol.js `computeRetention`: memoize sigmoid via _retentionCache Map
+8. [ux_accessibility] A-40 — index.html: complianceSpark SVG gets aria-hidden=true (decorative sparkline)
+
+## Stats
+- 4397 tests at cycle open → TBD at close
+
+---
 # Cycle 243 Plan — IMPROVEMENT MODE
 
 ## MIXER BUDGET — Cycle 243 (security+backend+frontend BANNED: C240+C241+C242 consecutive)
@@ -27,7 +59,9 @@ Total: 8 units — IMPROVEMENT MODE (security+backend+frontend BANNED)
 8. [data_db] DD-03 — main.js `atriles:save`: cap stored entries at 200 (prevent unbounded JSON growth)
 
 ## Stats
-- 4387 tests at cycle open → TBD at close
+- 4387 tests at cycle open → 4397 at close
+
+▸ ◼ Cycle 243 cerrado — COMPLIANCE quality_tests:4/4 performance:1/1 business_logic:1/1 ux_accessibility:1/1 data_db:1/1 DRIFT:none TESTS:green
 
 ---
 # Cycle 242 Plan — IMPROVEMENT MODE

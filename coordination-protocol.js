@@ -93,8 +93,8 @@ class CoordinationProtocol {
     if (!allocation) return 100
 
     const intensity = allocation.avgIntensity || 0
-    const hotPaths = Object.values(allocation.categoryBudgets || {})
-      .filter(b => b.hotPath).length
+    let hotPaths = 0
+    for (const b of Object.values(allocation.categoryBudgets || {})) { if (b.hotPath) hotPaths++ }
     const totalWeight = allocation.totalWeight || 0
 
     // Lower score = higher priority

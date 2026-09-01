@@ -76,12 +76,12 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('lifecycle:add', p, t, l, m)
   },
   // Telemetry / Metrics
-  metricsResource:     p       => ipcRenderer.invoke('metrics:resource', p),
-  metricsContext:      p       => ipcRenderer.invoke('metrics:context', p),
+  metricsResource:     p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:resource', p) },
+  metricsContext:      p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:context', p) },
   metricsCoordination: ()      => ipcRenderer.invoke('metrics:coordination'),
-  metricsSnapshot:     p       => ipcRenderer.invoke('metrics:snapshot', p),
-  metricsAllocation:   p       => ipcRenderer.invoke('metrics:allocation', p),
-  claudeUsage:         p       => ipcRenderer.invoke('metrics:claude-usage', p),
+  metricsSnapshot:     p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:snapshot', p) },
+  metricsAllocation:   p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:allocation', p) },
+  claudeUsage:         p       => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:claude-usage', p) },
   // System process monitor
   systemProcs:   ()        => ipcRenderer.invoke('system:claude-procs'),
   systemKill:    (pid, sig) => {
@@ -90,20 +90,20 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('system:kill-proc', pid, sig)
   },
   // Compliance & health metrics
-  complianceMetrics:   p  => ipcRenderer.invoke('metrics:compliance', p),
-  roadmapFreshness:    p  => ipcRenderer.invoke('metrics:roadmap-freshness', p),
+  complianceMetrics:   p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:compliance', p) },
+  roadmapFreshness:    p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('metrics:roadmap-freshness', p) },
   // Orchestra version management
   orchestraVersionCheck: p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:version-check', p) },
   orchestraUpgrade:      p  => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:upgrade', p) },
   // Blueprint / Discovery
-  blueprintLoad:      p        => ipcRenderer.invoke('blueprint:load', p),
+  blueprintLoad:      p        => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:load', p) },
   blueprintSave:      (p, d)   => {
     if (!d || typeof d !== 'object' || Array.isArray(d)) return Promise.resolve(false)
     try { if (JSON.stringify(d).length > 524288) return Promise.resolve(false) } catch { return Promise.resolve(false) }
     return ipcRenderer.invoke('blueprint:save', p, d)
   },
-  blueprintGenerate:  p        => ipcRenderer.invoke('blueprint:generate-brief', p),
-  blueprintReadiness: p        => ipcRenderer.invoke('blueprint:readiness', p),
+  blueprintGenerate:  p        => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:generate-brief', p) },
+  blueprintReadiness: p        => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('blueprint:readiness', p) },
   // Custom Atriles (app-wide)
   atrilesList:        ()       => ipcRenderer.invoke('atriles:list'),
   atrilesSave:        a        => {
@@ -122,7 +122,7 @@ contextBridge.exposeInMainWorld('director', {
   // Session export (F-23)
   exportSession:      dir      => ipcRenderer.invoke('export:session', dir),
   // Operator notes (F-25)
-  notesRead:          dir      => ipcRenderer.invoke('notes:read', dir),
+  notesRead:          dir      => { if (typeof dir !== 'string' || !dir) return Promise.resolve(null); return ipcRenderer.invoke('notes:read', dir) },
   notesWrite:         (dir, c) => {
     if (typeof c !== 'string' || c.length > 50000) return Promise.resolve(false)
     return ipcRenderer.invoke('notes:write', dir, c)

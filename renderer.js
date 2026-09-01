@@ -153,6 +153,7 @@ let aiCredits = {}
 // Cached metrics strip element refs — static DOM, looked up once at DOMContentLoaded
 let _mmAllocEl, _mmMemEl, _mmTokensEl, _mmComprEl, _mmInstEl, _mmAiUsageEl, _mmBurnEl, _mmComplianceEl, _mmRoadmapEl
 let _compressionPanelEl, _compressionStatsEl, _compressionHistEl
+let _complianceSparkEl = null
 
 function formatReset(iso) {
   if (!iso) return '—'
@@ -2500,16 +2501,18 @@ function renderSparkline(svgEl, scores) {
 function updateComplianceDisplay(data) {
   const el = _mmComplianceEl || $('#mmComplianceVal')
   if (!el) return
+  if (!_complianceSparkEl) _complianceSparkEl = $('#complianceSpark')
+  const sparkEl = _complianceSparkEl
   if (!data || data.last === null) {
     el.textContent = '—'; el.className = 'mm-val'
-    renderSparkline($('#complianceSpark'), null)
+    renderSparkline(sparkEl, null)
     return
   }
   const score = data.last ? data.last.score : data.avgScore
-  if (score === null) { el.textContent = '—'; el.className = 'mm-val'; renderSparkline($('#complianceSpark'), null); return }
+  if (score === null) { el.textContent = '—'; el.className = 'mm-val'; renderSparkline(sparkEl, null); return }
   el.textContent = score + '%' + (Number.isFinite(data.cycles) && data.cycles > 1 ? ` (${data.cycles}c)` : '')
   el.className = 'mm-val ' + (score >= 90 ? 'ok' : score >= 70 ? 'warn' : 'bad')
-  renderSparkline($('#complianceSpark'), data.history)
+  renderSparkline(sparkEl, data.history)
 }
 
 function updateComplianceFromLog(line) {
