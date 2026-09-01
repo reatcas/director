@@ -39,6 +39,7 @@ class CoordinationProtocol {
     this.events      = []          // coordination events log (max 200)
     this._cachedConflicts = null   // cached detectConflicts result
     this._totalMemMB = Math.floor(os.totalmem() / 1048576)  // constant at runtime
+    this._coordTelDirReady = new Set()  // dirs with telemetry dir already created
   }
 
   // ─── Instance registration ─────────────────────────────────────────────
@@ -332,7 +333,7 @@ class CoordinationProtocol {
 
     try {
       const telDir = path.join(dir, '.claude', 'telemetry')
-      fs.mkdirSync(telDir, { recursive: true })
+      if (!this._coordTelDirReady.has(dir)) { fs.mkdirSync(telDir, { recursive: true }); this._coordTelDirReady.add(dir) }
       const file = path.join(telDir, 'coordination-metrics.json')
       let hist = []
       try { if (fs.statSync(file).size <= 1_048_576) { const _cpHist = JSON.parse(fs.readFileSync(file, 'utf8')); if (Array.isArray(_cpHist)) hist = _cpHist } } catch {}
@@ -353,6 +354,7 @@ class CoordinationProtocol {
 
   cleanup(dir) {
     this.persistTelemetry(dir)
+    this._coordTelDirReady.delete(dir)
     this.unregister(dir)
   }
 }

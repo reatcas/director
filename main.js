@@ -1764,7 +1764,9 @@ ipcMain.handle('metrics:context', (_e, dir) => {
 ipcMain.handle('metrics:coordination', () => {
   const _coHit = metricsGet('coordination')
   if (_coHit !== null) return _coHit
-  return metricsSet('coordination', coordinator.getStatus())
+  const _coStatus = coordinator.getStatus()
+  const _coTTL = coordinator.getInstanceCount() === 0 ? _SLOW_METRICS_TTL : _METRICS_TTL
+  return metricsSet('coordination', _coStatus, _coTTL)
 })
 
 ipcMain.handle('metrics:snapshot', (_e, dir) => {

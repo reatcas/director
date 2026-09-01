@@ -18,8 +18,14 @@ contextBridge.exposeInMainWorld('director', {
     if (typeof id !== 'string' || id.length === 0 || id.length > 64) return Promise.resolve({ ok: false, error: 'Unknown AI' })
     return ipcRenderer.invoke('ai:select', id)
   },
-  aiLogin:   id     => ipcRenderer.invoke('ai:login', id),
-  aiAuthStatus: id  => ipcRenderer.invoke('ai:auth-status', id),
+  aiLogin:   id     => {
+    if (typeof id !== 'string' || id.length === 0 || id.length > 64) return Promise.resolve({ ok: false, msg: 'Unknown provider' })
+    return ipcRenderer.invoke('ai:login', id)
+  },
+  aiAuthStatus: id  => {
+    if (typeof id !== 'string' || id.length === 0 || id.length > 64) return Promise.resolve({ loggedIn: false })
+    return ipcRenderer.invoke('ai:auth-status', id)
+  },
   fine:    p       => ipcRenderer.invoke('orchestra:fine', p),
   kill:    p       => ipcRenderer.invoke('orchestra:kill', p),
   tail:    (p, lines) => ipcRenderer.invoke('orchestra:tail', p, Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400),
@@ -87,8 +93,8 @@ contextBridge.exposeInMainWorld('director', {
   complianceMetrics:   p  => ipcRenderer.invoke('metrics:compliance', p),
   roadmapFreshness:    p  => ipcRenderer.invoke('metrics:roadmap-freshness', p),
   // Orchestra version management
-  orchestraVersionCheck: p  => ipcRenderer.invoke('orchestra:version-check', p),
-  orchestraUpgrade:      p  => ipcRenderer.invoke('orchestra:upgrade', p),
+  orchestraVersionCheck: p  => { if (typeof p !== 'string' || !p) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:version-check', p) },
+  orchestraUpgrade:      p  => { if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:upgrade', p) },
   // Blueprint / Discovery
   blueprintLoad:      p        => ipcRenderer.invoke('blueprint:load', p),
   blueprintSave:      (p, d)   => {

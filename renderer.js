@@ -152,7 +152,7 @@ let aiCredits = {}
 
 // Cached metrics strip element refs — static DOM, looked up once at DOMContentLoaded
 let _mmAllocEl, _mmMemEl, _mmTokensEl, _mmComprEl, _mmInstEl, _mmAiUsageEl, _mmBurnEl, _mmComplianceEl, _mmRoadmapEl
-let _compressionPanelEl
+let _compressionPanelEl, _compressionStatsEl, _compressionHistEl
 
 function formatReset(iso) {
   if (!iso) return '—'
@@ -2443,8 +2443,10 @@ function updateCompressionPanel(contextData) {
   if (!agg && !last) { panel.style.display = 'none'; return }
 
   panel.style.display = ''
-  const statsEl = $('#compressionStats')
-  const histEl = $('#compressionHistory')
+  if (!_compressionStatsEl) _compressionStatsEl = $('#compressionStats')
+  if (!_compressionHistEl) _compressionHistEl = $('#compressionHistory')
+  const statsEl = _compressionStatsEl
+  const histEl = _compressionHistEl
   if (!statsEl) return
 
   const items = []
