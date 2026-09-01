@@ -274,7 +274,7 @@ window.mixerGraph = (() => {
   }
 
   function animLoop() {
-    _t += 0.05
+    _t = (_t + 0.05) % (Math.PI * 2)
 
     // Hub + active glow handled via _pulseLayer rings; sprites not used
 

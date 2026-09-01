@@ -931,6 +931,7 @@ ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
   const base = path.basename(p)
   const ext = path.extname(p).toLowerCase()
   if (_BLOCKED_FILE_EXT.has(ext) || _BLOCKED_FILE_NAME.has(base)) return null
+  if (/^\.env\./.test(base) || base === '.envrc') return null
   try {
     const stat = fs.statSync(p)
     if (!stat.isFile()) return null
