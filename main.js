@@ -1317,6 +1317,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
   _metricsCache.delete('allocation:' + dir)
   _metricsCache.delete('resource:' + dir)
   _metricsCache.delete('snapshot:' + dir)
+  _metricsCache.delete('coordination')
   for (const k of _metricsCache.keys()) { if (k.startsWith('mixer-hist:' + dir + ':')) _metricsCache.delete(k) }
   _invalidateOrchJson(dir)
   return true
@@ -1355,7 +1356,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   const p = path.join(dir, '.claude/orchestra.json')
   writeJSON(p, JSON.parse(serialized))
   _invalidateOrchJson(dir)
-  if (cfg.focus) { _metricsCache.delete('allocation:' + dir); _metricsCache.delete('resource:' + dir); _metricsCache.delete('snapshot:' + dir) }
+  if (cfg.focus) { _metricsCache.delete('allocation:' + dir); _metricsCache.delete('resource:' + dir); _metricsCache.delete('snapshot:' + dir); _metricsCache.delete('coordination') }
   return true
 })
 

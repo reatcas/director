@@ -129,13 +129,14 @@ class CoordinationProtocol {
     if (!requester) return { acquired: false, reason: 'not_registered' }
 
     const existing = this.locks.get(resource)
+    const _now = new Date().toISOString()
 
     if (!existing) {
       // No contention — grant immediately
       this.locks.set(resource, {
         holder:    dir,
         priority:  requester.priority,
-        grantedAt: new Date().toISOString()
+        grantedAt: _now
       })
       this._logEvent('lock_acquired', dir, { resource })
       this._cachedConflicts = null
@@ -148,7 +149,7 @@ class CoordinationProtocol {
 
     // Stale lock: holder unregistered — auto-reclaim and grant
     if (!this.instances.has(existing.holder)) {
-      this.locks.set(resource, { holder: dir, priority: requester.priority, grantedAt: new Date().toISOString() })
+      this.locks.set(resource, { holder: dir, priority: requester.priority, grantedAt: _now })
       this._logEvent('lock_stale_reclaimed', dir, { resource, staleHolder: existing.holder })
       return { acquired: true, staleReclaimed: true }
     }
@@ -157,7 +158,7 @@ class CoordinationProtocol {
     if (requester.priority < existing.priority) {
       // Preemption: requester has higher priority
       const conflict = {
-        timestamp:       new Date().toISOString(),
+        timestamp:       _now,
         resource,
         winner:          dir,
         loser:           existing.holder,
@@ -172,7 +173,7 @@ class CoordinationProtocol {
       this.locks.set(resource, {
         holder:    dir,
         priority:  requester.priority,
-        grantedAt: new Date().toISOString(),
+        grantedAt: _now,
         preemptedFrom: existing.holder
       })
 

@@ -14,8 +14,9 @@ contextBridge.exposeInMainWorld('director', {
   },
   install: p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:install', p) },
   play:    (p, a)  => {
-    if (typeof p !== 'string' || !p) return Promise.resolve({ ok: false, err: 'invalid path' })
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false, err: 'invalid path' })
     if (typeof a !== 'string' || a.length === 0 || a.length > 64) return Promise.resolve({ ok: false, err: 'invalid agent' })
+    if (!new Set(['claude', 'agy', 'codex', 'aider']).has(a)) return Promise.resolve({ ok: false, err: 'invalid agent' })
     return ipcRenderer.invoke('orchestra:play', p, a)
   },
   aiCredits: ()     => ipcRenderer.invoke('ai:credits'),
@@ -36,7 +37,7 @@ contextBridge.exposeInMainWorld('director', {
   },
   fine:    p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:fine', p) },
   kill:    p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:kill', p) },
-  tail:    (p, lines) => { if (typeof p !== 'string' || !p) return Promise.resolve(''); return ipcRenderer.invoke('orchestra:tail', p, Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400) },
+  tail:    (p, lines) => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(''); return ipcRenderer.invoke('orchestra:tail', p, Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400) },
   clearLog: p      => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false); return ipcRenderer.invoke('orchestra:clearLog', p) },
   mixerRead:  p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('mixer:read', p) },
   mixerWrite: (p, f)  => {

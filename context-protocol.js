@@ -288,7 +288,7 @@ class ContextProtocol {
   // Low-weight categories get aggressively compacted.
   _computeRetention(focusWeights, snapshot) {
     const fw = focusWeights || {}
-    const totalWeight = Object.values(fw).reduce((a, b) => a + b, 0)
+    let totalWeight = 0; for (const v of Object.values(fw)) totalWeight += v
     if (totalWeight === 0) return { actions: [], tokensSaved: 0, summary: {} }
     if (!snapshot || Object.keys(snapshot).length === 0) return { actions: [], tokensSaved: 0, summary: {} }
 

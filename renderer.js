@@ -1773,7 +1773,8 @@ if ($('#logFilterInput')) {
 
 // Iteration start entry
 function addIterationStartEntry(num, dateStr) {
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] [CYCLE ${num}] Start — ${dateStr}`)
@@ -1815,7 +1816,8 @@ function addIterationStartEntry(num, dateStr) {
 // Iteration end entry
 function addIterationEndEntry(num, exitCode) {
   activateMixerStand(null)
-  const logEl = $('#log')
+  if (!_logEl) _logEl = $('#log')
+  const logEl = _logEl
   if (!logEl) return null
   const time = timeStamp()
   const ok = exitCode === '0'
