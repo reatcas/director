@@ -1176,7 +1176,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const _lcClearCutoffISO = _lcCutoff()
     let events = []
     try { if (fs.statSync(lcFile).size <= 2_097_152) events = readJSON(lcFile, []) } catch {}
-    let pruned = events.filter(e => e && typeof e === 'object' && typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO && typeof e.type === 'string' && typeof e.label === 'string' && typeof e.message === 'string')
+    let pruned = events.filter(e => e && typeof e === 'object' && typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.label === 'string' && typeof e.message === 'string')
     if (pruned.length > 300) pruned = pruned.slice(-300)
     const _prSer = JSON.stringify(pruned)
     if (pruned.length < events.length && _prSer.length <= 2_097_152) writeJSON(lcFile, pruned)
@@ -1618,7 +1618,7 @@ function persistLifecycleEvent(dir, type, label, message) {
     let events = []
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
     const cutoffISO = _lcCutoff()
-    const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO && typeof e.type === 'string' && typeof e.label === 'string' && typeof e.message === 'string')
+    const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.label === 'string' && typeof e.message === 'string')
     const _evType = typeof type === 'string' && _LC_TYPES.has(type) ? type : null
     if (!_evType) return
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)

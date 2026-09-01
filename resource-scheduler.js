@@ -245,11 +245,17 @@ class ResourceScheduler {
     const allocation = this.allocations.get(dir)
     if (!allocation) return
 
-    // Average resource utilization over the sampling window
-    const avgMem = history.reduce((s, h) => s + h.rssMB, 0) / history.length
-    const avgCPU = history.reduce((s, h) => s + h.cpuPct, 0) / history.length
-    const peakMem = Math.max(...history.map(h => h.rssMB))
-    const peakCPU = Math.max(...history.map(h => h.cpuPct))
+    // Average resource utilization over the sampling window — single pass
+    let _sumMem = 0, _sumCPU = 0, _peakMem = 0, _peakCPU = 0
+    for (const h of history) {
+      _sumMem += h.rssMB; _sumCPU += h.cpuPct
+      if (h.rssMB > _peakMem) _peakMem = h.rssMB
+      if (h.cpuPct > _peakCPU) _peakCPU = h.cpuPct
+    }
+    const avgMem = _sumMem / history.length
+    const avgCPU = _sumCPU / history.length
+    const peakMem = _peakMem
+    const peakCPU = _peakCPU
 
     // Budget adherence: how well the process stayed within its allocation
     const memBudgetAdherence = allocation.memBudgetMB > 0

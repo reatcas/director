@@ -178,8 +178,9 @@ class CoordinationProtocol {
     if (!resource || typeof resource !== 'string' || resource.length > 256) return false
     const lock = this.locks.get(resource)
     if (lock && lock.holder === dir) {
+      const heldMs = lock.grantedAt ? Date.now() - new Date(lock.grantedAt).getTime() : null
       this.locks.delete(resource)
-      this._logEvent('lock_released', dir, { resource })
+      this._logEvent('lock_released', dir, { resource, heldMs })
       return true
     }
     return false
