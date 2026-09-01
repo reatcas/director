@@ -3418,7 +3418,8 @@ let _cmdPrevFocus = null
 
 function closeCmdPalette() {
   if ($('#cmdPalette')) $('#cmdPalette').hidden = true
-  if ($('#cmdInput')) $('#cmdInput').value = ''
+  const _cpInp = $('#cmdInput')
+  if (_cpInp) { _cpInp.value = ''; _cpInp.setAttribute('aria-expanded', 'false'); _cpInp.removeAttribute('aria-activedescendant') }
   if ($('#cmdResults')) $('#cmdResults').innerHTML = ''
   if (_cmdPrevFocus && typeof _cmdPrevFocus.focus === 'function') { _cmdPrevFocus.focus(); _cmdPrevFocus = null }
 }
@@ -3441,12 +3442,19 @@ async function renderCmdResults(q) {
   items.push({ type: 'ACTION', label: 'Kill', action: 'kill' })
   items.push({ type: 'ACTION', label: 'Export', action: 'export' })
   const filtered = q ? items.filter(i => i.label.toLowerCase().includes(q.toLowerCase())) : items
-  res.innerHTML = filtered.slice(0, 10).map((it, i) =>
-    `<div class="cmd-item${i === 0 ? ' active' : ''}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`
+  const sliced = filtered.slice(0, 10)
+  res.innerHTML = sliced.map((it, i) =>
+    `<div class="cmd-item${i === 0 ? ' active' : ''}" id="cmd-item-${i}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`
   ).join('')
   res.querySelectorAll('.cmd-item').forEach((el, i) => {
     el.onclick = () => { executeCmdItem(filtered[i]); closeCmdPalette() }
   })
+  const inp = $('#cmdInput')
+  if (inp) {
+    inp.setAttribute('aria-expanded', String(sliced.length > 0))
+    if (sliced.length > 0) inp.setAttribute('aria-activedescendant', 'cmd-item-0')
+    else inp.removeAttribute('aria-activedescendant')
+  }
 }
 
 function executeCmdItem(item) {
@@ -3480,6 +3488,7 @@ if ($('#cmdInput')) {
         el.setAttribute('aria-selected', String(i === nextIdx))
       })
       items[nextIdx].scrollIntoView({ block: 'nearest' })
+      e.currentTarget.setAttribute('aria-activedescendant', 'cmd-item-' + nextIdx)
     }
     if (e.key === 'Tab') {
       e.preventDefault()
@@ -3489,6 +3498,7 @@ if ($('#cmdInput')) {
       const _cpNext = e.shiftKey ? (_cpActive - 1 + _cpItems.length) % _cpItems.length : (_cpActive + 1) % _cpItems.length
       _cpItems.forEach((el, i) => { el.classList.toggle('active', i === _cpNext); el.setAttribute('aria-selected', String(i === _cpNext)) })
       _cpItems[_cpNext].scrollIntoView({ block: 'nearest' })
+      e.currentTarget.setAttribute('aria-activedescendant', 'cmd-item-' + _cpNext)
     }
   })
 }

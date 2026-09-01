@@ -1619,7 +1619,8 @@ function persistLifecycleEvent(dir, type, label, message) {
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
     const cutoffISO = _lcCutoff()
     const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO && typeof e.type === 'string' && typeof e.label === 'string' && typeof e.message === 'string')
-    const _evType = typeof type === 'string' && _LC_TYPES.has(type) ? type : 'unknown'
+    const _evType = typeof type === 'string' && _LC_TYPES.has(type) ? type : null
+    if (!_evType) return
     const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
     const _evMsgRaw = typeof message === 'string' ? message : String(message)
     const _evMsg = Buffer.byteLength(_evMsgRaw, 'utf8') > 4096 ? Buffer.from(_evMsgRaw, 'utf8').slice(0, 4096).toString('utf8') : _evMsgRaw
@@ -1832,7 +1833,7 @@ ipcMain.handle('metrics:roadmap-freshness', (_e, dir) => {
   let mtime
   try { mtime = fs.statSync(roadmapPath).mtimeMs } catch { return metricsSet('freshness:' + dir, { exists: false }, _SLOW_METRICS_TTL) }
   return new Promise(resolve => {
-    execFile('git', ['-C', dir, 'log', '-1', '--format=%ct'], (err, stdout) => {
+    execFile('git', ['-C', dir, 'log', '-1', '--format=%ct', '--', 'ROADMAP.md'], (err, stdout) => {
       if (err || !stdout.trim()) return resolve(metricsSet('freshness:' + dir, { exists: true, mtime, isStale: false }, _SLOW_METRICS_TTL))
       const lastCommitMs = parseInt(stdout.trim(), 10) * 1000
       const staleHours = Math.round((lastCommitMs - mtime) / 3_600_000)

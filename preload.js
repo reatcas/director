@@ -22,7 +22,10 @@ contextBridge.exposeInMainWorld('director', {
   mixerWrite: (p, f)  => ipcRenderer.invoke('mixer:write', p, f),
   configWrite: (p, c) => ipcRenderer.invoke('orchestra:writeConfig', p, c),
   analyze:    p       => ipcRenderer.invoke('orchestra:analyze', p),
-  readIterLog: (p, l)  => ipcRenderer.invoke('orchestra:readIterLog', p, l),
+  readIterLog: (p, l)  => {
+    if (typeof l !== 'string' || !l.trim()) return Promise.resolve('')
+    return ipcRenderer.invoke('orchestra:readIterLog', p, l)
+  },
   // Saved mixes
   mixerSavedList:   p           => ipcRenderer.invoke('mixer:saved:list', p),
   mixerSavedSave:   (p, n, f)   => {
@@ -72,7 +75,13 @@ contextBridge.exposeInMainWorld('director', {
   atrilesList:        ()       => ipcRenderer.invoke('atriles:list'),
   atrilesSave:        a        => ipcRenderer.invoke('atriles:save', a),
   // Alert notifications (F-22)
-  alertsConfig:       cfg      => ipcRenderer.invoke('alerts:config', cfg),
+  alertsConfig:       cfg      => {
+    if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return Promise.resolve(null)
+    const allowed = new Set(['stall', 'alto', 'usageLimit'])
+    if (Object.keys(cfg).some(k => !allowed.has(k))) return Promise.resolve(null)
+    if (Object.values(cfg).some(v => typeof v !== 'boolean')) return Promise.resolve(null)
+    return ipcRenderer.invoke('alerts:config', cfg)
+  },
   alertsRead:         ()       => ipcRenderer.invoke('alerts:read'),
   // Session export (F-23)
   exportSession:      dir      => ipcRenderer.invoke('export:session', dir),

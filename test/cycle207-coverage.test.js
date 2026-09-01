@@ -47,8 +47,8 @@ describe('persistLifecycleEvent type allowlist guard (I-586)', () => {
     expect(block).toContain('_LC_TYPES.has(type)')
   })
 
-  it('falls back to unknown for invalid types', () => {
-    expect(block).toContain("'unknown'")
+  it('returns null for invalid types instead of persisting as unknown (BL-14)', () => {
+    expect(block).toContain('? type : null')
   })
 })
 
