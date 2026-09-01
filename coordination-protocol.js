@@ -45,10 +45,12 @@ class CoordinationProtocol {
   register(dir, pid, allocation) {
     if (!dir || !allocation) return null
     const priority = this._computePriority(allocation)
+    const priorityTier = this._priorityTier(priority)
 
     this.instances.set(dir, {
       pid,
       priority,
+      priorityTier,
       nice:           allocation.nice || 10,
       avgIntensity:   allocation.avgIntensity || 0,
       memBudgetMB:    allocation.memBudgetMB || 0,
@@ -58,7 +60,7 @@ class CoordinationProtocol {
       status:         'active'
     })
 
-    this._logEvent('register', dir, { priority, pid })
+    this._logEvent('register', dir, { priority, priorityTier, pid })
     this._rebalance()
 
     return this.instances.get(dir)
@@ -105,6 +107,11 @@ class CoordinationProtocol {
     priority -= (totalWeight / 1200) * 10
 
     return Math.max(1, Math.round(priority))
+  }
+
+  // Score ≤40 → 'high' (intensive), ≤70 → 'medium', else → 'low'
+  _priorityTier(score) {
+    return score <= 40 ? 'high' : score <= 70 ? 'medium' : 'low'
   }
 
   // ─── Resource locking with priority inheritance ─────────────────────────

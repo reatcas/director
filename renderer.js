@@ -632,6 +632,7 @@ if ($('#clearLogBtn')) {
     logCache.set(current, '')
     if ($('#log')) $('#log').innerHTML = ''
     await window.director.clearLog(current)
+    _prevBurnTokens = 0; _burnHistory.length = 0
   }
 }
 if ($('#autoScrollBtn')) {

@@ -906,6 +906,7 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   _invalidateIsRunning(dir)
   _complianceMtimeCache.delete(dir)
   _worstComplianceCache.delete(dir)
+  _invalidateSavedMixes(dir)
   // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
   const lcLogDir = path.join(dir, '.claude', 'logs')
   _lifecycleDirReady.delete(lcLogDir)

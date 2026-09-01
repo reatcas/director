@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('director', {
   aiAuthStatus: id  => ipcRenderer.invoke('ai:auth-status', id),
   fine:    p       => ipcRenderer.invoke('orchestra:fine', p),
   kill:    p       => ipcRenderer.invoke('orchestra:kill', p),
-  tail:    (p, lines) => ipcRenderer.invoke('orchestra:tail', p, lines),
+  tail:    (p, lines) => ipcRenderer.invoke('orchestra:tail', p, Number.isInteger(lines) && lines > 0 && lines <= 1000 ? lines : 400),
   clearLog: p      => ipcRenderer.invoke('orchestra:clearLog', p),
   mixerRead:  p       => ipcRenderer.invoke('mixer:read', p),
   mixerWrite: (p, f)  => ipcRenderer.invoke('mixer:write', p, f),
@@ -91,7 +91,10 @@ contextBridge.exposeInMainWorld('director', {
   blueprintReadiness: p        => ipcRenderer.invoke('blueprint:readiness', p),
   // Custom Atriles (app-wide)
   atrilesList:        ()       => ipcRenderer.invoke('atriles:list'),
-  atrilesSave:        a        => ipcRenderer.invoke('atriles:save', a),
+  atrilesSave:        a        => {
+    if (!a || typeof a !== 'object' || !Array.isArray(a)) return Promise.resolve(false)
+    return ipcRenderer.invoke('atriles:save', a)
+  },
   // Alert notifications (F-22)
   alertsConfig:       cfg      => {
     if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return Promise.resolve(null)
