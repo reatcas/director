@@ -1501,13 +1501,20 @@ ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
 })
 
 // ─── Operator notes (F-25) ────────────────────────────────────────────────────
+const _notesCache = new Map()  // dir → { data, ts }
+const _NOTES_TTL  = 30_000
+
 ipcMain.handle('notes:read', (_e, dir) => {
   if (!isKnownProject(dir)) return ''
+  const _nHit = _notesCache.get(dir)
+  if (_nHit && Date.now() - _nHit.ts < _NOTES_TTL) return _nHit.data
   const p = path.join(dir, '.claude/OPERATOR_NOTES.md')
   try {
     const st = fs.statSync(p)
     if (st.size > 102_400) return ''
-    return fs.readFileSync(p, 'utf8')
+    const data = fs.readFileSync(p, 'utf8')
+    _notesCache.set(dir, { data, ts: Date.now() })
+    return data
   } catch { return '' }
 })
 
@@ -1523,6 +1530,7 @@ ipcMain.handle('notes:write', (_e, dir, content) => {
     fs.writeFileSync(tmp, content)
     fs.renameSync(tmp, p)
   } catch { return false }
+  _notesCache.delete(dir)
   persistLifecycleEvent(dir, 'note', 'NOTA', content.split('\n')[0].slice(0, 80))
   return true
 })

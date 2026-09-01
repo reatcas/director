@@ -157,6 +157,7 @@ let _complianceSparkEl = null
 let _aiSelectEl = null
 let _clockStatusEl = null
 let _pstatusEl = null
+let _pnameEl = null
 let _usageBarEl = null
 let _usageBarFillEl = null
 
@@ -585,7 +586,8 @@ async function open(dir) {
 
 function paint() {
   const p = proj(); if (!p) return
-  const pname = $('#pname'); if(pname) pname.textContent = p.name
+  if (!_pnameEl) _pnameEl = $('#pname')
+  if (_pnameEl) _pnameEl.textContent = p.name
   const ppath = $('#ppath'); if(ppath) ppath.textContent = p.path
   const badge = $('#pbadge')
   if (badge) {
@@ -673,7 +675,8 @@ if ($('#removeBtn')) $('#removeBtn').onclick = async () => {
   if ($('#mixerStrips')) $('#mixerStrips').innerHTML = ''
   if ($('#mixesList')) $('#mixesList').innerHTML = ''
   if (window.mixerGraph) { window.mixerGraph.destroy(); mixerGraphInited = false }
-  if ($('#pname')) $('#pname').textContent = '—'
+  if (!_pnameEl) _pnameEl = $('#pname')
+  if (_pnameEl) _pnameEl.textContent = '—'
   if (!_pstatusEl) _pstatusEl = $('#pstatus')
   if (_pstatusEl) {
     _pstatusEl.textContent = 'no project'

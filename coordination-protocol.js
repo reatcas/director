@@ -45,6 +45,10 @@ class CoordinationProtocol {
   // ─── Instance registration ─────────────────────────────────────────────
   register(dir, pid, allocation) {
     if (!dir || !allocation) return null
+    if (!this.instances.has(dir) && this.instances.size >= 20) {
+      this._logEvent('register_rejected', dir, { reason: 'max_instances', limit: 20 })
+      return null
+    }
     const priority = this._computePriority(allocation)
     const priorityTier = this._priorityTier(priority)
 
