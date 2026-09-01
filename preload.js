@@ -20,7 +20,10 @@ contextBridge.exposeInMainWorld('director', {
   clearLog: p      => ipcRenderer.invoke('orchestra:clearLog', p),
   mixerRead:  p       => ipcRenderer.invoke('mixer:read', p),
   mixerWrite: (p, f)  => ipcRenderer.invoke('mixer:write', p, f),
-  configWrite: (p, c) => ipcRenderer.invoke('orchestra:writeConfig', p, c),
+  configWrite: (p, c) => {
+    if (!c || typeof c !== 'object' || Array.isArray(c)) return Promise.resolve(false)
+    return ipcRenderer.invoke('orchestra:writeConfig', p, c)
+  },
   analyze:    p       => ipcRenderer.invoke('orchestra:analyze', p),
   readIterLog: (p, l)  => {
     if (typeof l !== 'string' || !l.trim()) return Promise.resolve('')
@@ -42,7 +45,7 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('mixer:saved:export', p, id)
   },
   // Mixer history (F-17) + Session summary (F-18)
-  mixerHistory:    (p, n) => ipcRenderer.invoke('mixer:history', p, n),
+  mixerHistory:    (p, n) => ipcRenderer.invoke('mixer:history', p, Number.isInteger(n) && n > 0 && n <= 100 ? n : undefined),
   sessionSummary:  ()     => ipcRenderer.invoke('metrics:session-summary'),
   // Lifecycle events
   lifecycleList:       (p, limit, typeFilter, before)  => {

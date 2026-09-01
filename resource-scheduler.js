@@ -54,9 +54,9 @@ class ResourceScheduler {
     const entries = Object.entries(focus || {})
     if (entries.length === 0) return this._defaultAllocation(dir, sys)
 
-    const totalWeight = entries.reduce((s, [, v]) => s + v, 0)
-    const avgWeight   = totalWeight / entries.length
-    const maxWeight   = Math.max(...entries.map(([, v]) => v))
+    let totalWeight = 0, maxWeight = 0
+    for (const [, v] of entries) { totalWeight += v; if (v > maxWeight) maxWeight = v }
+    const avgWeight = totalWeight / entries.length
 
     // ── Priority mapping ──────────────────────────────────────────────────
     // Map aggregate intensity to OS nice value.

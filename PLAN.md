@@ -1,3 +1,35 @@
+# Cycle 237 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 237 (business_logic BANNED: C234+C235+C236 consecutive)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | BAN (C234+C235+C236 consecutive) |
+| ux_accessibility | 5 | 0 | SKIP (done C236) |
+| data_db | 5 | 0 | SKIP (done C235) |
+| product | 10 | 0 | SKIP (ROADMAP empty) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (business_logic BANNED)
+
+## Units
+1. [quality_tests] T-129 — cycle237-coverage.test.js: P-68 _updateAggregated running sum source + integration
+2. [quality_tests] T-130 — cycle237-coverage.test.js: B-22 _metricsCache trim no-sort + insertion-order delete
+3. [quality_tests] T-131 — cycle237-coverage.test.js: S-75/S-76/S-77 preload guards (id format, array reject, param sanitization)
+4. [security] S-78 — preload.js `configWrite`: add cfg object guard (not null, not array) per ADR-007
+5. [security] S-79 — preload.js `mixerHistory`: add n integer guard (1-100) per ADR-007
+6. [performance] P-69 — resource-scheduler.js `computeAllocation`: merge totalWeight reduce + maxWeight map into single pass
+7. [backend] B-23 — main.js `orchestra:clearLog`: add usageTracker.delete(dir) + _metricsCache.delete('claude-usage:'+dir) + 'session-summary' after iter prune
+8. [frontend] F-20 — renderer.js `open()`: reset _prevBurnTokens=0 + _burnHistory.length=0 on project switch
+
+## Stats
+- 4320 tests at cycle open
+
+---
 # Cycle 236 Plan — IMPROVEMENT MODE
 
 ## MIXER BUDGET — Cycle 236 (quality_tests BANNED: 3 consecutive C233-C235)
@@ -27,7 +59,9 @@ Total: 8 units — IMPROVEMENT MODE (quality_tests BANNED)
 8. [ux_accessibility] A-36 — index.html `#rawLogOverlay`: add role=dialog + aria-modal + aria-label; renderer.js: focus closeRawBtn on open, restore prior focus on close, Escape closes
 
 ## Stats
-- 4320 tests at cycle open
+- 4320 tests at cycle open → 4320 at close (regressions fixed)
+
+▸ ◼ Cycle 236 cerrado — COMPLIANCE security:3/3 performance:1/1 backend:1/1 frontend:1/1 business_logic:1/1 ux_accessibility:1/1 DRIFT:none TESTS:green
 
 ---
 # Cycle 235 Plan — IMPROVEMENT MODE

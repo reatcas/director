@@ -508,6 +508,7 @@ async function open(dir) {
   }
   if (window.mixerGraph && mixerGraphInited) { window.mixerGraph.destroy(); mixerGraphInited = false }
   current = dir
+  _prevBurnTokens = 0; _burnHistory.length = 0
   await refresh()
 
   const logEl = $('#log')
