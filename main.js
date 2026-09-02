@@ -1264,7 +1264,7 @@ ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
     const s = buf.toString('utf8')
     const nl = s.indexOf('\n')
     const trimmed = stat.size > readSize && nl >= 0 ? s.slice(nl + 1) : s
-    const _rawLines = trimmed.split('\n'); const _cappedLines = []; for (const l of _rawLines) _cappedLines.push(l.length > 4096 ? l.slice(0, 4096) : l); return _cappedLines.slice(-_tailLines).join('\n')
+    const _rawLines = trimmed.split('\n'); const _cappedLines = []; for (const l of _rawLines) { const _ls = l.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); _cappedLines.push(_ls.length > 4096 ? _ls.slice(0, 4096) : _ls) }; return _cappedLines.slice(-_tailLines).join('\n')
   } catch { return '' }
 })
 
@@ -1537,7 +1537,7 @@ ipcMain.handle('notes:read', (_e, dir) => {
   try {
     const st = fs.statSync(p)
     if (st.size > 102_400) return ''
-    const data = fs.readFileSync(p, 'utf8')
+    const data = fs.readFileSync(p, 'utf8').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     if (_notesCache.size >= 100) _notesCache.delete(_notesCache.keys().next().value); _notesCache.set(dir, { data, ts: Date.now() })
     return data
   } catch { return '' }

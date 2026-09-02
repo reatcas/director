@@ -27,7 +27,7 @@ describe('mixer-chart — COLORS palette', () => {
   })
 
   it('has fallback color for unknown categories', () => {
-    expect(chartJs).toContain("COLORS[cat] || '#888'")
+    expect(chartJs).toContain("COLORS[cat] ?? '#888'")
   })
 })
 
@@ -92,7 +92,7 @@ describe('mixer-chart — SVG rendering', () => {
   })
 
   it('deduplicates x-axis labels', () => {
-    expect(chartJs).toContain('filter((v, i, a) => a.indexOf(v) === i)')
+    expect(chartJs).toContain('new Set([0,')
   })
 })
 

@@ -2524,7 +2524,7 @@ function updateCompressionPanel(contextData) {
 function renderSparkline(svgEl, scores) {
   if (!svgEl || !scores || scores.length < 2) { if (svgEl) svgEl.style.display = 'none'; return }
   const w = 60, h = 16, pad = 1
-  const min = Math.min(...scores), max = Math.max(...scores)
+  let min = scores[0], max = scores[0]; for (const _sv of scores) { if (_sv < min) min = _sv; if (_sv > max) max = _sv }
   const range = max - min || 1
   const points = scores.map((s, i) => {
     const x = pad + (i / (scores.length - 1)) * (w - 2 * pad)

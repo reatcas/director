@@ -61,7 +61,7 @@ describe('T-229: F-50 saveMixer onclick uses for...of over range inputs', () => 
 describe('T-230: B-53 orchestra:tail uses for...of _cappedLines accumulation', () => {
   it('uses _cappedLines with for...of instead of .map(l => ...)', () => {
     expect(mainJs).toContain('_cappedLines')
-    expect(mainJs).toContain('for (const l of _rawLines) _cappedLines.push(')
+    expect(mainJs).toContain('_cappedLines.push(_ls')
   })
 
   it('does not use .map(l => l.length > 4096', () => {

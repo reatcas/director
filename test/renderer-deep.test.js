@@ -300,8 +300,8 @@ describe('renderSparkline — SVG polyline rendering', () => {
   })
 
   it('calculates min/max range', () => {
-    expect(body).toContain('Math.min(...scores)')
-    expect(body).toContain('Math.max(...scores)')
+    expect(body).toContain('if (_sv < min) min = _sv')
+    expect(body).toContain('if (_sv > max) max = _sv')
   })
 
   it('maps scores to x,y coordinates', () => {

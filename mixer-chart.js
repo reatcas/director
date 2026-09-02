@@ -19,7 +19,7 @@
     const svg = document.querySelector('#mixerHistorySvg')
     if (!panel || !svg) return
 
-    const playEntries = entries.filter(e => e.event === 'play' && e.focus)
+    const _ecFiltered = []; for (const e of entries) { if (e.event === 'play' && e.focus) _ecFiltered.push(e) }; const playEntries = _ecFiltered
     if (playEntries.length < 2) {
       panel.style.display = 'none'
       return
@@ -39,7 +39,7 @@
     const lines = []
     const legend = []
     for (const cat of cats) {
-      const color = COLORS[cat] || '#888'
+      const color = COLORS[cat] ?? '#888'
       const points = playEntries.map((e, i) => `${xScale(i).toFixed(1)},${yScale(e.focus[cat] || 0).toFixed(1)}`)
       lines.push(`<polyline points="${points.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.85"/>`)
       const lastVal = playEntries[playEntries.length - 1].focus[cat] || 0
@@ -55,7 +55,7 @@
     }).join('')
 
     const nEntries = playEntries.length
-    const xLabels = [0, Math.floor(nEntries / 2), nEntries - 1].filter((v, i, a) => a.indexOf(v) === i)
+    const xLabels = [...new Set([0, Math.floor(nEntries / 2), nEntries - 1])]
     const xAxis = xLabels.map(i => {
       const d = new Date(playEntries[i].ts)
       const label = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`

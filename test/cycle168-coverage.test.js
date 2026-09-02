@@ -27,7 +27,7 @@ describe('orchestra:tail per-line truncation (I-506)', () => {
   const block = mainJs.split("'orchestra:tail'")[1]?.split('\nipcMain')[0] || ''
 
   it('truncates lines longer than 4096 chars', () => {
-    expect(block).toContain('l.length > 4096 ? l.slice(0, 4096) : l')
+    expect(block).toContain('_ls.length > 4096 ? _ls.slice(0, 4096) : _ls')
   })
 })
 
