@@ -1825,3 +1825,173 @@ Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
 6. [ux_accessibility] A-83 — renderer.js L3492: for(let _ci=0;_ci<_cmdItemEls.length;_ci++) → for(const [_ci,el] of _cmdItemEls.entries()). Cmd onclick handlers.
 7. [data_db] DD-25 — coordination-protocol.js L296: for(let idx=0;idx<entries.length;idx++) → for(const [idx,[,info]] of entries.entries()). Resource share computation.
 8. [data_db] DD-26 — renderer.js normalizeMixerValues L1031+1037: let i=0;i++ counter → sections.entries() in both for-of loops. Mixer weight normalization.
+
+---
+# Cycle 302 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 302 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (streak=1 after C301 BL/UX/DD) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=1)
+
+## Units
+1. [security] S-180 — main.js L829: nextItem from ROADMAP.md goes into persistLifecycleEvent and PRODUCT_DIRECTIVE.md without ctrl-char strip. Add narrow strip on nextItem.
+2. [security] S-181 — main.js L834: PRODUCT_DIRECTIVE.md readFileSync content → add narrow ctrl-char strip after read.
+3. [performance] P-118 — renderer.js L2512 renderSparkline: for(let i=0;i<scores.length;i++){const s=scores[i] → for(const [i,s] of scores.entries()). Eliminates manual element lookup.
+4. [backend] B-72 — coordination-protocol.js L226: for(let i=0;i<entries.length;i++){const [dirA,infoA]=entries[i] → for(const [i,[dirA,infoA]] of entries.entries()). Outer conflict detection loop.
+5. [frontend] F-69 — renderer.js L3210 mixer-tab keydown: for(let _ti=0;_ti<tabs.length;_ti++){if(tabs[_ti]===activeEl) → for(const [_ti,tab] of tabs.entries()){if(tab===activeEl).
+6. [quality_tests] T-288 — cycle302-coverage.test.js: S-180 nextItem strip; S-181 directive content strip.
+7. [quality_tests] T-289 — cycle302-coverage.test.js: P-118 scores.entries() in renderSparkline; B-72 entries.entries() in detectConflicts.
+8. [quality_tests] T-290 — cycle302-coverage.test.js: F-69 tabs.entries() in mixer-tab keydown.
+
+---
+# Cycle 303 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 303 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (streak=2 → C304 must be BL/UX/DD) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=2 → C304 must rotate)
+
+## Units
+1. [security] S-182 — main.js export:session L1582-1584: roadmap/plan/pending reads embedded raw in snapshot JSON → add narrow ctrl-char strip.
+2. [security] S-183 — main.js orchestra:analyze L1649: mixer-history.json read included raw in analyze report → add narrow ctrl-char strip.
+3. [performance] P-119 — renderer.js L41: outer particles connection loop for(let i...) { const dx=particles[i].x → for(const [i,pi] of particles.entries()) { const pj=particles[j]; dx=pi.x-pj.x.
+4. [backend] B-73 — main.js L976 nextAvailableAi: for(let offset=1...) { providers[(start+offset+len)%len] → const _rotated=[...providers.slice(start+1), ...providers.slice(0,start+1)]; for(const candidate of _rotated).
+5. [frontend] F-70 — mixer-graph.js L467: glowCache.forEach(t=>t.dispose&&t.dispose()) → for(const t of glowCache){if(t.dispose)t.dispose()}.
+6. [quality_tests] T-291 — cycle303-coverage.test.js: S-182 roadmap/plan/pending strip; S-183 mixer-history strip in analyze.
+7. [quality_tests] T-292 — cycle303-coverage.test.js: P-119 particles.entries() outer loop; B-73 _rotated slice for-of.
+8. [quality_tests] T-293 — cycle303-coverage.test.js: F-70 glowCache for-of.
+
+---
+# Cycle 304 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 304 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C302+C303 streak=2 → force BL/UX/DD) |
+| performance | 10 | 0 | BAN (streak) |
+| backend | 5 | 0 | BAN (streak) |
+| frontend | 5 | 0 | BAN (streak) |
+| quality_tests | 35 | 0 | SKIP (BL/UX/DD rotation cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
+
+## Units
+1. [business_logic] BL-72 — coordination-protocol.js L222 detectConflicts: _dcEntries push-loop → const entries=[...this.instances]. Eliminates intermediate for-of build.
+2. [business_logic] BL-73 — coordination-protocol.js L284 _rebalance: _rbEntries push-loop → const entries=[...this.instances]. Same pattern.
+3. [business_logic] BL-74 — renderer.js L3486 renderCmdResults: for(let i=0;i<sliced.length;i++){const it=sliced[i] → for(const [i,it] of sliced.entries()).
+4. [ux_accessibility] A-84 — renderer.js L3141 openAtrilModal color swatches: add role="radio" tabindex="0" aria-label aria-checked onkeydown to each swatch div.
+5. [ux_accessibility] A-85 — renderer.js L3157 openAtrilModal icon options: add role="radio" tabindex="0" aria-label aria-checked onkeydown to each opt div.
+6. [ux_accessibility] A-86 — renderer.js L3058-3064 renderBpModules: add aria-label to name/description/features/dependencies inputs.
+7. [data_db] DD-27 — main.js L829: (lines.find(...)|| '') → (lines.find(...) ?? ''). Precise nullish check.
+8. [data_db] DD-28 — mixer-graph.js L247+L250: nodePos()||(...) → ??(...); cfg.color||(...) → cfg.color??(...).
+
+---
+# Cycle 305 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 305 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (BL/UX/DD was C304) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=1 after BL/UX/DD rotation)
+
+## Units
+1. [security] S-184 — main.js lifecycle:list L1724: _llEvents push truncates message but doesn't strip ctrl-chars from label or message → add narrow ctrl-char strip on both.
+2. [security] S-185 — main.js blueprint:generate-brief: a.additionalNotes/mod.features[]/mod.dependencies[] pushed raw without _bpInline() → wrap through _bpInline()/strip.
+3. [performance] P-120 — renderer.js L21: for(let _pi=0;_pi<N;_pi++) particles.push({...}) push-loop → Array.from({length:N},()=>({...})) single-allocation.
+4. [backend] B-74 — main.js L1046: (out.match(regex)||[])[1]||null → out.match(regex)?.[1]??null. Optional-chain + nullish coalescing.
+5. [frontend] F-71 — renderer.js renderCommitBreakdown L826-838: html+= concat loops → _barParts/_legendParts for-of accumulators joined at end.
+6. [quality_tests] T-294 — cycle305-coverage.test.js: S-184 lifecycle:list strip; S-185 additionalNotes/features/deps _bpInline.
+7. [quality_tests] T-295 — cycle305-coverage.test.js: P-120 Array.from particles; B-74 match optchain.
+8. [quality_tests] T-296 — cycle305-coverage.test.js: F-71 renderCommitBreakdown _barParts/_legendParts for-of.
+
+---
+# Cycle 306 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 306 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (rotation) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+Total: 8 units — IMPROVEMENT MODE (streak=2, must rotate C307)
+
+## Units
+1. [security] S-186 — main.js mixer:saved:list _umFiltered: pushes m raw → push {…m, name: m.name.replace(ctrl-char)} defensive strip.
+2. [security] S-187 — main.js mixer:history _mhFiltered: strips h.event but not h.ts → add h.ts strip alongside h.event.
+3. [performance] P-121 — renderer.js L996: for(let i=0;i<2;i++) count-only spark loop → for(const _ of [0,1]) — eliminates indexed loop.
+4. [backend] B-75 — main.js mixer:read L1309: for(const k of Object.keys(cfg.focus)){…cfg.focus[k]} → for(const [k,v] of Object.entries(cfg.focus)){…v} — eliminates double-index.
+5. [frontend] F-72 — mixer-graph.js L201: for(let i=0;i<count;i++) spark emit → for(const _ of Array.from({length:count})) — consistent with P-120 pattern.
+6. [quality_tests] T-297 — cycle306-coverage.test.js: S-186 mixer:saved:list name strip; S-187 mixer:history ts strip.
+7. [quality_tests] T-298 — cycle306-coverage.test.js: P-121 [0,1] spark loop; B-75 Object.entries mixer:read.
+8. [quality_tests] T-299 — cycle306-coverage.test.js: F-72 Array.from spark emit in mixer-graph.
+
+---
+# Cycle 307 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 307 (F-01 HARNESS-blocked, BL/UX/DD rotation after C305+C306 streak=2)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C305+C306 streak=2) |
+| performance | 10 | 0 | BAN (streak) |
+| backend | 5 | 0 | BAN (streak) |
+| frontend | 5 | 0 | BAN (streak) |
+| quality_tests | 35 | 0 | SKIP (BL/UX/DD rotation cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
+
+## Units
+1. [business_logic] BL-75 — coordination-protocol.js L226: inner for(let j=i+1;j<entries.length;j++){const [dirB,infoB]=entries[j]} → for(const [dirB,infoB] of entries.slice(i+1)). Eliminates index variable.
+2. [business_logic] BL-76 — renderer.js L2386-2389: Object.keys(cats).sort()…cats[k] double-index → Object.entries(cats).sort()…[k,c] destructuring. Eliminates double-index.
+3. [business_logic] BL-77 — main.js L1293: for(const k of Object.keys(o).sort()) _sjArr.push([k,o[k]]) → for(const [k,v] of Object.entries(o).sort()) _sjArr.push([k,v]). Eliminates double-index.
+4. [ux_accessibility] A-87 — renderer.js L1648 le-group-header: add role="button" tabindex="0" aria-expanded onkeydown. Currently onclick-only div, not keyboard-accessible.
+5. [ux_accessibility] A-88 — renderer.js L1322-1324 saved mix buttons: include mix name in aria-label ("Cargar mezcla {name}", "Copiar JSON de {name}", "Eliminar mezcla {name}").
+6. [ux_accessibility] A-89 — renderer.js L828 commit breakdown bar divs: add aria-hidden="true" to visual-only bar segments; outer container already provides aria-label summary.
+7. [data_db] DD-29 — renderer.js L1489-1491 addFeatureEntry: match&&match[1]?match[1]:'' → match?.[1]??''; match?match[2].trim():text → match?.[2]?.trim()??text; match&&match[3]?match[3].trim():'' → match?.[3]?.trim()??''.
+8. [data_db] DD-30 — main.js L1618: const k=m?m[1]:'other' → const k=m?.[1]??'other'. Optional chain eliminates redundant guard.

@@ -104,7 +104,7 @@ describe('T-227: DD-05 analyze _anFiles prune uses for...of', () => {
 describe('T-227: DD-06 _sortedJson uses for...of _sjArr accumulation', () => {
   it('builds _sjArr with for...of instead of .map(k => [k, o[k]])', () => {
     expect(mainJs).toContain('_sjArr')
-    expect(mainJs).toContain('for (const k of Object.keys(o).sort()) _sjArr.push')
+    expect(mainJs).toContain('for (const [k, v] of Object.entries(o).sort(')
   })
 
   it('does not use .map(k => [k, o[k]]) in _sortedJson', () => {

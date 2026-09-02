@@ -49,7 +49,7 @@ describe('snapshotMixer sorted-key dedup (I-553)', () => {
   it('uses sorted JSON for key-order-independent dedup comparison', () => {
     const block = mainJs.split('function snapshotMixer')[1]?.split('\n}\n')[0] || ''
     expect(block).toContain('_sortedJson')
-    expect(block).toContain('Object.keys(o).sort()')
+    expect(block).toContain('Object.entries(o).sort(')
   })
 })
 

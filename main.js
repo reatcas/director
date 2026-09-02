@@ -1290,7 +1290,7 @@ function snapshotMixer(dir, event) {
   const _ssFocus = {}; for (const [k, v] of Object.entries(cfg.focus)) { if (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100) _ssFocus[k] = v }
   if (Object.keys(_ssFocus).length === 0) return
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
-  const _sortedJson = o => { const _sjArr = []; for (const k of Object.keys(o).sort()) _sjArr.push([k, o[k]]); return JSON.stringify(Object.fromEntries(_sjArr)) }
+  const _sortedJson = o => { const _sjArr = []; for (const [k, v] of Object.entries(o).sort(([a], [b]) => a < b ? -1 : 1)) _sjArr.push([k, v]); return JSON.stringify(Object.fromEntries(_sjArr)) }
   if (_ssLast && _ssLast.event === _ssEvent && _sortedJson(_ssLast.focus) === _sortedJson(_ssFocus)) return
   hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: _ssFocus })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
@@ -1615,7 +1615,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
       const cat = {}
       for (const c of _azCommits) {
         const m = c.match(/ (feat|fix|test|refactor|chore|security|sec|perf|docs|style|i18n)[:(]/)
-        const k = m ? m[1] : 'other'
+        const k = m?.[1] ?? 'other'
         cat[k] = (cat[k] ?? 0) + 1
       }
       // Fetch local metrics

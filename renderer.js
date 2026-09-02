@@ -825,12 +825,12 @@ function renderCommitBreakdown(report) {
     for (const [type, count] of sorted) {
       const pct = (count / total * 100).toFixed(1)
       const color = COMMIT_TYPE_COLORS[type] ?? '#484a56'
-      _barParts.push(`<div style="width:${pct}%;background:${color};min-width:2px" title="${esc(type)}: ${count} (${pct}%)"></div>`)
+      _barParts.push(`<div aria-hidden="true" style="width:${pct}%;background:${color};min-width:2px"></div>`)
     }
     const _legendParts = []
     for (const [type, count] of sorted) {
       const color = COMMIT_TYPE_COLORS[type] ?? '#484a56'
-      _legendParts.push(`<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:3px"></span>${esc(type)} ${count}</span>`)
+      _legendParts.push(`<span><span aria-hidden="true" style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:3px"></span>${esc(type)} ${count}</span>`)
     }
     el.innerHTML = '<div style="display:flex;height:16px;border-radius:3px;overflow:hidden;margin-bottom:6px">' + _barParts.join('') + '</div><div style="display:flex;gap:10px;flex-wrap:wrap;font:9px var(--mono);color:var(--dim)">' + _legendParts.join('') + '</div>'
     el.style.display = ''
@@ -1319,9 +1319,9 @@ async function loadMixes() {
         <div class="mix-card-meta">${date}</div>
       </div>
       <div class="mix-card-actions">
-        <button class="mix-btn load" aria-label="Cargar mezcla">▶</button>
-        <button class="mix-btn share" aria-label="Copiar JSON">⎘</button>
-        <button class="mix-btn del" aria-label="Eliminar mezcla">✕</button>
+        <button class="mix-btn load" aria-label="Cargar mezcla ${esc(m.name)}">▶</button>
+        <button class="mix-btn share" aria-label="Copiar JSON de ${esc(m.name)}">⎘</button>
+        <button class="mix-btn del" aria-label="Eliminar mezcla ${esc(m.name)}">✕</button>
       </div>`
 
     card.querySelector('.load').onclick = async e => {
@@ -1486,9 +1486,9 @@ function addFeatureEntry(text) {
 
   // Extract category tag, unit name, and goal
   const match = text.match(/▶\s*(?:\[(\w+)\]\s*)?(.+?)\s*—\s*(.+)/) || text.match(/▶\s*(?:\[(\w+)\]\s*)?(.+)/)
-  const category = match && match[1] ? match[1] : ''
-  const unit = match ? match[2].trim() : text
-  const goal = match && match[3] ? match[3].trim() : ''
+  const category = match?.[1] ?? ''
+  const unit = match?.[2]?.trim() ?? text
+  const goal = match?.[3]?.trim() ?? ''
 
   // Map category to its mixer color
   const catSection = category ? SECTIONS.find(s => s[0] === category) : null
@@ -1645,12 +1645,12 @@ function addNormalLine(text) {
   const grp = document.createElement('div')
   grp.className = 'le-group'
   grp.innerHTML = `
-    <div class="le-group-header" onclick="this.parentElement.classList.toggle('expanded')">
-      <span class="le-icon" style="color:#666;background:rgba(255,255,255,.04)">·</span>
+    <div class="le-group-header" role="button" tabindex="0" aria-expanded="false" onclick="const _lgh=this;_lgh.parentElement.classList.toggle('expanded');_lgh.setAttribute('aria-expanded',String(_lgh.parentElement.classList.contains('expanded')))" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+      <span class="le-icon" style="color:#666;background:rgba(255,255,255,.04)" aria-hidden="true">·</span>
       <span class="le-time">${time}</span>
       <span class="le-group-count">1</span>
       <span class="le-msg" style="color:#666;font-size:10px">${esc(preview)}</span>
-      <span class="le-group-expand">▾</span>
+      <span class="le-group-expand" aria-hidden="true">▾</span>
     </div>
     <div class="le-group-body">${esc(text)}\n</div>
   `
@@ -2383,10 +2383,10 @@ function updateAllocInspector(allocation) {
   ].join('')
 
   const cats = allocation.categoryBudgets ?? {}
-  const keys = Object.keys(cats).sort((a, b) => (cats[b].weight ?? 0) - (cats[a].weight ?? 0))
-  if (keys.length === 0) { catEl.innerHTML = ''; return }
+  const catEntries = Object.entries(cats).sort(([, a], [, b]) => (b.weight ?? 0) - (a.weight ?? 0))
+  if (catEntries.length === 0) { catEl.innerHTML = ''; return }
 
-  const _catParts = []; for (const k of keys) { const c = cats[k]; const pct = Math.round((c.normalizedShare ?? 0) * 100); const ret = Math.round((c.contextRetentionFactor ?? 0) * 100); const hot = c.hotPath ? ' <span class="ac-hot">HOT</span>' : ''; _catParts.push(`<span class="alloc-cat"><span class="ac-name">${esc(k)}</span><span class="ac-val">${esc(String(c.weight))}% · ${esc(String(pct))}% share · ${esc(String(ret))}% ret</span>${hot}</span>`) }; catEl.innerHTML = _catParts.join('')
+  const _catParts = []; for (const [k, c] of catEntries) { const pct = Math.round((c.normalizedShare ?? 0) * 100); const ret = Math.round((c.contextRetentionFactor ?? 0) * 100); const hot = c.hotPath ? ' <span class="ac-hot">HOT</span>' : ''; _catParts.push(`<span class="alloc-cat"><span class="ac-name">${esc(k)}</span><span class="ac-val">${esc(String(c.weight))}% · ${esc(String(pct))}% share · ${esc(String(ret))}% ret</span>${hot}</span>`) }; catEl.innerHTML = _catParts.join('')
 }
 
 // ─── Token Burn Rate (F-19) ───────────────────────────────────────────────────

@@ -35,11 +35,11 @@ describe('orchestra:analyze report cap in resolve (I-488)', () => {
 })
 
 describe('mix-card buttons aria-label (I-489)', () => {
-  it('load button has Spanish aria-label', () => {
-    expect(rendererJs).toContain('aria-label="Cargar mezcla"')
+  it('load button has Spanish aria-label with mix name', () => {
+    expect(rendererJs).toContain('aria-label="Cargar mezcla ${esc(m.name)}"')
   })
 
-  it('delete button has Spanish aria-label', () => {
-    expect(rendererJs).toContain('aria-label="Eliminar mezcla"')
+  it('delete button has Spanish aria-label with mix name', () => {
+    expect(rendererJs).toContain('aria-label="Eliminar mezcla ${esc(m.name)}"')
   })
 })

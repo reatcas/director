@@ -169,7 +169,7 @@ describe('updateAllocInspector — resource allocation display (F-13)', () => {
 
   it('renders category budgets sorted by weight', () => {
     expect(body).toContain('categoryBudgets')
-    expect(body).toContain('sort((a, b)')
+    expect(body).toContain('sort(([, a], [, b])')
   })
 
   it('shows normalized share, retention, and HOT badge', () => {

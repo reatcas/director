@@ -223,8 +223,7 @@ class CoordinationProtocol {
     const conflicts = []
 
     for (const [i, [dirA, infoA]] of entries.entries()) {
-      for (let j = i + 1; j < entries.length; j++) {
-        const [dirB, infoB] = entries[j]
+      for (const [dirB, infoB] of entries.slice(i + 1)) {
 
         const weightsA = infoA.categoryWeights ?? {}
         const weightsB = infoB.categoryWeights ?? {}
