@@ -827,7 +827,7 @@ function playOrchestra(dir, agent = 'claude') {
         if (_rmStat && _rmStat.size <= 1_048_576) {
           const lines = fs.readFileSync(roadmapPath, 'utf8').split('\n')
           const uncheckedItems = lines.filter(l => l.trim().startsWith('- [ ]')).map(l => l.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''))
-          const BLOCK_PATTERNS = /blocked|credentials|SMTP|Twilio|API key|needs.*owner|pending.*config|requires.*setup/i
+          const BLOCK_PATTERNS = /blocked|credentials|SMTP|Twilio|API key|needs.*owner|pending.*config|requires.*setup|harness must|Cannot be done|apply between|self-orchestrat|between.sessions|\[HARNESS\]|requires modif/i
           const actionableItem = uncheckedItems.find(l => !BLOCK_PATTERNS.test(l))
           const allBlocked = uncheckedItems.length > 0 && !actionableItem
           const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
@@ -835,14 +835,15 @@ function playOrchestra(dir, agent = 'claude') {
           try { const _dse = fs.statSync(directivePath); if (_dse.size > 0 && _dse.size <= 512_000) content = fs.readFileSync(directivePath, 'utf8').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') } catch {}
           const nextIdx = content.indexOf('## NEXT ITEM')
           if (nextIdx !== -1) content = content.substring(0, nextIdx).trimEnd()
-          if (allBlocked) {
-            persistLifecycleEvent(dir, 'directive', 'DIRECTOR', `Modo evaluación activado — todos los items bloqueados (${uncheckedItems.length})`)
-            content += `\n\n## NEXT ITEM\nTodos los items pendientes están bloqueados por dependencias externas (credenciales, configuración del propietario).\nENTRAR EN MODO EVALUACIÓN:\n1. Analiza el código actual en profundidad — handlers, servicios, modelos, UI.\n2. Identifica módulos incompletos, features de alto valor, mejoras de UX, gaps de seguridad, o integraciones faltantes.\n3. Agrega al menos 3 items accionables (sin bloqueos externos) a ROADMAP.md bajo una nueva sección ## Mejoras Evaluadas.\n4. Implementa inmediatamente el item de mayor impacto. Escribe código real. Commit real.\nEsta es tu única instrucción. No reports. No docs. Código real.\n`
-          } else if (actionableItem) {
-            persistLifecycleEvent(dir, 'directive', 'DIRECTOR', `Siguiente item indicado: ${actionableItem}`)
-            content += `\n\n## NEXT ITEM\nEl proceso ha parado. Tu siguiente objetivo es:\n${actionableItem}\n`
+          const nextDirective = allBlocked
+            ? `Todos los items pendientes están bloqueados por dependencias externas.\nENTRAR EN MODO EVALUACIÓN:\n1. Analiza el código actual — handlers, servicios, modelos, UI.\n2. Identifica módulos incompletos, features de alto valor, mejoras de UX, gaps de seguridad.\n3. Agrega ≥3 items accionables a ROADMAP.md bajo ## Mejoras Evaluadas.\n4. Implementa el de mayor impacto. Código real. Commit real. Sin docs ni reports.\n`
+            : actionableItem ? `El proceso ha parado. Tu siguiente objetivo es:\n${actionableItem}\n` : null
+          if (nextDirective) {
+            const evtMsg = allBlocked ? `Modo evaluación activado — todos los items bloqueados (${uncheckedItems.length})` : `Siguiente item indicado: ${actionableItem}`
+            persistLifecycleEvent(dir, 'directive', 'DIRECTOR', evtMsg)
+            content += `\n\n## NEXT ITEM\n${nextDirective}`
+            fs.writeFileSync(directivePath, content)
           }
-          if (allBlocked || actionableItem) fs.writeFileSync(directivePath, content)
         }
       } catch (err) {}
 

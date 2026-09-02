@@ -42,6 +42,9 @@ BLOCKED_STREAK=0
 MAX_HALLUCINATION_STREAK=5
 IMPROVEMENT_STREAK=0
 MAX_IMPROVEMENT_STREAK=10
+CATEGORY_BAN_STREAK=0
+LAST_CATEGORY=""
+PREV_CATEGORY=""
 ITER=0
 while :; do
 
@@ -330,11 +333,18 @@ for raw in sys.stdin:
     [ -n "$SUMMARY" ] && echo "[orchestra v$VERSION] summary: $SUMMARY" | tee -a "$MASTER_LOG"
   fi
 
-  # ── Cycle close validation: verify COMPLIANCE line was emitted ────────
-  if [ -f "$ITER_LOG" ] && [ "$REAL_COMMITS" -gt 0 ] 2>/dev/null; then
-    if ! grep -q 'COMPLIANCE' "$ITER_LOG" 2>/dev/null; then
-      stamp "COMPLIANCE_MISSING: agent did not emit ▸ ◼ COMPLIANCE line this iteration"
-      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) COMPLIANCE_MISSING iter=$ITER agent=$AI_AGENT" >> .claude/CYCLE_LEARNINGS.md
+  # ── F-01: Cycle close validation — verify COMPLIANCE line was emitted ────
+  if [ -f "$ITER_LOG" ]; then
+    _RC_CHECK=$(git log --oneline "${START_COMMIT:-none}".."${END_COMMIT:-none}" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "${_RC_CHECK:-0}" -gt 0 ]; then
+      if grep -q 'COMPLIANCE' "$ITER_LOG" 2>/dev/null; then
+        stamp "COMPLIANCE_OK: agent emitted ◼ COMPLIANCE line (iter=$ITER)"
+      else
+        stamp "COMPLIANCE_MISSING: agent made ${_RC_CHECK} commit(s) but did NOT emit ▸ ◼ COMPLIANCE line (iter=$ITER)"
+        echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) COMPLIANCE_MISSING iter=$ITER commits=${_RC_CHECK} agent=$AI_AGENT" >> .claude/CYCLE_LEARNINGS.md
+        # Inject compliance reminder into PRODUCT_DIRECTIVE for next cycle
+        echo "⚠️ HARNESS: Previous cycle had ${_RC_CHECK} commit(s) but MISSING compliance line. End EVERY cycle with: ▸ ◼ Cycle N cerrado — COMPLIANCE cat:A/P DRIFT:none|cat+N TESTS:green|red" >> .claude/PRODUCT_DIRECTIVE.md
+      fi
     fi
   fi
 
@@ -389,6 +399,25 @@ for raw in sys.stdin:
     if [ "${TOP_COUNT:-0}" -gt 5 ]; then
       stamp "ANTI-SLOP: module $TOP_NAME hit $TOP_COUNT times in this iteration — concentration violation"
       echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) MODULE_CONCENTRATION=$TOP_NAME×$TOP_COUNT agent=$AI_AGENT" >> .claude/CYCLE_LEARNINGS.md
+    fi
+
+    # ── F-02: Category ban enforcement — 3 consecutive same-category cycles ──
+    ITER_CATEGORY=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null \
+      | grep -oE '^[a-f0-9]+ (feat|fix|security|perf|test|style|refactor|chore|i18n|a11y|data_db|backend|frontend|bl|ux)\(' \
+      | grep -oE '(feat|fix|security|perf|test|style|refactor|chore|i18n|a11y|data_db|backend|frontend|bl|ux)' \
+      | sort | uniq -c | sort -rn | head -1 | awk '{print $2}' || echo "")
+    if [ -n "$ITER_CATEGORY" ]; then
+      if [ "$ITER_CATEGORY" = "$LAST_CATEGORY" ] && [ "$ITER_CATEGORY" = "$PREV_CATEGORY" ]; then
+        CATEGORY_BAN_STREAK=$((CATEGORY_BAN_STREAK + 1))
+        stamp "CATEGORY-BAN: '$ITER_CATEGORY' repeated 3+ consecutive cycles (streak=$CATEGORY_BAN_STREAK). Injecting category-ban directive."
+        echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) CATEGORY_BAN cat=$ITER_CATEGORY streak=$CATEGORY_BAN_STREAK agent=$AI_AGENT" >> .claude/CYCLE_LEARNINGS.md
+        printf '\n⚠️ HARNESS RULE 22 VIOLATION: Category "%s" has been the dominant category for %d consecutive cycles.\nNext cycle MUST use a different primary category. Banned categories this session: %s\n' \
+          "$ITER_CATEGORY" "$CATEGORY_BAN_STREAK" "$ITER_CATEGORY" >> .claude/PRODUCT_DIRECTIVE.md
+      else
+        CATEGORY_BAN_STREAK=0
+      fi
+      PREV_CATEGORY="$LAST_CATEGORY"
+      LAST_CATEGORY="$ITER_CATEGORY"
     fi
 
     # ── Improvement mode streak detection ──────────────────────────────────

@@ -2,7 +2,7 @@
 
 ## Product Features
 
-- [ ] **F-01** Cycle close validation — harness must verify `▸ ◼ ... COMPLIANCE` line was emitted by the agent after each iteration. Log `COMPLIANCE_MISSING` warning if absent.
+- [x] **F-01** Cycle close validation — harness verifies `▸ ◼ COMPLIANCE` line after each iteration with commits. Injects reminder to PRODUCT_DIRECTIVE if missing.
 - [x] **F-02** Final git check on process exit — run one last `git log` poll when orchestra process exits (before sending `orchestra:exit` to renderer) so commits made in the last 8s aren't missed.
 - [x] **F-03** PRODUCT_DIRECTIVE.md growth cap — overwrite instead of append when injecting `## NEXT ITEM` on auto-restart, preventing the file from growing to megabytes after many restarts.
 - [x] **F-04** Credits floor at zero — prevent `credits` from going negative in `ai-credits.json`. Clamp to 0 instead of decrementing below.
@@ -208,3 +208,14 @@
 - [x] **I-173** Security tests for atriles:save entry validation (13 tests in atriles-security.test.js).
 - [x] **I-174** Cache aiState() reads — 5s TTL, invalidated on every write to ai-credits.json.
 - [x] **I-175** Clear _lifecycleDirReady on repertoire:remove — prevents stale mkdirSync skip.
+
+## P3 — Product Wave (2026-09-02)
+
+- [ ] **P-F01** Multi-project dashboard: renderer panel showing all repertoire projects side by side with live cycle status, last commit, and compliance badge. IPC: `metrics:multi-summary` returning array of per-project snapshots.
+- [ ] **P-F02** Cycle timeline visualization: a chronological bar chart in renderer showing each cycle's category breakdown (colors = mixer weights), compliance status, and commit count. Reads from `.claude/CYCLE_LEARNINGS.md`.
+- [ ] **P-F03** One-click project clone + bootstrap: UI button to enter a GitHub URL → clone repo → run `team-orchestra` skill automatically to initialize PLAN.md, DECISIONS.md, ROADMAP.md, and orchestra.json from a template.
+- [ ] **P-F04** Run-history export: export the last N cycles to a structured JSON/CSV report (cycle number, categories, commits, compliance, test status). Button in UI triggers `orchestra:export-history` IPC.
+- [ ] **P-F05** Live token usage gauge: display cumulative API tokens used per session in the UI strip (reads from `.claude/telemetry/context-metrics.json`), with a configurable budget threshold that turns the gauge red.
+- [ ] **P-F06** AI model switcher per-project: dropdown in project settings to set model independently per project (overrides global default). Writes to per-project `orchestra.json`. Model change takes effect on next Play.
+- [ ] **P-F07** Keyboard shortcuts panel: `?` key opens a cheatsheet overlay in the Director UI listing all keyboard shortcuts (play/stop/switch project/open settings/etc.).
+- [ ] **P-F08** Session notes: a free-text notes panel per project that persists in `.claude/SESSION_NOTES.md`. Visible alongside the lifecycle feed. Useful for leaving context between sessions.
