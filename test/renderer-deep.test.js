@@ -64,16 +64,16 @@ describe('normalizeMixerValues — weight normalization', () => {
   const body = rendererJs.split('function normalizeMixerValues')[1]?.split('\nfunction ')[0] || ''
 
   it('extracts keys from sections', () => {
-    expect(body).toContain('sections.map(s => s[0])')
+    expect(body).toContain('for (const [k] of sections)')
   })
 
   it('distributes equally when all weights are zero', () => {
     expect(body).toContain('total === 0')
-    expect(body).toContain('Math.floor(100 / keys.length)')
+    expect(body).toContain('Math.floor(100 / sections.length)')
   })
 
   it('gives first key the remainder for equal distribution', () => {
-    expect(body).toContain('100 - each * (keys.length - 1)')
+    expect(body).toContain('100 - each * (sections.length - 1)')
   })
 
   it('scales proportionally to sum to 100', () => {

@@ -198,10 +198,10 @@ class ContextProtocol {
 
         // Section-level analysis — the granular delta
         const prevSections = previous[file].sections || []
-        const prevMap = new Map(prevSections.map(s => [s.title, s]))
+        const prevMap = new Map(); for (const s of prevSections) prevMap.set(s.title, s)
         const sectionDelta = { changed: [], unchanged: [], added: [], removed: [] }
 
-        const currTitles = new Set(sections.map(s => s.title))
+        const currTitles = new Set(); for (const s of sections) currTitles.add(s.title)
         for (const sec of sections) {
           sectionsTotal++
           const prev = prevMap.get(sec.title)

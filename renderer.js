@@ -1026,27 +1026,27 @@ function updateMixerGraph() {
 
 // ─── Mixer Equalizer: all stands always sum to 100% ────────────────────────
 function normalizeMixerValues(focus, sections) {
-  const keys = sections.map(s => s[0])
   let total = 0
-  for (const k of keys) total += (Number.isFinite(focus[k]) ? focus[k] : 0)
+  for (const [k] of sections) total += (Number.isFinite(focus[k]) ? focus[k] : 0)
   if (total === 0) {
-    // Distribute equally among all sections
-    const each = Math.floor(100 / keys.length)
+    const each = Math.floor(100 / sections.length)
     const result = {}
-    keys.forEach((k, i) => { result[k] = i === 0 ? 100 - each * (keys.length - 1) : each })
+    let i = 0
+    for (const [k] of sections) { result[k] = i === 0 ? 100 - each * (sections.length - 1) : each; i++ }
     return result
   }
-  // Scale proportionally to sum to 100
   const result = {}
   let assigned = 0
-  keys.forEach((k, i) => {
-    if (i === keys.length - 1) {
+  let i = 0
+  for (const [k] of sections) {
+    if (i === sections.length - 1) {
       result[k] = 100 - assigned
     } else {
       result[k] = Math.round(((Number.isFinite(focus[k]) ? focus[k] : 0) / total) * 100)
       assigned += result[k]
     }
-  })
+    i++
+  }
   return result
 }
 

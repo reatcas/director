@@ -52,7 +52,7 @@ contextBridge.exposeInMainWorld('director', {
   },
   analyze:    p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(null); return ipcRenderer.invoke('orchestra:analyze', p) },
   readIterLog: (p, l)  => {
-    if (typeof p !== 'string' || !p) return Promise.resolve('')
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve('')
     if (typeof l !== 'string' || !l.trim() || l.length > 512) return Promise.resolve('')
     return ipcRenderer.invoke('orchestra:readIterLog', p, l)
   },
@@ -130,6 +130,7 @@ contextBridge.exposeInMainWorld('director', {
     if (a.length > 200) return Promise.resolve(false)
     if (a.some(el => !el || typeof el !== 'object' || Array.isArray(el))) return Promise.resolve(false)
     if (a.some(el => typeof el.name !== 'string' || el.name.length === 0 || el.name.length > 256)) return Promise.resolve(false)
+    if (a.some(el => typeof el.path !== 'string' || el.path.length === 0 || el.path.length > 4096)) return Promise.resolve(false)
     return ipcRenderer.invoke('atriles:save', a)
   },
   // Alert notifications (F-22)

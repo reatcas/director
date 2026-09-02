@@ -1704,7 +1704,9 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string')
   const _llUnfilteredTotal = events.length
   if (_llBefore || _llType) events = events.filter(e => (!_llBefore || e.ts < _llBefore) && (!_llType || e.type === _llType))
-  const _llEvents = events.slice(-_llLimit).map(e => Buffer.byteLength(e.message, 'utf8') > 4096 ? { ...e, message: Buffer.from(e.message, 'utf8').slice(0, 4096).toString('utf8') } : e)
+  const _llSlice = events.length > _llLimit ? events.slice(-_llLimit) : events
+  const _llEvents = []
+  for (const e of _llSlice) { _llEvents.push(Buffer.byteLength(e.message, 'utf8') > 4096 ? { ...e, message: Buffer.from(e.message, 'utf8').slice(0, 4096).toString('utf8') } : e) }
   return metricsSet(_lcKey, { events: _llEvents, total: events.length, unfilteredTotal: _llUnfilteredTotal })
 })
 
