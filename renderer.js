@@ -1016,11 +1016,11 @@ function activateMixerStand(category) {
 function updateMixerGraph() {
   if (!window.mixerGraph || !mixerGraphInited) return
   const focus = {}
-  document.querySelectorAll('#mixerStrips .strip-h').forEach(s => {
+  for (const s of document.querySelectorAll('#mixerStrips .strip-h')) {
     const k = s.dataset.key
     const v = s.querySelector('.strip-h-val')
     if (k && v) focus[k] = parseInt(v.textContent, 10) || 0
-  })
+  }
   window.mixerGraph.update(focus)
 }
 
@@ -3101,7 +3101,7 @@ function renderBpModules() {
     list.appendChild(card)
   }
   // Bind events
-  list.querySelectorAll('.bp-mod-name, .bp-mod-desc, .bp-mod-features, .bp-mod-deps').forEach(inp => {
+  for (const inp of list.querySelectorAll('.bp-mod-name, .bp-mod-desc, .bp-mod-features, .bp-mod-deps')) {
     inp.addEventListener('change', () => {
       const i = parseInt(inp.dataset.i, 10)
       const field = inp.dataset.field
@@ -3112,14 +3112,14 @@ function renderBpModules() {
       }
       bpSave()
     })
-  })
-  list.querySelectorAll('.bp-mod-del').forEach(btn => {
+  }
+  for (const btn of list.querySelectorAll('.bp-mod-del')) {
     btn.onclick = () => {
       bpState.modules.splice(parseInt(btn.dataset.i, 10), 1)
       renderBpModules()
       bpSave()
     }
-  })
+  }
 }
 
 function bpAddModule() {

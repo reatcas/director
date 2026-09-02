@@ -2307,7 +2307,8 @@ app.whenReady().then(() => {
       const raw = req.url.replace('local-img://', '')
       const fp = decodeURIComponent(raw)
       const filePath = path.resolve(fp.startsWith('/') ? fp : '/' + fp)
-      const allowedDirs = cachedProjects().map(p => p.path).filter(Boolean)
+      const _allowedDirs = []; for (const p of cachedProjects()) { if (p.path) _allowedDirs.push(p.path) }
+      const allowedDirs = _allowedDirs
       allowedDirs.push(path.join(app.getPath('userData')))
       if (!allowedDirs.some(d => filePath.startsWith(d + path.sep) || filePath.startsWith(d + '/'))) {
         return new Response('', { status: 403 })
