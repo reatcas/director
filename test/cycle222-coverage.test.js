@@ -23,12 +23,12 @@ describe('_sectionMap state variable declared (B-16)', () => {
 describe('_sectionMap populated in init() (B-16)', () => {
   const initBlock = graphJs.split('function init')[1]?.split('\n  function ')[0] || ''
 
-  it('init() creates new Map from sections array', () => {
-    expect(initBlock).toContain('new Map(_sections.map')
+  it('init() iterates _sections with for-of to populate sectionMap', () => {
+    expect(initBlock).toContain('for (const s of _sections)')
   })
 
-  it('maps s[0] (key) to full section entry', () => {
-    expect(initBlock).toContain("s => [s[0], s]")
+  it('maps s[0] (key) to full section entry via Map.set', () => {
+    expect(initBlock).toContain('_sectionMap.set(s[0], s)')
   })
 
   it('assignment target is _sectionMap', () => {

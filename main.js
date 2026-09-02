@@ -946,7 +946,7 @@ ipcMain.handle('repertoire:readFile', (_e, dir, subpath) => {
     const stat = fs.statSync(p)
     if (!stat.isFile()) return null
     if (stat.size > 2_097_152) return null
-    return fs.readFileSync(p, 'utf8')
+    return fs.readFileSync(p, 'utf8').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
   } catch {
     return null
   }
@@ -1462,7 +1462,7 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
   const p = path.join(dir, '.claude/mixer-history.json')
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
-  const _mhFiltered = []; if (Array.isArray(hist)) { for (const h of hist) { if (h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _mhFiltered.push(h) } }
+  const _mhFiltered = []; if (Array.isArray(hist)) { for (const h of hist) { if (h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _mhFiltered.push({ ...h, event: h.event.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) } }
   return metricsSet(_mhKey, _mhFiltered.slice(-n))
 })
 

@@ -57,9 +57,9 @@ window.mixerGraph = (() => {
   }
   function nodeColor(node) {
     if (node.id === HUB_ID) return HUB_COLOR
-    const w = node.weight || 0
+    const w = node.weight ?? 0
     if (w <= 0) return '#2a2a40'  // dim but visible on dark background
-    return node.color || '#888888'
+    return node.color ?? '#888888'
   }
 
   // ── Glow sprite (extends default sphere for hub + active node) ───────────
@@ -69,7 +69,7 @@ window.mixerGraph = (() => {
     const isActive = node.id === _activeCategory
     if (!isHub && !isActive) return null
 
-    const color  = isHub ? HUB_COLOR : (node.color || '#00ffee')
+    const color  = isHub ? HUB_COLOR : (node.color ?? '#00ffee')
     const tex    = makeGlowTexture(color)
     if (!tex) return null
 
@@ -79,7 +79,7 @@ window.mixerGraph = (() => {
       opacity: isHub ? 0.7 : 0.85,
     })
     const sprite = new THREE.Sprite(mat)
-    const base   = isHub ? 28 : Math.max(24, (node.weight||0)*0.6+22)
+    const base   = isHub ? 28 : Math.max(24, (node.weight??0)*0.6+22)
     sprite.scale.set(base, base, 1)
     sprite.userData.baseScale = base
     if (isHub)    _hubGlow    = sprite
@@ -148,7 +148,7 @@ window.mixerGraph = (() => {
       link._active    = tgt === _activeCategory
       link._particles = link._active ? 6 : 0
     }
-    _gData.links = _gData.links.filter(l => !l._cross)
+    const _lgFiltered = []; for (const l of _gData.links) { if (!l._cross) _lgFiltered.push(l) }; _gData.links = _lgFiltered
     if (_recentPair.length === 2) {
       const [a, b] = _recentPair
       if ((_focus[a] ?? 0) > 0 && (_focus[b] ?? 0) > 0)
@@ -253,7 +253,7 @@ window.mixerGraph = (() => {
       return s ? s[2] : HUB_COLOR
     })()
 
-    for (const r of (cfg.rings || [])) emitRing(pos.x, pos.y, color, r.scale, r.dur)
+    for (const r of (cfg.rings ?? [])) emitRing(pos.x, pos.y, color, r.scale, r.dur)
     if (cfg.sparks > 0) emitSparks(pos.x, pos.y, color, cfg.sparks)
 
     // Flash the link connecting hub → this node
@@ -338,12 +338,12 @@ window.mixerGraph = (() => {
     }
 
     _container = containerEl
-    _sections  = sections || []
-    _sectionMap = new Map(_sections.map(s => [s[0], s]))
+    _sections  = sections ?? []
+    _sectionMap = new Map(); for (const s of _sections) _sectionMap.set(s[0], s)
     _hubGlow = _activeGlow = null
     _rings = []; _sparks = []
     _gData = buildData()
-    _nodeMap = new Map(_gData.nodes.map(n => [n.id, n]))
+    _nodeMap = new Map(); for (const n of _gData.nodes) _nodeMap.set(n.id, n)
     _mounted = true
 
     const w = containerEl.clientWidth  || 500
@@ -409,7 +409,7 @@ window.mixerGraph = (() => {
   }
 
   function update(focus) {
-    _focus = focus || {}
+    _focus = focus ?? {}
     if (!graph || !_gData || !_mounted) return
     for (const node of _gData.nodes) {
       if (node.id === HUB_ID) continue

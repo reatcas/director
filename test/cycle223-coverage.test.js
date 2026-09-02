@@ -11,12 +11,12 @@ const cssStr  = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8')
 describe('init() guards against undefined sections (B-17)', () => {
   const initBlock = graphJs.split('function init')[1]?.split('\n  function ')[0] || ''
 
-  it('uses sections || [] fallback when assigning _sections', () => {
-    expect(initBlock).toContain('_sections  = sections || []')
+  it('uses sections ?? [] fallback when assigning _sections', () => {
+    expect(initBlock).toContain('_sections  = sections ?? []')
   })
 
   it('_sectionMap is built from _sections (not raw sections param)', () => {
-    expect(initBlock).toContain('new Map(_sections.map')
+    expect(initBlock).toContain('for (const s of _sections)')
   })
 
   it('does not reference raw sections param directly in Map constructor', () => {
@@ -51,9 +51,9 @@ describe('_sectionMap lifecycle: init populates, destroy clears (B-17)', () => {
     expect(stateBlock).toContain('_sectionMap = new Map()')
   })
 
-  it('init() overwrites _sectionMap with populated Map', () => {
+  it('init() builds _sectionMap via for-of', () => {
     const initBlock = graphJs.split('function init')[1]?.split('\n  function ')[0] || ''
-    expect(initBlock).toContain('_sectionMap = new Map(_sections.map')
+    expect(initBlock).toContain('_sectionMap.set(s[0], s)')
   })
 
   it('destroy() clears _sectionMap', () => {

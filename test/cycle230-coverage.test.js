@@ -41,8 +41,8 @@ describe('nodePos() uses _nodeMap.get() instead of find() (P-64)', () => {
 describe('_nodeMap populated in init() after buildData() (P-64)', () => {
   const initBlock = graphJs.split('function init(containerEl')[1]?.split('\n  function ')[0] || ''
 
-  it('_nodeMap assigned from _gData.nodes after buildData()', () => {
-    expect(initBlock).toContain('_nodeMap = new Map(_gData.nodes.map(n => [n.id, n]))')
+  it('_nodeMap built via for-of over _gData.nodes after buildData()', () => {
+    expect(initBlock).toContain('for (const n of _gData.nodes) _nodeMap.set(n.id, n)')
   })
 
   it('_nodeMap assignment follows _gData = buildData()', () => {
