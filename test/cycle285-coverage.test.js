@@ -46,10 +46,9 @@ describe('T-256: S-159 ai:auth-status strips control chars from email', () => {
 })
 
 // ─── T-257: P-107 + B-61 + F-58 ─────────────────────────────────────────────
-describe('T-257: P-107 initParticles uses for loop instead of Array.from', () => {
-  it('uses for loop with _pi variable for particle creation', () => {
-    expect(rendererJs).toContain('for (let _pi = 0; _pi < N; _pi++) particles.push({')
-    expect(rendererJs).not.toContain('Array.from({ length: N }')
+describe('T-257: P-107 initParticles uses Array.from single-allocation', () => {
+  it('uses Array.from for particle init (updated in C305 P-120)', () => {
+    expect(rendererJs).toContain('Array.from({length: N}, () => ({')
   })
 })
 

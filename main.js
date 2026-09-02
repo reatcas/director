@@ -1043,7 +1043,7 @@ ipcMain.handle('ai:auth-status', (_e, id) => {
     if (id === 'claude') {
       const out = runCmd('claude', ['auth', 'status'])
       const logged = out.includes('"loggedIn": true') || out.includes('"loggedIn":true')
-      const _emailRaw = (out.match(/"email":\s*"([^"]+)"/) || [])[1] || null
+      const _emailRaw = out.match(/"email":\s*"([^"]+)"/)?.[1] ?? null
       const email = _emailRaw ? _emailRaw.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 254) : null
       return { loggedIn: logged, email }
     }
@@ -1721,7 +1721,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   if (_llBefore || _llType) { const _llCursorFiltered = []; for (const e of events) { if ((!_llBefore || e.ts < _llBefore) && (!_llType || e.type === _llType)) _llCursorFiltered.push(e) }; events = _llCursorFiltered }
   const _llSlice = events.length > _llLimit ? events.slice(-_llLimit) : events
   const _llEvents = []
-  for (const e of _llSlice) { _llEvents.push(Buffer.byteLength(e.message, 'utf8') > 4096 ? { ...e, message: Buffer.from(e.message, 'utf8').slice(0, 4096).toString('utf8') } : e) }
+  for (const e of _llSlice) { const _llLabel = e.label.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); const _llMsgRaw = e.message.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); const _llMsg = Buffer.byteLength(_llMsgRaw, 'utf8') > 4096 ? Buffer.from(_llMsgRaw, 'utf8').slice(0, 4096).toString('utf8') : _llMsgRaw; _llEvents.push({ ...e, label: _llLabel, message: _llMsg }) }
   return metricsSet(_lcKey, { events: _llEvents, total: events.length, unfilteredTotal: _llUnfilteredTotal })
 })
 
@@ -2230,10 +2230,10 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
       if (mod.description) lines.push(`${_bpInline(mod.description)}`)
       if (mod.features && mod.features.length) {
         lines.push('Features:')
-        for (const f of mod.features) lines.push(`- ${f}`)
+        for (const f of mod.features) lines.push(`- ${_bpInline(f)}`)
       }
       if (mod.dependencies && mod.dependencies.length) {
-        lines.push(`Dependencies: ${mod.dependencies.join(', ')}`)
+        const _depParts = []; for (const d of mod.dependencies) _depParts.push(_bpInline(d)); lines.push(`Dependencies: ${_depParts.join(', ')}`)
       }
       if (mod.notes) lines.push(`Notes: ${_bpInline(mod.notes)}`)
       lines.push('')
@@ -2242,7 +2242,7 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
 
   if (a.additionalNotes) {
     lines.push('## ADDITIONAL NOTES')
-    lines.push(a.additionalNotes)
+    lines.push(typeof a.additionalNotes === 'string' ? a.additionalNotes.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') : '')
     lines.push('')
   }
 

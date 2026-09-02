@@ -17,8 +17,7 @@
   window.addEventListener('resize', resize)
   resize()
 
-  const particles = []
-  for (let _pi = 0; _pi < N; _pi++) particles.push({
+  const particles = Array.from({length: N}, () => ({
     x:   Math.random() * window.innerWidth,
     y:   Math.random() * window.innerHeight,
     vx:  (Math.random() - .5) * .35,
@@ -26,7 +25,7 @@
     r:   Math.random() * 1.6 + .6,
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     pulse: Math.random() * Math.PI * 2
-  })
+  }))
 
   let _particlesRunning = true
 
@@ -822,19 +821,18 @@ function renderCommitBreakdown(report) {
     let total = 0; for (const v of Object.values(cat)) total += v
     if (total === 0) { el.style.display = 'none'; return }
     const sorted = Object.entries(cat).sort((a, b) => b[1] - a[1])
-    let html = '<div style="display:flex;height:16px;border-radius:3px;overflow:hidden;margin-bottom:6px">'
+    const _barParts = []
     for (const [type, count] of sorted) {
       const pct = (count / total * 100).toFixed(1)
       const color = COMMIT_TYPE_COLORS[type] ?? '#484a56'
-      html += `<div style="width:${pct}%;background:${color};min-width:2px" title="${esc(type)}: ${count} (${pct}%)"></div>`
+      _barParts.push(`<div style="width:${pct}%;background:${color};min-width:2px" title="${esc(type)}: ${count} (${pct}%)"></div>`)
     }
-    html += '</div><div style="display:flex;gap:10px;flex-wrap:wrap;font:9px var(--mono);color:var(--dim)">'
+    const _legendParts = []
     for (const [type, count] of sorted) {
       const color = COMMIT_TYPE_COLORS[type] ?? '#484a56'
-      html += `<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:3px"></span>${esc(type)} ${count}</span>`
+      _legendParts.push(`<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:3px"></span>${esc(type)} ${count}</span>`)
     }
-    html += '</div>'
-    el.innerHTML = html
+    el.innerHTML = '<div style="display:flex;height:16px;border-radius:3px;overflow:hidden;margin-bottom:6px">' + _barParts.join('') + '</div><div style="display:flex;gap:10px;flex-wrap:wrap;font:9px var(--mono);color:var(--dim)">' + _legendParts.join('') + '</div>'
     el.style.display = ''
     const _alParts = []; for (const [t, c] of sorted) _alParts.push(`${t} ${c}`); el.setAttribute('aria-label', 'Distribución de commits por tipo: ' + _alParts.join(', '))
   } catch { el.style.display = 'none' }
