@@ -1216,3 +1216,32 @@ Total: 8 units — IMPROVEMENT MODE (C279 streak=1; all available)
 6. [quality_tests] T-246 — cycle280-coverage.test.js: S-152 ORCHESTRA_VERSION strip; S-153 started ISO validation
 7. [quality_tests] T-247 — cycle280-coverage.test.js: P-104 csv for-of; F-55 conflicts ??
 8. [quality_tests] T-248 — cycle280-coverage.test.js: B-58 credits ??
+
+---
+# Cycle 281 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 281 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C279+C280 consecutive) |
+| performance | 10 | 0 | BAN (C279+C280 consecutive) |
+| backend | 5 | 0 | BAN (C279+C280 consecutive) |
+| frontend | 5 | 0 | BAN (C279+C280 consecutive) |
+| quality_tests | 35 | 0 | BAN (C279+C280 consecutive) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (5 banned; BL/UX/DD available)
+
+## Units
+1. [business_logic] BL-45 — main.js mixer:saved:list: new Set(userMixes.map(m=>m.id)) → for...of Set.add (eliminates intermediate array)
+2. [business_logic] BL-46 — renderer.js renderBpModules: mod.features || [] and mod.dependencies || [] → ?? [] (nullish coalescing)
+3. [business_logic] BL-47 — renderer.js updateMetrics: allocation.categoryBudgets || {} → ?? {} (nullish coalescing)
+4. [ux_accessibility] A-60 — renderer.js loadCustomAtriles: atrilesList() || [] → ?? [] (null-safe init)
+5. [ux_accessibility] A-61 — renderer.js loadAiCredits: aiCredits() || {} → ?? {} (null-safe init)
+6. [ux_accessibility] A-62 — renderer.js: mixerRead(current) || {} → ?? {} (batch replace all 9 occurrences)
+7. [data_db] DD-11 — main.js metrics:snapshot: readOrchJson(dir).focus || {} → ?? {} (nullish coalescing)
+8. [data_db] DD-12 — main.js metrics:session-summary: _worstComplianceCache.get(p.path) || null → ?? null

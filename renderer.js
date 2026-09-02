@@ -125,7 +125,7 @@ let _sectionsCache = null
 let _sectionsCacheKey = ''
 
 async function loadCustomAtriles() {
-  customAtriles = await window.director.atrilesList() || []
+  customAtriles = await window.director.atrilesList() ?? []
   _sectionsCache = null
 }
 
@@ -171,7 +171,7 @@ function formatReset(iso) {
   return isNaN(_frD.getTime()) ? iso.slice(0, 16) : new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(_frD)
 }
 async function loadAiCredits() {
-  aiCredits = await window.director.aiCredits() || {}
+  aiCredits = await window.director.aiCredits() ?? {}
   const select = $('#aiSelect')
   if (!select) return
   if (aiCredits.selected) select.value = aiCredits.selected
@@ -722,7 +722,7 @@ if ($('#playBtn')) $('#playBtn').onclick = async () => {
   if (!p || !p.installed || p.running || !agent) return
   
   if (current) {
-    const cfg = await window.director.mixerRead(current) || {}
+    const cfg = await window.director.mixerRead(current) ?? {}
     cfg.agent = agent
     if (model) cfg.model = model
     await window.director.configWrite(current, cfg)
@@ -758,7 +758,7 @@ if ($('#aiSelect')) $('#aiSelect').onchange = async event => {
   await loadAiCredits()
   
   if (current) {
-    const cfg = await window.director.mixerRead(current) || {}
+    const cfg = await window.director.mixerRead(current) ?? {}
     cfg.agent = agentId
     const aiData = aiCredits[agentId]
     if (aiData && aiData.defaultModel) {
@@ -770,7 +770,7 @@ if ($('#aiSelect')) $('#aiSelect').onchange = async event => {
 }
 if ($('#modelSelect')) $('#modelSelect').onchange = async event => {
   if (current) {
-    const cfg = await window.director.mixerRead(current) || {}
+    const cfg = await window.director.mixerRead(current) ?? {}
     cfg.model = event.target.value
     await window.director.configWrite(current, cfg)
   }
@@ -864,7 +864,7 @@ function sortMixerStrips() {
 
 async function loadMixer() {
   if (!current) return
-  const cfg = await window.director.mixerRead(current) || {}
+  const cfg = await window.director.mixerRead(current) ?? {}
   
   if ($('#aiSelect')) {
     if (cfg.agent && aiCredits[cfg.agent]) {
@@ -1171,7 +1171,7 @@ function updateSmartAuroraColors() {
 if ($('#smartMixToggle')) {
   $('#smartMixToggle').onclick = async () => {
     if (!current) return
-    const cfg = await window.director.mixerRead(current) || {}
+    const cfg = await window.director.mixerRead(current) ?? {}
     const newState = !cfg.smartMix
     cfg.smartMix = newState
     await window.director.configWrite(current, cfg)
@@ -1202,7 +1202,7 @@ function updateSmartModelToggle(active) {
 
 if ($('#smartModelToggle')) $('#smartModelToggle').onclick = async () => {
   if (!current) return
-  const cfg = await window.director.mixerRead(current) || {}
+  const cfg = await window.director.mixerRead(current) ?? {}
   const newState = !cfg.smartModel
   cfg.smartModel = newState
   if (newState && !cfg.modelComplex) {
@@ -1341,7 +1341,7 @@ async function loadMixes() {
       await window.director.mixerWrite(current, normalized)
       // Enable/disable smart mix based on preset flag
       if (current) {
-        const cfg = await window.director.mixerRead(current) || {}
+        const cfg = await window.director.mixerRead(current) ?? {}
         cfg.smartMix = !!m.smart
         await window.director.configWrite(current, cfg)
       }
@@ -2399,7 +2399,7 @@ function updateAllocInspector(allocation) {
     `<span class="as-item">peso total <span class="as-val">${esc(String(allocation.totalWeight))}</span></span>`
   ].join('')
 
-  const cats = allocation.categoryBudgets || {}
+  const cats = allocation.categoryBudgets ?? {}
   const keys = Object.keys(cats).sort((a, b) => (cats[b].weight || 0) - (cats[a].weight || 0))
   if (keys.length === 0) { catEl.innerHTML = ''; return }
 
@@ -3089,8 +3089,8 @@ function renderBpModules() {
         <button class="bp-mod-del" data-i="${i}" aria-label="Eliminar módulo">✕</button>
       </div>
       <textarea class="bp-mod-desc mono" rows="2" placeholder="Description — what it does, responsibilities…" data-i="${i}" data-field="description">${esc(mod.description || '')}</textarea>
-      <input class="bp-mod-features mono" value="${esc((mod.features || []).join(', '))}" placeholder="Features: feat1, feat2, feat3…" data-i="${i}" data-field="features">
-      <input class="bp-mod-deps mono" value="${esc((mod.dependencies || []).join(', '))}" placeholder="Depends on: module1, module2…" data-i="${i}" data-field="dependencies">
+      <input class="bp-mod-features mono" value="${esc((mod.features ?? []).join(', '))}" placeholder="Features: feat1, feat2, feat3…" data-i="${i}" data-field="features">
+      <input class="bp-mod-deps mono" value="${esc((mod.dependencies ?? []).join(', '))}" placeholder="Depends on: module1, module2…" data-i="${i}" data-field="dependencies">
     `
     list.appendChild(card)
   }
@@ -3375,7 +3375,7 @@ if ($('#settingsModal')) $('#settingsModal').addEventListener('keydown', e => {
 
 async function loadSettings() {
   if (!current) return
-  const cfg = await window.director.mixerRead(current) || {}
+  const cfg = await window.director.mixerRead(current) ?? {}
   if ($('#stgCaveman')) $('#stgCaveman').checked = cfg.caveman !== false
   if ($('#stgCompactAt')) $('#stgCompactAt').value = cfg.compactAt ?? 50
   if ($('#stgRunMode')) $('#stgRunMode').value = cfg.mode || 'perpetual'
@@ -3395,7 +3395,7 @@ async function loadSettings() {
 
 async function saveSettings() {
   if (!current) return
-  const cfg = await window.director.mixerRead(current) || {}
+  const cfg = await window.director.mixerRead(current) ?? {}
   cfg.caveman = $('#stgCaveman')?.checked ?? true
   cfg.compactAt = parseInt($('#stgCompactAt')?.value) || 50
   cfg.mode = $('#stgRunMode')?.value || 'perpetual'

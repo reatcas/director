@@ -1382,7 +1382,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
     _defaultMixesCache = []
     try { if (fs.statSync(_dmPath).size <= 512_000) _defaultMixesCache = readJSON(_dmPath, []) } catch {}
   }
-  const existingIds = new Set(userMixes.map(m => m.id))
+  const existingIds = new Set(); for (const m of userMixes) existingIds.add(m.id)
   const validDefaults = _defaultMixesCache.filter(p => p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^[0-9a-z_\-]+$/.test(p.id) && p.id.length <= 64 && typeof p.name === 'string' && p.name.length > 0 && p.name.length <= 256 && p.focus && typeof p.focus === 'object' && !Array.isArray(p.focus))
   const merged = [...validDefaults.filter(p => !existingIds.has(p.id)), ...userMixes]
   const _slResult = merged.slice(0, 200)
@@ -1484,7 +1484,7 @@ ipcMain.handle('metrics:session-summary', () => {
             if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(p.path, _ssSt.mtimeMs)
           }
         } else {
-          _ssLast = _worstComplianceCache.get(p.path) || null
+          _ssLast = _worstComplianceCache.get(p.path) ?? null
         }
         if (_ssLast && (worstCompliance === null || _ssLast.score < worstCompliance.score)) {
           worstCompliance = { dir: p.path, name: p.name, ..._ssLast }
@@ -1819,7 +1819,7 @@ ipcMain.handle('metrics:snapshot', (_e, dir) => {
   if (!isKnownProject(dir)) return null
   const _snHit = metricsGet('snapshot:' + dir)
   if (_snHit !== null) return _snHit
-  return metricsSet('snapshot:' + dir, contextProto.computeDelta(dir, readOrchJson(dir).focus || {}))
+  return metricsSet('snapshot:' + dir, contextProto.computeDelta(dir, readOrchJson(dir).focus ?? {}))
 })
 
 ipcMain.handle('metrics:allocation', (_e, dir) => {
