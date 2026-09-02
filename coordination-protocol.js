@@ -41,6 +41,7 @@ class CoordinationProtocol {
     this._totalMemMB = Math.floor(os.totalmem() / 1048576)  // constant at runtime
     this._coordTelDirReady = new Set()  // dirs with telemetry dir already created
     this._lastPersistEvCount = 0   // event count at last telemetry write (BL-26)
+    this._rebalanceCount = 0       // total rebalances this session (BL-35)
   }
 
   // ─── Instance registration ─────────────────────────────────────────────
@@ -279,6 +280,7 @@ class CoordinationProtocol {
   // new conflicts.
   _rebalance() {
     this._cachedConflicts = null
+    this._rebalanceCount++
     const entries = Array.from(this.instances.entries())
     if (entries.length <= 1) return
 
@@ -296,10 +298,9 @@ class CoordinationProtocol {
       info.resourceShare = Math.round((inversePriorities[idx] / totalInverse) * 1000) / 1000
     }
 
-    this._logEvent('rebalance', 'system', {
-      instanceCount: entries.length,
-      priorities: entries.map(([d, i]) => ({ dir: d, priority: i.priority, priorityTier: i.priorityTier, rank: i.rank }))
-    })
+    const _prList = []
+    for (const [d, i] of entries) _prList.push({ dir: d, priority: i.priority, priorityTier: i.priorityTier, rank: i.rank })
+    this._logEvent('rebalance', 'system', { instanceCount: entries.length, priorities: _prList })
   }
 
   invalidateConflictCache() {
@@ -322,19 +323,12 @@ class CoordinationProtocol {
     const conflicts = this.detectConflicts()
     const _csvSummary = { high: 0, medium: 0, low: 0 }
     for (const c of conflicts) { if (c.severity === 'high') _csvSummary.high++; else if (c.severity === 'medium') _csvSummary.medium++; else _csvSummary.low++ }
+    const _gsInstObj = {}
+    for (const [d, i] of this.instances) _gsInstObj[d] = { priority: i.priority, priorityTier: i.priorityTier, rank: i.rank, status: i.status, avgIntensity: i.avgIntensity, memBudgetMB: i.memBudgetMB, registeredAt: i.registeredAt }
     return {
       activeInstances:  this.instances.size,
-      instances:        Object.fromEntries(
-        Array.from(this.instances).map(([d, i]) => [d, {
-          priority:     i.priority,
-          priorityTier: i.priorityTier,
-          rank:         i.rank,
-          status:       i.status,
-          avgIntensity: i.avgIntensity,
-          memBudgetMB:  i.memBudgetMB,
-          registeredAt: i.registeredAt
-        }])
-      ),
+      instances:        _gsInstObj,
+      rebalanceCount:   this._rebalanceCount,
       activeLocks:             Object.fromEntries(this.locks),
       conflicts,
       conflictSeveritySummary: _csvSummary,

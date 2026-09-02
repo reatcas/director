@@ -498,7 +498,7 @@ async function saveMixerState() {
   const inputs = document.querySelectorAll('#mixerStrips input[type="range"]')
   if (!inputs.length) return
   const focus = {}
-  inputs.forEach(i => { focus[i.dataset.k] = +i.value })
+  for (const i of inputs) focus[i.dataset.k] = +i.value
   await window.director.mixerWrite(current, focus)
 }
 
@@ -1143,6 +1143,8 @@ function updateSmartMixIndicator(active) {
   const bar = $('#smartMixBar')
   if (!bar) return
   bar.classList.toggle('active', active)
+  const toggle = $('#smartMixToggle')
+  if (toggle) toggle.setAttribute('aria-checked', String(active))
   if (active) updateSmartAuroraColors()
 }
 
@@ -1165,14 +1167,19 @@ function updateSmartAuroraColors() {
   aurora.style.setProperty('--aurora-c4', colors[3])
 }
 
-if ($('#smartMixToggle')) $('#smartMixToggle').onclick = async () => {
-  if (!current) return
-  const cfg = await window.director.mixerRead(current) || {}
-  const newState = !cfg.smartMix
-  cfg.smartMix = newState
-  await window.director.configWrite(current, cfg)
-  updateSmartMixIndicator(newState)
-  showToast(newState ? 'Smart Mix activated — stands will self-regulate' : 'Smart Mix disabled')
+if ($('#smartMixToggle')) {
+  $('#smartMixToggle').onclick = async () => {
+    if (!current) return
+    const cfg = await window.director.mixerRead(current) || {}
+    const newState = !cfg.smartMix
+    cfg.smartMix = newState
+    await window.director.configWrite(current, cfg)
+    updateSmartMixIndicator(newState)
+    showToast(newState ? 'Smart Mix activated — stands will self-regulate' : 'Smart Mix disabled')
+  }
+  $('#smartMixToggle').addEventListener('keydown', e => {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); $('#smartMixToggle').click() }
+  })
 }
 
 // ─── Smart Model Toggle ──────────────────────────────────────────────────────
@@ -3147,10 +3154,12 @@ if ($('#bpInput')) $('#bpInput').addEventListener('keydown', e => {
 // ─── Atril Modal ─────────────────────────────────────────────────────────────
 let selectedAtrilColor = COLOR_PALETTE[0]
 let selectedAtrilIcon = ICON_LIBRARY[0][0]
+let _atrilPrevFocus = null
 
 function openAtrilModal() {
   const modal = $('#atrilModal')
   if (!modal) return
+  _atrilPrevFocus = document.activeElement
   modal.hidden = false
   requestAnimationFrame(() => {
     const first = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
@@ -3193,12 +3202,12 @@ function openAtrilModal() {
 }
 
 if ($('#addAtrilBtn')) $('#addAtrilBtn').onclick = openAtrilModal
-if ($('#closeAtrilModal')) $('#closeAtrilModal').onclick = () => { $('#atrilModal').hidden = true }
-if ($('#atrilModal')) $('#atrilModal').onclick = (e) => { if (e.target === $('#atrilModal')) $('#atrilModal').hidden = true }
+if ($('#closeAtrilModal')) $('#closeAtrilModal').onclick = () => { $('#atrilModal').hidden = true; if (_atrilPrevFocus && typeof _atrilPrevFocus.focus === 'function') { _atrilPrevFocus.focus(); _atrilPrevFocus = null } }
+if ($('#atrilModal')) $('#atrilModal').onclick = (e) => { if (e.target === $('#atrilModal')) { $('#atrilModal').hidden = true; if (_atrilPrevFocus && typeof _atrilPrevFocus.focus === 'function') { _atrilPrevFocus.focus(); _atrilPrevFocus = null } } }
 if ($('#atrilModal')) $('#atrilModal').addEventListener('keydown', e => {
   const modal = $('#atrilModal')
   if (!modal || modal.hidden) return
-  if (e.key === 'Escape') { modal.hidden = true; return }
+  if (e.key === 'Escape') { modal.hidden = true; if (_atrilPrevFocus && typeof _atrilPrevFocus.focus === 'function') { _atrilPrevFocus.focus(); _atrilPrevFocus = null }; return }
   if (e.key === 'Tab') {
     const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
     if (!focusable.length) return
@@ -3219,6 +3228,7 @@ if ($('#atrilSaveBtn')) $('#atrilSaveBtn').onclick = async () => {
   await window.director.atrilesSave(customAtriles)
 
   $('#atrilModal').hidden = true
+  if (_atrilPrevFocus && typeof _atrilPrevFocus.focus === 'function') { _atrilPrevFocus.focus(); _atrilPrevFocus = null }
   $('#atrilName').value = ''
   $('#atrilDesc').value = ''
   showToast('Stand "' + name + '" created')

@@ -483,7 +483,7 @@ function getClaudeUsage(dir) {
     } catch {}
     const _guCfg = readOrchJson(dir)
     _dailyBudget = (typeof _guCfg.claudeUsageBudget === 'number' && Number.isFinite(_guCfg.claudeUsageBudget) && _guCfg.claudeUsageBudget > 0) ? _guCfg.claudeUsageBudget : 1_000_000
-    usageTracker.set(dir, { runStarted, iterCount, totalBytes, lastScan: now, dailyBudget: _dailyBudget })
+    if (usageTracker.size >= 200) usageTracker.delete(usageTracker.keys().next().value); usageTracker.set(dir, { runStarted, iterCount, totalBytes, lastScan: now, dailyBudget: _dailyBudget })
   }
 
   const tokensEstimated = Math.round(totalBytes / 4)
@@ -899,8 +899,8 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   stopTailing(dir)
   stopMetricsSampling(dir)
   stopWatchingResume(dir)
-  // Evict any cached metrics for removed project
-  for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir)) _metricsCache.delete(key) }
+  // Evict any cached metrics for removed project (DD-03: also catch lc: and mixer-hist: prefix keys)
+  for (const key of _metricsCache.keys()) { if (key.endsWith(':' + dir) || key.startsWith('lc:' + dir + ':') || key.startsWith('mixer-hist:' + dir + ':')) _metricsCache.delete(key) }
   usageTracker.delete(dir)
   _readinessCache.delete(dir)
   _orchJsonCache.delete(dir)
@@ -913,6 +913,7 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   _notesCache.delete(dir)
   _blueprintCache.delete(dir)
   _invalidateSavedMixes(dir)
+  _gitCommitMtimes.delete(dir)  // DD-04: evict stale mtime if project re-added
   // Clear lifecycle dir ready flag so mkdirSync runs fresh if re-added
   const lcLogDir = path.join(dir, '.claude', 'logs')
   _lifecycleDirReady.delete(lcLogDir)
@@ -1308,8 +1309,8 @@ const _VALID_CATS = new Set(['product','backend','frontend','business_logic','se
 ipcMain.handle('mixer:write', (_e, dir, focus) => {
   if (!isKnownProject(dir)) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
-  if (Object.keys(focus).some(k => !_VALID_CATS.has(k))) return false
-  if (Object.values(focus).some(v => typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100)) return false
+  if (Object.keys(focus).length > _VALID_CATS.size) return false
+  for (const [k, v] of Object.entries(focus)) { if (!_VALID_CATS.has(k) || typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100) return false }
   const p = path.join(dir, '.claude/orchestra.json')
   let cfg = { version: '2.0.0' }
   try { if (fs.statSync(p).size <= 512_000) cfg = readJSON(p, { version: '2.0.0' }) } catch {}
@@ -1396,6 +1397,7 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   if (name.trim().length === 0) return false
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(name)) return false
   if (!focus || typeof focus !== 'object' || Array.isArray(focus)) return false
+  if (Object.keys(focus).length > _VALID_CATS.size) return false
   if (Object.keys(focus).some(k => !_VALID_CATS.has(k))) return false
   if (Object.values(focus).some(v => typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100)) return false
   const p = path.join(dir, '.claude/saved-mixes.json')
@@ -2047,8 +2049,7 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
   if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false
   if (atriles.some(a => typeof a.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.description))) return false
   if (atriles.some(a => typeof a.icon === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.icon))) return false
-  const _asPaths = atriles.map(a => a.path)
-  if (new Set(_asPaths).size !== _asPaths.length) return false
+  const _asPathSet = new Set(); for (const a of atriles) { if (_asPathSet.has(a.path)) return false; _asPathSet.add(a.path) }
   const _asSer = JSON.stringify(atriles)
   if (_asSer.length > 512_000) return false
   writeJSON(customAtrilesFile(), JSON.parse(_asSer))

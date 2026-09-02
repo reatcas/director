@@ -395,7 +395,7 @@
               <span class="section-icon" aria-hidden="true">⚙</span>
               <span class="rack-title" style="color:var(--txt)">PROCESSES</span>
               <button id="procsRefresh" class="ms-copy" aria-label="Refrescar procesos">↺</button>
-              <span id="procsCount" class="section-badge mono"></span>
+              <span id="procsCount" class="section-badge mono" aria-live="polite" aria-label="Número de procesos activos"></span>
             </div>
             <div id="procsList"></div>
           </div>
@@ -405,7 +405,7 @@
             <summary class="collapsible-header">
               <span class="section-icon" aria-hidden="true">◉</span>
               <span class="section-title">LIFECYCLE</span>
-              <span id="lifecycleCount" class="section-badge mono"></span>
+              <span id="lifecycleCount" class="section-badge mono" aria-live="polite" aria-label="Número de eventos de ciclo de vida"></span>
             </summary>
             <div class="collapsible-body">
               <div id="lifecycleTimeline" class="lifecycle-timeline" role="list" aria-label="Eventos del ciclo de vida"></div>
@@ -455,7 +455,7 @@
             </div>
           </div>
           <div id="smartMixBar" class="smart-mix-bar">
-            <div id="smartMixToggle" class="smart-toggle" title="Smart Mix — self-regulating stands">
+            <div id="smartMixToggle" class="smart-toggle" title="Smart Mix — self-regulating stands" role="switch" aria-label="Smart Mix — pesos auto-regulados" aria-checked="false" tabindex="0">
               <div class="smart-toggle-aurora" id="smartAurora"></div>
               <div class="smart-toggle-glass"></div>
               <div class="smart-toggle-knob" id="smartKnob"></div>
