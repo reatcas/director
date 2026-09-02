@@ -59,7 +59,7 @@ class ResourceScheduler {
   // This is the patentable mapping: domain weights → physical resources
   computeAllocation(dir, focus) {
     const sys = this.systemSnapshot()
-    const entries = Object.entries(focus || {})
+    const entries = Object.entries(focus ?? {})
     if (entries.length === 0) return this._defaultAllocation(dir, sys)
 
     let totalWeight = 0, maxWeight = 0
@@ -236,7 +236,7 @@ class ResourceScheduler {
       loadAvg1:       this.systemSnapshot().loadAvg1
     }
 
-    const history = this.samples.get(dir) || []
+    const history = this.samples.get(dir) ?? []
     history.push(sample)
     // Keep last 600 samples (~5h at 30s intervals)
     if (history.length > 600) history.splice(0, history.length - 600)
@@ -252,7 +252,7 @@ class ResourceScheduler {
   // Computes measurable efficiency metrics that demonstrate the technical
   // effect of weight-based resource allocation.
   _updateEfficiency(dir) {
-    const history = this.samples.get(dir) || []
+    const history = this.samples.get(dir) ?? []
     if (history.length < 2) return
 
     const allocation = this.allocations.get(dir)
@@ -325,12 +325,12 @@ class ResourceScheduler {
 
   // ─── Public API ─────────────────────────────────────────────────────────
   getMetrics(dir) {
-    const _gmSamples = this.samples.get(dir) || []
+    const _gmSamples = this.samples.get(dir) ?? []
     return {
-      allocation:  this.allocations.get(dir) || null,
-      baseline:    this.baselines.get(dir) || null,
+      allocation:  this.allocations.get(dir) ?? null,
+      baseline:    this.baselines.get(dir) ?? null,
       lastSample:  _gmSamples.length > 0 ? _gmSamples[_gmSamples.length - 1] : null,
-      efficiency:  this.efficiency.get(dir) || null,
+      efficiency:  this.efficiency.get(dir) ?? null,
       sampleCount: _gmSamples.length
     }
   }
@@ -349,7 +349,7 @@ class ResourceScheduler {
   }
 
   getSampleHistory(dir, limit) {
-    const history = this.samples.get(dir) || []
+    const history = this.samples.get(dir) ?? []
     return (limit && limit < history.length) ? history.slice(-limit) : history
   }
 

@@ -17,7 +17,8 @@ const rendererJs = readFileSync(join(root, 'renderer.js'), 'utf8')
 describe('T-261: S-162 export:session compliance lines ctrl-char strip', () => {
   it('maps compliance lines through replace(/[\\x00-\\x1F\\x7F]/g) and slice(0, 512)', () => {
     const block = mainJs.split("'export:session'")[1]?.split("'notes:read'")[0] || ''
-    expect(block).toContain(".map(l => l.replace(/[\\x00-\\x1F\\x7F]/g, '').slice(0, 512))")
+    expect(block).toContain("_compFiltered")
+    expect(block).toContain(".replace(/[\\x00-\\x1F\\x7F]/g, '').slice(0, 512)")
   })
 
   it('does not return raw split lines without strip', () => {

@@ -106,7 +106,7 @@ function pollGitCommits(dir) {
     const currentHash = execFileSync('git', ['log', '-1', '--format=%H'], { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
     if (currentHash && currentHash !== lastHash) {
       const logArgs = lastHash ? ['log', '--oneline', lastHash + '..'] : ['log', '--oneline', '-1']
-      const newCommits = execFileSync('git', logArgs, { cwd: dir, encoding: 'utf8', timeout: 5000 }).trim().split('\n').filter(Boolean).slice(0, 100)
+      const _ncFiltered = []; for (const c of execFileSync('git', logArgs, { cwd: dir, encoding: 'utf8', timeout: 5000 }).trim().split('\n')) { if (c) _ncFiltered.push(c) }; const newCommits = _ncFiltered.slice(0, 100)
       gitLastHash.set(dir, currentHash)
       gitLastCommitTime.set(dir, Date.now())
       for (const c of newCommits) {
@@ -1578,7 +1578,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
     mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return (d && typeof d === 'object' && !Array.isArray(d)) ? d : {} })(),
     mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; if (!Array.isArray(d)) return []; const _expMhFiltered = []; for (const e of d) { if (e && typeof e === 'object' && typeof e.ts === 'string' && typeof e.event === 'string' && e.focus && typeof e.focus === 'object') _expMhFiltered.push({ ...e, event: e.event.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }; return _expMhFiltered })(),
     claudeUsage: getClaudeUsage(dir),
-    compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')).map(l => l.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 512)).slice(-50),
+    compliance: (() => { const _compFiltered = []; for (const l of read('ORCHESTRA_REPORT.md').split('\n')) { if (l.includes('COMPLIANCE')) _compFiltered.push(l.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 512)) }; return _compFiltered.slice(-50) })(),
     roadmap: read('ROADMAP.md'),
     plan: read('PLAN.md'),
     pending: read('PENDING.md')

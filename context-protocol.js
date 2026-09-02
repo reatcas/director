@@ -139,7 +139,7 @@ class ContextProtocol {
   // section-level deltas, applies weight-based retention, and produces
   // quantified metrics.
   computeDelta(dir, focusWeights) {
-    const previous = this.snapshots.get(dir) || {}
+    const previous = this.snapshots.get(dir) ?? {}
     const current  = {}
     const timestamp = new Date().toISOString()
 
@@ -155,7 +155,7 @@ class ContextProtocol {
     let sectionsTotal         = 0
     let sectionsUnchanged     = 0
 
-    const prevMtimes = this._mtimes.get(dir) || {}
+    const prevMtimes = this._mtimes.get(dir) ?? {}
     const currMtimes = {}
 
     // ── Scan current state ────────────────────────────────────────────────
@@ -196,7 +196,7 @@ class ContextProtocol {
         changedTokens += fileTokens
 
         // Section-level analysis — the granular delta
-        const prevSections = previous[file].sections || []
+        const prevSections = previous[file].sections ?? []
         const prevMap = new Map(); for (const s of prevSections) prevMap.set(s.title, s)
         const sectionDelta = { changed: [], unchanged: [], added: [], removed: [] }
 
@@ -270,7 +270,7 @@ class ContextProtocol {
     this.snapshots.set(dir, current)
     this._mtimes.set(dir, currMtimes)
 
-    const hist = this.deltaHistory.get(dir) || []
+    const hist = this.deltaHistory.get(dir) ?? []
     hist.push({ delta: fileLevelDelta, metrics, retentionPlan: retentionPlan.summary })
     if (hist.length > 100) hist.shift()
     this.deltaHistory.set(dir, hist)
@@ -286,7 +286,7 @@ class ContextProtocol {
   // High-weight categories retain more context (fewer tokens discarded).
   // Low-weight categories get aggressively compacted.
   _computeRetention(focusWeights, snapshot) {
-    const fw = focusWeights || {}
+    const fw = focusWeights ?? {}
     let totalWeight = 0; for (const v of Object.values(fw)) totalWeight += v
     if (totalWeight === 0) return { actions: [], tokensSaved: 0, summary: {} }
     if (!snapshot || Object.keys(snapshot).length === 0) return { actions: [], tokensSaved: 0, summary: {} }
@@ -296,10 +296,10 @@ class ContextProtocol {
     const summary = {}
 
     for (const [file, data] of Object.entries(snapshot)) {
-      const category = FILE_CATEGORY_MAP[file] || 'product'
+      const category = FILE_CATEGORY_MAP[file] ?? 'product'
       const weight   = category === 'architecture'
-        ? Math.max(fw[category] || 0, totalWeight / Object.keys(fw).length)
-        : (fw[category] || 0)
+        ? Math.max(fw[category] ?? 0, totalWeight / Object.keys(fw).length)
+        : (fw[category] ?? 0)
       const share    = weight / totalWeight
 
       // Retention factor: S-curve centered at share=0.25 — memoized per share‰
@@ -338,10 +338,10 @@ class ContextProtocol {
   // ─── Aggregated metrics ─────────────────────────────────────────────────
   // Incremental running sum: O(1) typical case (no shift), O(n) only when hist shifts
   _updateAggregated(dir) {
-    const hist = this.deltaHistory.get(dir) || []
+    const hist = this.deltaHistory.get(dir) ?? []
     if (hist.length === 0) return
 
-    const running = this._aggRunning.get(dir) || { processed: 0, saved: 0, len: 0 }
+    const running = this._aggRunning.get(dir) ?? { processed: 0, saved: 0, len: 0 }
     const newest = hist[hist.length - 1]
     let totalProcessed, totalSaved
 
@@ -387,16 +387,16 @@ class ContextProtocol {
 
   // ─── Public API ─────────────────────────────────────────────────────────
   getMetrics(dir) {
-    const hist = this.deltaHistory.get(dir) || []
+    const hist = this.deltaHistory.get(dir) ?? []
     return {
       lastDelta:   hist.length > 0 ? hist[hist.length - 1] : null,
-      aggregated:  this.aggregated.get(dir) || null,
+      aggregated:  this.aggregated.get(dir) ?? null,
       historySize: hist.length
     }
   }
 
   getFullHistory(dir) {
-    return this.deltaHistory.get(dir) || []
+    return this.deltaHistory.get(dir) ?? []
   }
 
   cleanup(dir) {

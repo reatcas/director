@@ -58,11 +58,11 @@ class CoordinationProtocol {
       pid,
       priority,
       priorityTier,
-      nice:           allocation.nice || 10,
-      avgIntensity:   allocation.avgIntensity || 0,
-      memBudgetMB:    allocation.memBudgetMB || 0,
-      tokenBudget:    allocation.tokenBudget || 0,
-      categoryWeights: allocation.categoryBudgets || {},
+      nice:           allocation.nice ?? 10,
+      avgIntensity:   allocation.avgIntensity ?? 0,
+      memBudgetMB:    allocation.memBudgetMB ?? 0,
+      tokenBudget:    allocation.tokenBudget ?? 0,
+      categoryWeights: allocation.categoryBudgets ?? {},
       registeredAt:   new Date().toISOString(),
       status:         'active'
     })
@@ -98,10 +98,10 @@ class CoordinationProtocol {
   _computePriority(allocation) {
     if (!allocation) return 100
 
-    const intensity = allocation.avgIntensity || 0
+    const intensity = allocation.avgIntensity ?? 0
     let hotPaths = 0
-    for (const b of Object.values(allocation.categoryBudgets || {})) { if (b.hotPath) hotPaths++ }
-    const totalWeight = allocation.totalWeight || 0
+    for (const b of Object.values(allocation.categoryBudgets ?? {})) { if (b.hotPath) hotPaths++ }
+    const totalWeight = allocation.totalWeight ?? 0
 
     // Lower score = higher priority
     // Base: invert intensity (high intensity → low priority number)
@@ -228,8 +228,8 @@ class CoordinationProtocol {
         const [dirA, infoA] = entries[i]
         const [dirB, infoB] = entries[j]
 
-        const weightsA = infoA.categoryWeights || {}
-        const weightsB = infoB.categoryWeights || {}
+        const weightsA = infoA.categoryWeights ?? {}
+        const weightsB = infoB.categoryWeights ?? {}
 
         const overlapping = []
         let contentionScore = 0
