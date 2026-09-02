@@ -28,7 +28,7 @@ describe('orchestra:analyze handler', () => {
   })
 
   it('generates report with commit count', () => {
-    expect(block).toContain('commits')
+    expect(block).toContain('_azCommits.length')
     expect(block).toContain('report')
   })
 

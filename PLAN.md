@@ -1995,3 +1995,30 @@ Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
 6. [ux_accessibility] A-89 — renderer.js L828 commit breakdown bar divs: add aria-hidden="true" to visual-only bar segments; outer container already provides aria-label summary.
 7. [data_db] DD-29 — renderer.js L1489-1491 addFeatureEntry: match&&match[1]?match[1]:'' → match?.[1]??''; match?match[2].trim():text → match?.[2]?.trim()??text; match&&match[3]?match[3].trim():'' → match?.[3]?.trim()??''.
 8. [data_db] DD-30 — main.js L1618: const k=m?m[1]:'other' → const k=m?.[1]??'other'. Optional chain eliminates redundant guard.
+
+---
+# Cycle 308 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 308 (F-01 HARNESS-blocked, streak=1 after C307 BL/UX/DD rotation)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| quality_tests | 35 | 3 | 0/3 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (C307 rotation) |
+| ux_accessibility | 5 | 0 | SKIP (C307 rotation) |
+| data_db | 5 | 0 | SKIP (C307 rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+Total: 8 units — IMPROVEMENT MODE (streak=1)
+
+## Units
+1. [security] S-188 — main.js export:session L1579 _expMhFiltered: strips e.event but not e.ts → add ts: e.ts.replace(ctrl-char) alongside event strip.
+2. [security] S-189 — main.js blueprint:load L2092: returns raw JSON without ctrl-char strip on answer values / module name+description+notes → apply narrow strip on those string fields before return.
+3. [performance] P-122 — renderer.js L41: inner particle connection loop for(let j=i+1;j<particles.length;j++){const pj=particles[j]} → for(const pj of particles.slice(i+1)). Eliminates index arithmetic in animation hot path.
+4. [backend] B-76 — main.js L1630 orchestra:analyze report: "Commits since start: ${commits.length}" → "${_azCommits.length}" — latent undefined variable bug (commits never defined; _azCommits is the correct name).
+5. [frontend] F-73 — main.js L440 copyDir settings.json hooks merge: for(const k of Object.keys(b.hooks??{})) a.hooks[k]=[…,…b.hooks[k]] → for(const [k,v] of Object.entries(b.hooks??{})) a.hooks[k]=[…,…v]. Eliminates double-index.
+6. [quality_tests] T-300 — cycle308-coverage.test.js: S-188 export:session mixerHistory ts strip; S-189 blueprint:load answer/module strip.
+7. [quality_tests] T-301 — cycle308-coverage.test.js: P-122 particles.slice inner loop; B-76 _azCommits.length in analyze.
+8. [quality_tests] T-302 — cycle308-coverage.test.js: F-73 Object.entries hooks copyDir merge.

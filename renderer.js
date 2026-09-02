@@ -38,8 +38,7 @@
       if (p.y < 0 || p.y > canvas.height) p.vy *= -1
     }
     for (const [i, pi] of particles.entries()) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const pj = particles[j]
+      for (const pj of particles.slice(i + 1)) {
         const dx = pi.x - pj.x
         const dy = pi.y - pj.y
         const d  = Math.sqrt(dx * dx + dy * dy)

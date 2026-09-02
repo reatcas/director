@@ -437,7 +437,7 @@ function copyDir(src, dst) {
       try { if (fs.statSync(d).size <= 512_000) a = readJSON(d, {}) } catch {}
       try { if (fs.statSync(s).size <= 512_000) b = readJSON(s, {}) } catch {}
       a.hooks = a.hooks ?? {}
-      for (const k of Object.keys(b.hooks ?? {})) a.hooks[k] = [...(a.hooks[k] ?? []), ...b.hooks[k]]
+      for (const [k, v] of Object.entries(b.hooks ?? {})) a.hooks[k] = [...(a.hooks[k] ?? []), ...v]
       const _cdMergeSer = JSON.stringify(a)
       if (_cdMergeSer.length <= 512_000) writeJSON(d, JSON.parse(_cdMergeSer))
     }
@@ -1576,7 +1576,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
     runStarted: read('.claude/RUN_STARTED').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) || null,
     lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; if (!Array.isArray(d)) return []; const _expLcFiltered = []; for (const e of d) { if (e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string') _expLcFiltered.push({ ...e, label: e.label.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''), message: e.message.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }; return _expLcFiltered })(),
     mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return (d && typeof d === 'object' && !Array.isArray(d)) ? d : {} })(),
-    mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; if (!Array.isArray(d)) return []; const _expMhFiltered = []; for (const e of d) { if (e && typeof e === 'object' && typeof e.ts === 'string' && typeof e.event === 'string' && e.focus && typeof e.focus === 'object') _expMhFiltered.push({ ...e, event: e.event.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }; return _expMhFiltered })(),
+    mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; if (!Array.isArray(d)) return []; const _expMhFiltered = []; for (const e of d) { if (e && typeof e === 'object' && typeof e.ts === 'string' && typeof e.event === 'string' && e.focus && typeof e.focus === 'object') _expMhFiltered.push({ ...e, ts: e.ts.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''), event: e.event.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }; return _expMhFiltered })(),
     claudeUsage: getClaudeUsage(dir),
     compliance: (() => { const _compFiltered = []; for (const l of read('ORCHESTRA_REPORT.md').split('\n')) { if (l.includes('COMPLIANCE')) _compFiltered.push(l.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 512)) }; return _compFiltered.slice(-50) })(),
     roadmap: read('ROADMAP.md').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''),
@@ -1627,7 +1627,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         `Project: ${dir}`,
         `Orchestra version: ${read('.claude/ORCHESTRA_VERSION').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) || 'unknown'}`,
         `Run started: ${started || 'unknown'}`,
-        `Commits since start: ${commits.length}`,
+        `Commits since start: ${_azCommits.length}`,
         `By type: ${JSON.stringify(cat)}`,
         `Usage / Iterations: ${usage ? usage.iterations : 0}`,
         `Tokens Estimated: ${usage ? (usage.tokensEstimated / 1000).toFixed(1) + 'k' : 'unknown'}`,
@@ -2090,6 +2090,11 @@ ipcMain.handle('blueprint:load', (_e, dir) => {
   const bpPath = blueprintFile(dir)
   try { if (fs.statSync(bpPath).size > 512_000) return null } catch {}
   const data = readJSON(bpPath, null)
+  if (data && typeof data === 'object') {
+    const _bpStrip = s => typeof s === 'string' ? s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') : s
+    if (data.answers && typeof data.answers === 'object') { for (const [k, v] of Object.entries(data.answers)) { if (typeof v === 'string') data.answers[k] = _bpStrip(v) } }
+    if (Array.isArray(data.modules)) { for (const m of data.modules) { if (m && typeof m === 'object') { if (typeof m.name === 'string') m.name = _bpStrip(m.name); if (typeof m.description === 'string') m.description = _bpStrip(m.description); if (typeof m.notes === 'string') m.notes = _bpStrip(m.notes) } } }
+  }
   if (_blueprintCache.size >= 100) _blueprintCache.delete(_blueprintCache.keys().next().value); _blueprintCache.set(dir, { data, ts: Date.now() })
   return data
 })
