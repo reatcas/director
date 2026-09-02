@@ -110,11 +110,12 @@ function pollGitCommits(dir) {
       gitLastHash.set(dir, currentHash)
       gitLastCommitTime.set(dir, Date.now())
       for (const c of newCommits) {
-        const line = `▸ ✔ [commit] ${c}\n`
+        const _cSafe = c.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').slice(0, 256)
+        const line = `▸ ✔ [commit] ${_cSafe}\n`
         if (win && !win.isDestroyed()) {
           win.webContents.send('orchestra:line', { dir, line })
         }
-        persistLifecycleEvent(dir, 'commit', 'COMMIT', c)
+        persistLifecycleEvent(dir, 'commit', 'COMMIT', _cSafe)
       }
     } else {
       if (!gitLastCommitTime.has(dir)) gitLastCommitTime.set(dir, Date.now())
@@ -230,7 +231,8 @@ function cachedProjects() {
   let _rpData = []
   try { if (fs.statSync(_rpPath).size <= 512_000) _rpData = readJSON(_rpPath, []) } catch {}
   if (!Array.isArray(_rpData)) _rpData = []
-  _rpData = _rpData.filter(p => p && typeof p.path === 'string' && (!p.name || typeof p.name === 'string') && (!p.id || typeof p.id === 'string') && (!p.name || p.name.length <= 256) && (!p.id || p.id.length <= 64) && (!p.name || !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(p.name)))
+  const _rpFiltered = []; for (const p of _rpData) { if (p && typeof p.path === 'string' && (!p.name || typeof p.name === 'string') && (!p.id || typeof p.id === 'string') && (!p.name || p.name.length <= 256) && (!p.id || p.id.length <= 64) && (!p.name || !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(p.name))) _rpFiltered.push(p) }
+  _rpData = _rpFiltered
   _projectsCache = _rpData
   const _kps = new Set(); for (const p of _rpData) _kps.add(p.path); _knownPathsSet = _kps
   return _projectsCache
@@ -1281,7 +1283,8 @@ function snapshotMixer(dir, event) {
   let hist = []
   try { if (fs.statSync(histFile).size <= 512_000) hist = readJSON(histFile, []) } catch {}
   if (!Array.isArray(hist)) hist = []
-  hist = hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && h.ts >= cutoffISO && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
+  const _smFiltered = []; for (const h of hist) { if (h && typeof h === 'object' && typeof h.ts === 'string' && h.ts >= cutoffISO && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _smFiltered.push(h) }
+  hist = _smFiltered
   const _ssEvent = typeof event === 'string' ? event.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) : 'unknown'
   const _ssFocus = {}; for (const [k, v] of Object.entries(cfg.focus)) { if (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100) _ssFocus[k] = v }
   if (Object.keys(_ssFocus).length === 0) return
@@ -1678,8 +1681,8 @@ function persistLifecycleEvent(dir, type, label, message) {
     const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.label === 'string' && typeof e.message === 'string')
     const _evType = typeof type === 'string' && _LC_TYPES.has(type) ? type : null
     if (!_evType) return
-    const _evLabel = typeof label === 'string' ? label.slice(0, 128) : String(label).slice(0, 128)
-    const _evMsgRaw = typeof message === 'string' ? message : String(message)
+    const _evLabel = (typeof label === 'string' ? label : String(label)).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').slice(0, 128)
+    const _evMsgRaw = (typeof message === 'string' ? message : String(message)).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     const _evMsg = Buffer.byteLength(_evMsgRaw, 'utf8') > 4096 ? Buffer.from(_evMsgRaw, 'utf8').slice(0, 4096).toString('utf8') : _evMsgRaw
     pruned.push({ ts: new Date().toISOString(), type: _evType, label: _evLabel, message: _evMsg })
     if (pruned.length > 300) pruned.splice(0, pruned.length - 300)

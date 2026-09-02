@@ -53,7 +53,7 @@ describe('cachedProjects data validation (I-452)', () => {
 
   it('filters projects to objects with string path', () => {
     expect(block).toContain("typeof p.path === 'string'")
-    expect(block).toContain('_rpData.filter')
+    expect(block).toContain('_rpFiltered')
   })
 })
 

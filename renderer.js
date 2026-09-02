@@ -2955,7 +2955,8 @@ function bpSkip() {
 
 function bpUpdateCompleteness() {
   const total = BP_QUESTIONS.length
-  const answered = BP_QUESTIONS.filter(q => bpState.answers[q.key] && bpState.answers[q.key].trim()).length
+  let _bpAnswered = 0; for (const q of BP_QUESTIONS) { if (bpState.answers[q.key] && bpState.answers[q.key].trim()) _bpAnswered++ }
+  const answered = _bpAnswered
   bpState.completeness = Math.round(answered / total * 100)
   const badge = $('#bpReadiness')
   if (badge) { badge.textContent = `${bpState.completeness}%`; badge.style.display = bpState.completeness > 0 ? '' : 'none' }

@@ -74,7 +74,7 @@ describe('snapshotMixer 30-day age pruning (I-210)', () => {
   })
 
   it('filters history by cutoff before push', () => {
-    expect(block).toContain('.filter(')
+    expect(block).toContain('_smFiltered')
     expect(block).toContain('cutoffISO')
   })
 

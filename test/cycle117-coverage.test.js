@@ -55,7 +55,7 @@ describe('snapshotMixer age-based pruning (cycle 115)', () => {
   })
 
   it('filters history array before push', () => {
-    expect(block).toContain('.filter(')
+    expect(block).toContain('_smFiltered')
   })
 })
 
