@@ -1361,3 +1361,32 @@ Total: 8 units — IMPROVEMENT MODE (C284 streak=1; C285 streak=2 → C286 must 
 6. [quality_tests] T-255 — cycle285-coverage.test.js: S-158 mod.name/description/notes _bpInline wrap in generate-brief
 7. [quality_tests] T-256 — cycle285-coverage.test.js: S-159 email ctrl-char strip in ai:auth-status
 8. [quality_tests] T-257 — cycle285-coverage.test.js: P-107 Array.from→for loop; B-61 hooks??{}; F-58 maxIterations??0 / notesRead??''
+
+---
+# Cycle 286 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 286 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C284+C285 streak=2 → force BL/UX/DD) |
+| performance | 10 | 0 | BAN (streak) |
+| backend | 5 | 0 | BAN (streak) |
+| frontend | 5 | 0 | BAN (streak) |
+| quality_tests | 35 | 0 | SKIP (BL/UX/DD rotation cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
+
+## Units
+1. [business_logic] BL-51 — main.js pollGitCommits: gitLastHash.get(dir) || '' → ?? '' (Map.get returns undefined on cache miss)
+2. [business_logic] BL-52 — main.js runCmd: (r.stdout || '') + (r.stderr || '') → ?? '' both (spawnSync returns null on timeout)
+3. [business_logic] BL-53 — main.js lifecycle:list cache key: (_llType || '') + ':' + (_llBefore || '') → ?? '' both (validated-null sentinel)
+4. [ux_accessibility] A-66 — renderer.js loadSettings: cfg.mode || 'perpetual' → ?? 'perpetual'; cfg.agent || 'claude' → ?? 'claude' (null-safe config display)
+5. [ux_accessibility] A-67 — renderer.js: cfg.maxHallucinationStreak || 5 → ?? 5; status.note || 'Not connected' → ?? 'Not connected' (null-safe UX display)
+6. [ux_accessibility] A-68 — renderer.js renderCommitBreakdown: COMMIT_TYPE_COLORS[type] || '#484a56' → ?? '#484a56' (both occurrences; undefined lookup vs falsy)
+7. [data_db] DD-15 — main.js orchestra:analyze: (gitOut || '').trim() → (gitOut ?? '').trim() (null-guard on execFile stdout)
+8. [data_db] DD-16 — renderer.js renderBpQuestion: inp.value = existing || '' → ?? '' (blueprint answer stored as string; undefined→empty)

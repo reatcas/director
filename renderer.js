@@ -245,7 +245,7 @@ async function checkAiAuth(id) {
       if (btn) btn.style.display = 'none'
     } else {
       dot.className = 'ai-auth-dot'
-      dot.title = status.note || 'Not connected'
+      dot.title = status.note ?? 'Not connected'
       if (btn) btn.style.display = ''
     }
   } catch {
@@ -824,12 +824,12 @@ function renderCommitBreakdown(report) {
     let html = '<div style="display:flex;height:16px;border-radius:3px;overflow:hidden;margin-bottom:6px">'
     for (const [type, count] of sorted) {
       const pct = (count / total * 100).toFixed(1)
-      const color = COMMIT_TYPE_COLORS[type] || '#484a56'
+      const color = COMMIT_TYPE_COLORS[type] ?? '#484a56'
       html += `<div style="width:${pct}%;background:${color};min-width:2px" title="${esc(type)}: ${count} (${pct}%)"></div>`
     }
     html += '</div><div style="display:flex;gap:10px;flex-wrap:wrap;font:9px var(--mono);color:var(--dim)">'
     for (const [type, count] of sorted) {
-      const color = COMMIT_TYPE_COLORS[type] || '#484a56'
+      const color = COMMIT_TYPE_COLORS[type] ?? '#484a56'
       html += `<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:3px"></span>${esc(type)} ${count}</span>`
     }
     html += '</div>'
@@ -2934,7 +2934,7 @@ function bpAskCurrent() {
   bpAddMessage('agent', prompt)
   renderBpPhases()
   const inp = $('#bpInput')
-  if (inp) { inp.value = existing || ''; inp.focus() }
+  if (inp) { inp.value = existing ?? ''; inp.focus() }
 }
 
 function bpAnswer(text) {
@@ -3379,13 +3379,13 @@ async function loadSettings() {
   const cfg = await window.director.mixerRead(current) ?? {}
   if ($('#stgCaveman')) $('#stgCaveman').checked = cfg.caveman !== false
   if ($('#stgCompactAt')) $('#stgCompactAt').value = cfg.compactAt ?? 50
-  if ($('#stgRunMode')) $('#stgRunMode').value = cfg.mode || 'perpetual'
+  if ($('#stgRunMode')) $('#stgRunMode').value = cfg.mode ?? 'perpetual'
   if ($('#stgMaxIter')) $('#stgMaxIter').value = cfg.maxIterations ?? 0
-  if ($('#stgDefaultAi')) $('#stgDefaultAi').value = cfg.agent || 'claude'
+  if ($('#stgDefaultAi')) $('#stgDefaultAi').value = cfg.agent ?? 'claude'
   if ($('#stgAutoSwitch')) $('#stgAutoSwitch').checked = cfg.autoSwitch !== false
   if ($('#stgKeepLogs')) $('#stgKeepLogs').value = cfg.keepLogs ?? 50
   if ($('#stgAutoScroll')) $('#stgAutoScroll').checked = autoScrollEnabled
-  if ($('#stgMaxHallStreak')) $('#stgMaxHallStreak').value = cfg.maxHallucinationStreak || 5
+  if ($('#stgMaxHallStreak')) $('#stgMaxHallStreak').value = cfg.maxHallucinationStreak ?? 5
   try {
     const alerts = await window.director.alertsRead()
     if ($('#stgAlertStall')) $('#stgAlertStall').checked = alerts.stall !== false

@@ -96,7 +96,7 @@ const gitLastCommitTime = new Map()
 
 const _gitCommitMtimes = new Map()
 function pollGitCommits(dir) {
-  const lastHash = gitLastHash.get(dir) || ''
+  const lastHash = gitLastHash.get(dir) ?? ''
   try {
     const _commitMsgFile = path.join(dir, '.git', 'COMMIT_EDITMSG')
     let _curMtime = 0
@@ -1032,7 +1032,7 @@ ipcMain.handle('ai:select', (_e, id) => {
 
 function runCmd(cmd, args, timeout = 5000) {
   const r = spawnSync(cmd, args, { encoding: 'utf8', timeout })
-  return (r.stdout || '') + (r.stderr || '')
+  return (r.stdout ?? '') + (r.stderr ?? '')
 }
 
 ipcMain.handle('ai:auth-status', (_e, id) => {
@@ -1602,7 +1602,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
     const _startedRaw = read('.claude/RUN_STARTED').trim().slice(0, 64)
     const started = /^\d{4}-\d{2}-\d{2}T/.test(_startedRaw) ? _startedRaw : ''
     execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000, maxBuffer: 262_144 }, (gitErr, gitOut) => {
-      const commits = gitErr ? [] : (gitOut || '').trim().split('\n').filter(Boolean)
+      const commits = gitErr ? [] : (gitOut ?? '').trim().split('\n').filter(Boolean)
       const cat = {}
       for (const c of commits) {
         const m = c.match(/ (feat|fix|test|refactor|chore|security|sec|perf|docs|style|i18n)[:(]/)
@@ -1698,7 +1698,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   const _llLimit = Number.isInteger(limit) && limit > 0 && limit <= 500 ? limit : 200
   const _llType = typeof typeFilter === 'string' && typeFilter.length <= 64 && /^[\w\-]+$/.test(typeFilter) ? typeFilter : null
   const _llBefore = typeof before === 'string' && before.length <= 64 && /^\d{4}-\d{2}-\d{2}T/.test(before) ? before : null
-  const _lcKey = 'lc:' + dir + ':' + _llLimit + ':' + (_llType || '') + ':' + (_llBefore || '')
+  const _lcKey = 'lc:' + dir + ':' + _llLimit + ':' + (_llType ?? '') + ':' + (_llBefore ?? '')
   const _lcHit = metricsGet(_lcKey)
   if (_lcHit !== null) return _lcHit
   const p = path.join(dir, '.claude', 'logs', 'lifecycle-events.json')

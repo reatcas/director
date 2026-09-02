@@ -618,7 +618,7 @@ describe('settings modal — config persistence', () => {
 
   it('populates run mode selector', () => {
     expect(body).toContain('stgRunMode')
-    expect(body).toContain("cfg.mode || 'perpetual'")
+    expect(body).toContain("cfg.mode ?? 'perpetual'")
   })
 
   it('populates max iterations', () => {
