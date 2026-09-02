@@ -1245,3 +1245,32 @@ Total: 8 units — IMPROVEMENT MODE (5 banned; BL/UX/DD available)
 6. [ux_accessibility] A-62 — renderer.js: mixerRead(current) || {} → ?? {} (batch replace all 9 occurrences)
 7. [data_db] DD-11 — main.js metrics:snapshot: readOrchJson(dir).focus || {} → ?? {} (nullish coalescing)
 8. [data_db] DD-12 — main.js metrics:session-summary: _worstComplianceCache.get(p.path) || null → ?? null
+
+---
+# Cycle 282 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 282 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (budget trim) |
+| ux_accessibility | 5 | 0 | SKIP (budget trim) |
+| data_db | 5 | 0 | SKIP (budget trim) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C281 broke streak; all available)
+
+## Units
+1. [security] S-154 — main.js system:claude-procs: strip control chars from project field (cwdMatch[1] from ps output — untrusted)
+2. [security] S-155 — main.js system:claude-procs: strip control chars from cmd field (cmd.slice(0,120) from ps output — untrusted)
+3. [performance] P-105 — main.js getClaudeUsage: readdirSync().filter(e=>...) → for...of accumulation (eliminates intermediate array)
+4. [backend] B-59 — main.js getClaudeUsage: cached.dailyBudget || 1_000_000 → cached.dailyBudget ?? 1_000_000
+5. [frontend] F-56 — renderer.js updateSessionSummary: s.active || 0 and s.idle || 0 → s.active ?? 0 and s.idle ?? 0 (multiple occurrences)
+6. [quality_tests] T-249 — cycle282-coverage.test.js: S-154 project ctrl-char; S-155 cmd ctrl-char
+7. [quality_tests] T-250 — cycle282-coverage.test.js: P-105 for-of files; B-59 dailyBudget ??
+8. [quality_tests] T-251 — cycle282-coverage.test.js: F-56 session summary ?? 0

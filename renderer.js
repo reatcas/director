@@ -477,17 +477,17 @@ async function loadSessionSummary() {
     const s = await window.director.sessionSummary()
     if (!s || typeof s !== 'object') { el.innerHTML = '<span class="ss-item"><span class="ss-val">—</span><span>sin datos</span></span>'; return }
     const tokK = s.totalTokens > 0 ? (s.totalTokens / 1000).toFixed(1) + 'k' : '—'
-    const total = typeof s.total === 'number' ? s.total : (s.active || 0) + (s.idle || 0)
+    const total = typeof s.total === 'number' ? s.total : (s.active ?? 0) + (s.idle ?? 0)
     const worstScore = s.worstCompliance?.score != null ? String(Math.round(s.worstCompliance.score)) + '%' : '—'
     el.setAttribute('tabindex', '0')
     el.setAttribute('role', 'group')
-    el.setAttribute('aria-label', `Sesión: ${esc(String(s.active || 0))} activos, ${esc(String(s.idle || 0))} inactivos, ${esc(tokK)} tokens`)
+    el.setAttribute('aria-label', `Sesión: ${esc(String(s.active ?? 0))} activos, ${esc(String(s.idle ?? 0))} inactivos, ${esc(tokK)} tokens`)
     const credStr = typeof s.creditsRemaining === 'number' ? String(Math.round(s.creditsRemaining)) : '—'
     const credWarn = typeof s.creditsRemaining === 'number' && s.creditsRemaining === 0 ? ' ss-warn' : ''
     const compScore = s.worstCompliance?.score != null ? s.worstCompliance.score : null
     const compWarn = compScore !== null && compScore < 50 ? ' ss-warn' : ''
-    const activeClass = (s.active || 0) > 0 ? 'ss-live' : 'ss-idle'
-    el.innerHTML = `<span class="ss-item" aria-label="${esc(String(s.active || 0))} orquestas activas"><span class="ss-val ${activeClass}">${esc(String(s.active || 0))}</span><span>activos</span></span><span class="ss-item" aria-label="${esc(String(s.idle || 0))} orquestas inactivas"><span class="ss-val ss-idle">${esc(String(s.idle || 0))}</span><span>idle</span></span><span class="ss-item" aria-label="${esc(tokK)} tokens totales"><span class="ss-val">${esc(tokK)}</span><span>tok</span></span><span class="ss-item"><span class="ss-val">${esc(String(total))}</span><span>total</span></span><span class="ss-item" aria-label="peor cumplimiento ${esc(worstScore)}"><span class="ss-val${compWarn}" aria-label="${esc(worstScore)} compliance score">${esc(worstScore)}</span><span>compliance</span></span><span class="ss-item" aria-label="${esc(credStr)} créditos restantes"><span class="ss-val${credWarn}">${esc(credStr)}</span><span>créditos</span></span>`
+    const activeClass = (s.active ?? 0) > 0 ? 'ss-live' : 'ss-idle'
+    el.innerHTML = `<span class="ss-item" aria-label="${esc(String(s.active ?? 0))} orquestas activas"><span class="ss-val ${activeClass}">${esc(String(s.active ?? 0))}</span><span>activos</span></span><span class="ss-item" aria-label="${esc(String(s.idle ?? 0))} orquestas inactivas"><span class="ss-val ss-idle">${esc(String(s.idle ?? 0))}</span><span>idle</span></span><span class="ss-item" aria-label="${esc(tokK)} tokens totales"><span class="ss-val">${esc(tokK)}</span><span>tok</span></span><span class="ss-item"><span class="ss-val">${esc(String(total))}</span><span>total</span></span><span class="ss-item" aria-label="peor cumplimiento ${esc(worstScore)}"><span class="ss-val${compWarn}" aria-label="${esc(worstScore)} compliance score">${esc(worstScore)}</span><span>compliance</span></span><span class="ss-item" aria-label="${esc(credStr)} créditos restantes"><span class="ss-val${credWarn}">${esc(credStr)}</span><span>créditos</span></span>`
   } catch { }
 }
 

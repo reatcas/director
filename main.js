@@ -465,12 +465,12 @@ function getClaudeUsage(dir) {
   if (cached && cached.runStarted === runStarted && (now - cached.lastScan) < 25_000) {
     iterCount = cached.iterCount
     totalBytes = cached.totalBytes
-    _dailyBudget = cached.dailyBudget || 1_000_000
+    _dailyBudget = cached.dailyBudget ?? 1_000_000
   } else {
     iterCount = 0
     totalBytes = 0
     try {
-      const files = fs.readdirSync(logDir, { withFileTypes: true }).filter(e => e.isFile() && /^iter-[\w\-.]+\.log$/.test(e.name))
+      const files = []; for (const e of fs.readdirSync(logDir, { withFileTypes: true })) { if (e.isFile() && /^iter-[\w\-.]+\.log$/.test(e.name)) files.push(e) }
       for (const f of files) {
         try {
           const st = fs.statSync(path.join(logDir, f.name))
@@ -1990,7 +1990,7 @@ ipcMain.handle('system:claude-procs', () => {
         // Determine project dir from cmd path if possible
         let project = null
         const cwdMatch = cmd.match(/--cwd[= ]([^ ]+)/)
-        if (cwdMatch) project = cwdMatch[1]
+        if (cwdMatch) project = cwdMatch[1].replace(/[\x00-\x1F\x7F]/g, '').slice(0, 4096)
         // Classify process type
         let type = 'claude'
         if (cmd.includes('run.sh')) type = 'orchestra'
@@ -1998,7 +1998,7 @@ ipcMain.handle('system:claude-procs', () => {
         else if (cmd.includes('monitor.js')) type = 'monitor'
         else if (cmd.includes('mcp')) type = 'mcp'
         else if (cmd.includes('Electron') || cmd.includes('director')) type = 'director'
-        procs.push({ pid, cpu, mem, started, time, cmd: cmd.slice(0, 120), type, project })
+        procs.push({ pid, cpu, mem, started, time, cmd: cmd.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 120), type, project })
       }
       resolve(metricsSet('sys:claude-procs', procs, 5_000))
     })

@@ -59,7 +59,7 @@ describe('persistLifecycleEvent evicts lc:dir:* cache after writing (P-60)', () 
 describe('sessionSummary ss-idle class when active===0 (FE-11)', () => {
   it('defines activeClass variable based on s.active count', () => {
     expect(rendererJs).toContain('activeClass')
-    expect(rendererJs).toContain("(s.active || 0) > 0 ? 'ss-live' : 'ss-idle'")
+    expect(rendererJs).toContain("(s.active ?? 0) > 0 ? 'ss-live' : 'ss-idle'")
   })
 
   it('uses activeClass in innerHTML instead of hardcoded ss-live', () => {
