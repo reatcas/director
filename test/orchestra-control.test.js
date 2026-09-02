@@ -70,7 +70,7 @@ describe('saved mixes handlers', () => {
 
   it('delete filters by id', () => {
     const block = mainJs.split("'mixer:saved:delete'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('.filter(')
+    expect(block).toContain('_msdFiltered')
     expect(block).toContain('writeJSON')
   })
 

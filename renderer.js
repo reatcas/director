@@ -2164,7 +2164,7 @@ async function loadLifecycleHistory() {
       'auto_resume': { icon: '⟳', color: '#00aaff' },
       'directive':   { icon: '→', color: '#ddba00' },
     }
-    const s = HISTORY_STYLES[ev.type] || { icon: '·', color: '#666' }
+    const s = HISTORY_STYLES[ev.type] ?? { icon: '·', color: '#666' }
 
     const el = document.createElement('div')
     el.className = 'le le-action le-history'

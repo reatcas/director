@@ -415,7 +415,7 @@ function projectInfo(dir) {
     try {
       const _sfStat = fs.statSync(startFile)
       if (_sfStat.size <= 1024) {
-        const startedStr = fs.readFileSync(startFile, 'utf8').trim()
+        const startedStr = fs.readFileSync(startFile, 'utf8').trim().replace(/[\x00-\x1F\x7F]/g, '')
         if (startedStr) runStarted = new Date(startedStr).getTime()
       }
     } catch {}
@@ -457,7 +457,7 @@ function getClaudeUsage(dir) {
 
   const logDir = path.join(dir, '.claude/logs')
   let runStarted = 0
-  try { const _rsp = path.join(dir, '.claude/RUN_STARTED'); if (fs.statSync(_rsp).size <= 1024) runStarted = new Date(fs.readFileSync(_rsp, 'utf8').trim()).getTime() } catch {}
+  try { const _rsp = path.join(dir, '.claude/RUN_STARTED'); if (fs.statSync(_rsp).size <= 1024) runStarted = new Date(fs.readFileSync(_rsp, 'utf8').trim().replace(/[\x00-\x1F\x7F]/g, '')).getTime() } catch {}
 
   const cached = usageTracker.get(dir)
   const now = Date.now()
@@ -1431,8 +1431,9 @@ ipcMain.handle('mixer:saved:delete', (_e, dir, id) => {
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
   if (!Array.isArray(mixes)) mixes = []
-  mixes = mixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.id === 'string' && m.id !== id)
-  const _msdSer = JSON.stringify(mixes)
+  const _msdFiltered = []
+  for (const m of mixes) { if (m && typeof m === 'object' && !Array.isArray(m) && typeof m.id === 'string' && m.id !== id) _msdFiltered.push(m) }
+  const _msdSer = JSON.stringify(_msdFiltered)
   if (_msdSer.length <= 512_000) writeJSON(p, JSON.parse(_msdSer))
   _invalidateSavedMixes(dir)
   return true
@@ -2041,8 +2042,11 @@ ipcMain.handle('atriles:list', () => {
   let data = []
   try { if (fs.statSync(p).size <= 512_000) data = readJSON(p, []) } catch {}
   if (!Array.isArray(data)) data = []
-  data = data.filter(a => a && typeof a === 'object' && typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) && typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path) && !(typeof a.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.description)) && !(typeof a.icon === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.icon)) && !(typeof a.color === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.color)))
-  _atrilesCache = data
+  const _ataFiltered = []
+  for (const a of data) {
+    if (a && typeof a === 'object' && typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) && typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path) && !(typeof a.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.description)) && !(typeof a.icon === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.icon)) && !(typeof a.color === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.color))) _ataFiltered.push(a)
+  }
+  _atrilesCache = _ataFiltered
   _atrilesCacheTs = Date.now()
   return _atrilesCache
 })
