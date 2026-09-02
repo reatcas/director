@@ -232,7 +232,7 @@ function cachedProjects() {
   if (!Array.isArray(_rpData)) _rpData = []
   _rpData = _rpData.filter(p => p && typeof p.path === 'string' && (!p.name || typeof p.name === 'string') && (!p.id || typeof p.id === 'string') && (!p.name || p.name.length <= 256) && (!p.id || p.id.length <= 64))
   _projectsCache = _rpData
-  _knownPathsSet = new Set(_rpData.map(p => p.path))
+  const _kps = new Set(); for (const p of _rpData) _kps.add(p.path); _knownPathsSet = _kps
   return _projectsCache
 }
 

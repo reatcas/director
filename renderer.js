@@ -3241,8 +3241,8 @@ for (const t of document.querySelectorAll('.mixer-tab')) t.addEventListener('cli
 
 document.querySelector('.mixer-tabs')?.addEventListener('keydown', e => {
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-  const tabs = Array.from(document.querySelectorAll('.mixer-tab'))
-  const idx = tabs.indexOf(document.activeElement)
+  const tabs = [...document.querySelectorAll('.mixer-tab')]
+  let idx = -1; for (let _ti = 0; _ti < tabs.length; _ti++) { if (tabs[_ti] === document.activeElement) { idx = _ti; break } }
   if (idx === -1) return
   e.preventDefault()
   const next = e.key === 'ArrowRight' ? (idx + 1) % tabs.length : (idx - 1 + tabs.length) % tabs.length
@@ -3526,9 +3526,8 @@ async function renderCmdResults(q) {
   res.innerHTML = sliced.map((it, i) =>
     `<div class="cmd-item${i === 0 ? ' active' : ''}" id="cmd-item-${i}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`
   ).join('')
-  res.querySelectorAll('.cmd-item').forEach((el, i) => {
-    el.onclick = () => { executeCmdItem(filtered[i]); closeCmdPalette() }
-  })
+  const _cmdItemEls = res.querySelectorAll('.cmd-item')
+  for (let _ci = 0; _ci < _cmdItemEls.length; _ci++) { _cmdItemEls[_ci].onclick = () => { executeCmdItem(filtered[_ci]); closeCmdPalette() } }
   const inp = $('#cmdInput')
   if (inp) {
     inp.setAttribute('aria-expanded', String(sliced.length > 0))

@@ -138,8 +138,11 @@ contextBridge.exposeInMainWorld('director', {
     if (a.some(el => /[\x00-\x1F\x7F]/.test(el.name))) return Promise.resolve(false)
     if (a.some(el => typeof el.path !== 'string' || el.path.length === 0 || el.path.length > 4096)) return Promise.resolve(false)
     if (a.some(el => el.description !== undefined && el.description !== null && (typeof el.description !== 'string' || el.description.length > 1024))) return Promise.resolve(false)
+    if (a.some(el => el.description !== undefined && el.description !== null && typeof el.description === 'string' && /[\x00-\x1F\x7F]/.test(el.description))) return Promise.resolve(false)
     if (a.some(el => el.icon !== undefined && (typeof el.icon !== 'string' || el.icon.length > 64))) return Promise.resolve(false)
+    if (a.some(el => el.icon !== undefined && typeof el.icon === 'string' && /[\x00-\x1F\x7F]/.test(el.icon))) return Promise.resolve(false)
     if (a.some(el => el.color !== undefined && (typeof el.color !== 'string' || el.color.length > 64))) return Promise.resolve(false)
+    if (a.some(el => el.color !== undefined && typeof el.color === 'string' && /[\x00-\x1F\x7F]/.test(el.color))) return Promise.resolve(false)
     return ipcRenderer.invoke('atriles:save', a)
   },
   // Alert notifications (F-22)
