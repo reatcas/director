@@ -1061,7 +1061,7 @@ function rebalanceMixer(changedKey, newVal) {
   // Get current values of OTHER strips
   const others = []
   let othersTotal = 0
-  strips.forEach(s => {
+  for (const s of strips) {
     const inp = s.querySelector('input[type="range"]')
     const k = inp.dataset.k
     if (k !== changedKey) {
@@ -1069,23 +1069,22 @@ function rebalanceMixer(changedKey, newVal) {
       others.push({ strip: s, inp, k, cur })
       othersTotal += cur
     }
-  })
+  }
 
   // Distribute remaining among others proportionally
   let assigned = 0
-  others.forEach((o, i) => {
+  for (let _ri = 0; _ri < others.length; _ri++) {
+    const o = others[_ri]
     let share
-    if (i === others.length - 1) {
+    if (_ri === others.length - 1) {
       share = remaining - assigned
     } else if (othersTotal > 0) {
       share = Math.min(Math.round((o.cur / othersTotal) * remaining), remaining - assigned)
     } else {
-      // All others were 0 — distribute equally
       share = Math.min(Math.round(remaining / others.length), remaining - assigned)
     }
     share = Math.max(0, share)
     assigned += share
-
     o.inp.value = share
     o.inp.setAttribute('aria-valuetext', share + '%')
     const fill = o.strip.querySelector('.strip-bar-fill-h')
@@ -1094,10 +1093,10 @@ function rebalanceMixer(changedKey, newVal) {
     if (valEl) valEl.textContent = share + '%'
     o.strip.classList.toggle('on', share > 0)
     o.strip.classList.toggle('off', share === 0)
-  })
+  }
 
   // Update the changed strip itself
-  strips.forEach(s => {
+  for (const s of strips) {
     const inp = s.querySelector('input[type="range"]')
     if (inp.dataset.k === changedKey) {
       inp.value = newVal
@@ -1109,7 +1108,7 @@ function rebalanceMixer(changedKey, newVal) {
       s.classList.toggle('on', newVal > 0)
       s.classList.toggle('off', newVal === 0)
     }
-  })
+  }
 }
 
 // ─── Save Mix ────────────────────────────────────────────────────────────────
@@ -1312,7 +1311,7 @@ async function loadMixes() {
   }
 
   empty.hidden = true
-  mixes.forEach(m => {
+  for (const m of mixes) {
     const card = document.createElement('div')
     card.className = 'mix-card'
     card.setAttribute('role', 'button')
@@ -1361,7 +1360,7 @@ async function loadMixes() {
     card.addEventListener('click', () => card.querySelector('.load').click())
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.querySelector('.load').click() } })
     container.appendChild(card)
-  })
+  }
 }
 
 // ─── Compact Log Entry System ─────────────────────────────────────────────────

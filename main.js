@@ -1190,7 +1190,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const files = fs.readdirSync(claudeDir).filter(f => f.startsWith('analysis-') && f.endsWith('.txt'))
     if (files.length > 5) {
       files.sort()
-      files.slice(0, files.length - 5).forEach(f => { try { fs.unlinkSync(path.join(claudeDir, f)) } catch {} })
+      for (const f of files.slice(0, files.length - 5)) { try { fs.unlinkSync(path.join(claudeDir, f)) } catch {} }
     }
   } catch {}
   // Prune lifecycle events older than 90 days

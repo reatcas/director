@@ -61,6 +61,7 @@ contextBridge.exposeInMainWorld('director', {
   mixerSavedSave:   (p, n, f)   => {
     if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false)
     if (typeof n !== 'string' || n.length === 0 || n.length > 256) return Promise.resolve(false)
+    if (/[\x00-\x1F\x7F]/.test(n)) return Promise.resolve(false)
     if (!f || typeof f !== 'object' || Array.isArray(f)) return Promise.resolve(false)
     return ipcRenderer.invoke('mixer:saved:save', p, n, f)
   },
@@ -131,6 +132,9 @@ contextBridge.exposeInMainWorld('director', {
     if (a.some(el => !el || typeof el !== 'object' || Array.isArray(el))) return Promise.resolve(false)
     if (a.some(el => typeof el.name !== 'string' || el.name.length === 0 || el.name.length > 256)) return Promise.resolve(false)
     if (a.some(el => typeof el.path !== 'string' || el.path.length === 0 || el.path.length > 4096)) return Promise.resolve(false)
+    if (a.some(el => el.description !== undefined && el.description !== null && (typeof el.description !== 'string' || el.description.length > 1024))) return Promise.resolve(false)
+    if (a.some(el => el.icon !== undefined && (typeof el.icon !== 'string' || el.icon.length > 64))) return Promise.resolve(false)
+    if (a.some(el => el.color !== undefined && (typeof el.color !== 'string' || el.color.length > 64))) return Promise.resolve(false)
     return ipcRenderer.invoke('atriles:save', a)
   },
   // Alert notifications (F-22)

@@ -1,3 +1,33 @@
+# Cycle 270 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 270 (no bans — C269 broke 7-cycle security/perf/backend/frontend/quality streak)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| quality_tests | 35 | 3 | 0/3 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (at budget) |
+| ux_accessibility | 5 | 0 | SKIP (at budget) |
+| data_db | 5 | 0 | SKIP (at budget) |
+| product | 10 | 0 | SKIP (F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE
+
+## Units
+1. [security] S-138 — preload.js `atrilesSave`: add per-element `description` (≤1024), `icon` (≤64), `color` (≤64) validation — matches main.js `atriles:save` field validation, early-exit before IPC
+2. [security] S-139 — preload.js `mixerSavedSave`: add control-char rejection on name `n` — `/[\x00-\x1F\x7F]/.test(n)` → false; prevents malformed preset names in storage
+3. [performance] P-97 — renderer.js `rebalanceMixer()`: `strips.forEach(s => {...})` → `for (const s of strips)`; `others.forEach((o, i) => {...})` → `for (let _ri = 0; _ri < others.length; _ri++)`
+4. [backend] B-51 — main.js `orchestra:clearLog`: `files.slice(...).forEach(f => {...})` → `for (const f of files.slice(...))`
+5. [frontend] F-48 — renderer.js `renderSavedMixes()`: `mixes.forEach(m => {...})` → `for (const m of mixes)`
+6. [quality_tests] T-219 — cycle270-coverage.test.js: S-138 description/icon/color validation in preload source
+7. [quality_tests] T-220 — cycle270-coverage.test.js: S-139 control-char check; P-97 for...of strips/others source
+8. [quality_tests] T-221 — cycle270-coverage.test.js: B-51 forEach→for in clearLog; F-48 for-of in renderSavedMixes
+
+---
+
 # Cycle 269 Plan — IMPROVEMENT MODE
 
 ## MIXER BUDGET — Cycle 269 (BAN: security+performance+backend+frontend+quality_tests — 7 consecutive cycles C262-C268)
