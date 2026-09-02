@@ -681,7 +681,7 @@ function playOrchestra(dir, agent = 'claude') {
         ''
       ]
 
-      sortedFocus.forEach(([key, weight]) => {
+      for (const [key, weight] of sortedFocus) {
         if (weight >= 70) {
           lines.push(`- **${key.toUpperCase()} (CRITICAL - ${weight}%):** Must be the primary focus of this cycle. Do not substitute with other tasks.`)
         } else if (weight >= 40) {
@@ -689,7 +689,7 @@ function playOrchestra(dir, agent = 'claude') {
         } else if (weight > 0) {
           lines.push(`- **${key.toUpperCase()} (LOW - ${weight}%):** Address only if opportunistic or blocking other work.`)
         }
-      })
+      }
       
       const productW = (focus.product || 0)
       if (productW >= 50) {
@@ -1210,7 +1210,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const iterLogs = fs.readdirSync(logDir).filter(f => f.startsWith('iter-') && f.endsWith('.log'))
     if (iterLogs.length > 200) {
       iterLogs.sort()
-      iterLogs.slice(0, iterLogs.length - 200).forEach(f => { try { fs.unlinkSync(path.join(logDir, f)) } catch {} })
+      for (const f of iterLogs.slice(0, iterLogs.length - 200)) { try { fs.unlinkSync(path.join(logDir, f)) } catch {} }
     }
   } catch {}
   // Cap context-metrics telemetry at 300 entries (matches context-protocol.js cap)

@@ -1153,10 +1153,10 @@ function updateSmartAuroraColors() {
   if (!aurora) return
   const strips = document.querySelectorAll('#mixerStrips .strip-h.on')
   const colors = []
-  strips.forEach(s => {
+  for (const s of strips) {
     const color = getComputedStyle(s).getPropertyValue('--strip-color').trim()
     if (color && colors.length < 4) colors.push(color)
-  })
+  }
   // Pad to 4 colors
   const defaults = ['#e8631a', '#3d78e8', '#9955ee', '#28a828']
   while (colors.length < 4) colors.push(defaults[colors.length])

@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('director', {
   readFile: (p, s) => {
     if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve('')
     if (s !== undefined && (typeof s !== 'string' || s.length > 512)) return Promise.resolve('')
+    if (s !== undefined && typeof s === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s)) return Promise.resolve('')
     return ipcRenderer.invoke('repertoire:readFile', p, s)
   },
   install: p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('orchestra:install', p) },
@@ -54,6 +55,7 @@ contextBridge.exposeInMainWorld('director', {
   readIterLog: (p, l)  => {
     if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve('')
     if (typeof l !== 'string' || !l.trim() || l.length > 512) return Promise.resolve('')
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(l)) return Promise.resolve('')
     return ipcRenderer.invoke('orchestra:readIterLog', p, l)
   },
   // Saved mixes
