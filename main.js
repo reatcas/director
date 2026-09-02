@@ -102,7 +102,7 @@ function pollGitCommits(dir) {
     let _curMtime = 0
     try { _curMtime = fs.statSync(_commitMsgFile).mtimeMs } catch {}
     if (_curMtime && _curMtime === _gitCommitMtimes.get(dir)) return
-    _gitCommitMtimes.set(dir, _curMtime)
+    if (_gitCommitMtimes.size >= 200) _gitCommitMtimes.delete(_gitCommitMtimes.keys().next().value); _gitCommitMtimes.set(dir, _curMtime)
     const currentHash = execFileSync('git', ['log', '-1', '--format=%H'], { cwd: dir, encoding: 'utf8', timeout: 3000 }).trim()
     if (currentHash && currentHash !== lastHash) {
       const logArgs = lastHash ? ['log', '--oneline', lastHash + '..'] : ['log', '--oneline', '-1']
@@ -249,10 +249,10 @@ function isRunning(dir) {
   if (_irHit && now - _irHit.ts < 1_000) return _irHit.val
   const pidFile = path.join(dir, '.claude/ORCHESTRA_PID')
   let pid = 0
-  try { const _irStat = fs.statSync(pidFile); if (_irStat.size <= 64) pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10) } catch { _isRunningCache.set(dir, { val: false, ts: now }); return false }
+  try { const _irStat = fs.statSync(pidFile); if (_irStat.size <= 64) pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10) } catch { if (_isRunningCache.size >= 200) _isRunningCache.delete(_isRunningCache.keys().next().value); _isRunningCache.set(dir, { val: false, ts: now }); return false }
   const _irVal = !!(pid && pidAlive(pid))
   if (!_irVal) { try { fs.unlinkSync(pidFile) } catch {} }
-  _isRunningCache.set(dir, { val: _irVal, ts: now })
+  if (_isRunningCache.size >= 200) _isRunningCache.delete(_isRunningCache.keys().next().value); _isRunningCache.set(dir, { val: _irVal, ts: now })
   return _irVal
 }
 
@@ -1873,7 +1873,7 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
     const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
     if (!lines.length) { if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(dir, st.mtimeMs); return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL) }
     const recent = lines.slice(-10)
-    const scores = recent.map(l => parseComplianceLine(l)).filter(Boolean).map(c => c.score).filter(s => s !== null)
+    const scores = []; for (const l of recent) { const _p = parseComplianceLine(l); if (_p && _p.score !== null) scores.push(_p.score) }
     const last = parseComplianceLine(recent[recent.length - 1])
     let _rawSum = 0; for (const s of scores) _rawSum += s
     const _rawAvg = scores.length ? Math.round(_rawSum / scores.length) : null

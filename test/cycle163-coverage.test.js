@@ -40,7 +40,7 @@ describe('metrics:compliance null-score filter (I-484)', () => {
   const block = mainJs.split("'metrics:compliance'")[1]?.split('\nipcMain')[0] || ''
 
   it('filters null scores before computing average', () => {
-    expect(block).toContain(".filter(s => s !== null)")
+    expect(block).toContain('_p.score !== null')
   })
 
   it('guards avg with Number.isFinite', () => {

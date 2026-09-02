@@ -2430,7 +2430,8 @@ function updateBurnRate(usage) {
   if (_burnHistory.length > 30) _burnHistory.shift()
 
   if (_burnHistory.length > 0) {
-    const avg = Math.round(_burnHistory.reduce((s, v) => s + v, 0) / _burnHistory.length)
+    let _burnSum = 0; for (const v of _burnHistory) _burnSum += v
+    const avg = Math.round(_burnSum / _burnHistory.length)
     const avgK = avg > 999 ? Math.floor(avg / 1000) + 'K' : String(avg)
     valEl.textContent = avgK + '/iter'
     const trend = _burnHistory.length >= 3 && _burnHistory[_burnHistory.length - 1] > avg * 1.3 ? ' warn' : ' active'
@@ -2731,8 +2732,7 @@ async function loadProcs() {
   }
   if (countEl) countEl.textContent = `${procs.length} process${procs.length > 1 ? 'es' : ''}`
 
-  const totalCpu = procs.reduce((s, p) => s + (parseFloat(p.cpu) || 0), 0)
-  const totalMem = procs.reduce((s, p) => s + (parseFloat(p.mem) || 0), 0)
+  let totalCpu = 0, totalMem = 0; for (const p of procs) { totalCpu += parseFloat(p.cpu) || 0; totalMem += parseFloat(p.mem) || 0 }
   const gaugeEl = document.createElement('div')
   gaugeEl.className = 'proc-gauge'
   const cpuColor = totalCpu > 80 ? '#e03030' : totalCpu > 40 ? '#ddba00' : '#40c840'

@@ -212,7 +212,7 @@ describe('updateBurnRate — token burn rate tracking (F-19)', () => {
   })
 
   it('calculates average burn rate', () => {
-    expect(body).toContain('reduce((s, v) => s + v, 0)')
+    expect(body).toContain('_burnSum')
     expect(body).toContain('_burnHistory.length')
   })
 
