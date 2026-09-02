@@ -1486,7 +1486,7 @@ ipcMain.handle('metrics:session-summary', () => {
         if (_ssSt.size > 1_048_576) continue
         let _ssLast = null
         if (_complianceMtimeCache.get(p.path) !== _ssSt.mtimeMs) {
-          const _ssLines = []; for (const l of fs.readFileSync(reportPath, 'utf8').split('\n')) { if (l.includes('COMPLIANCE')) _ssLines.push(l) }
+          const _ssLines = []; for (const l of fs.readFileSync(reportPath, 'utf8').split('\n')) { if (l.includes('COMPLIANCE')) _ssLines.push(l.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')) }
           if (_ssLines.length) {
             _ssLast = parseComplianceLine(_ssLines[_ssLines.length - 1])
             if (_ssLast) { if (_worstComplianceCache.size >= 200) _worstComplianceCache.delete(_worstComplianceCache.keys().next().value); _worstComplianceCache.set(p.path, _ssLast) }
@@ -1889,7 +1889,7 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
   const lastMtime = _complianceMtimeCache.get(dir)
   if (hit !== null && lastMtime === st.mtimeMs) return hit
   try {
-    const _mcLines = []; for (const l of fs.readFileSync(reportPath, 'utf8').split('\n')) { if (l.includes('COMPLIANCE')) _mcLines.push(l) }
+    const _mcLines = []; for (const l of fs.readFileSync(reportPath, 'utf8').split('\n')) { if (l.includes('COMPLIANCE')) _mcLines.push(l.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')) }
     const lines = _mcLines
     if (!lines.length) { if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(dir, st.mtimeMs); return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL) }
     const recent = lines.slice(-10)

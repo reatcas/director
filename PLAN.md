@@ -1738,3 +1738,32 @@ Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
 6. [ux_accessibility] A-80 — renderer.js L2529: scores.map((s,i) => ...).join(' ') → _spParts indexed for-loop push + join (sparkline points).
 7. [data_db] DD-23 — mixer-chart.js L43: playEntries.map((e,i) => ...) → _ptParts for-of entries() push + join (polyline points per category).
 8. [data_db] DD-24 — mixer-chart.js L52: yTicks.map(v=>{...}).join('') + L59: xLabels.map(i=>{...}).join('') → both for-of/indexed push + join (grid + x-axis SVG building).
+
+---
+# Cycle 299 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 299 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (BL/UX/DD last C298 → SEC/PERF/BE/FE/QA streak=1) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=1)
+
+## Units
+1. [security] S-176 — main.js L1489 session-summary _ssLines: raw ORCHESTRA_REPORT lines pushed without ctrl-char strip. Add narrow strip before push.
+2. [security] S-177 — main.js L1892 metrics:compliance _mcLines: same pattern. Add narrow ctrl-char strip before _mcLines push.
+3. [performance] P-116 — renderer.js L1292 renderMixRibbon: segments.map(s=>{...}).join('') → _ribParts for-of push + join. Eliminates intermediate map array.
+4. [backend] B-70 — renderer.js L3498 renderCmdResults: sliced.map((it,i)=>...).join('') → _ciParts indexed for-loop push + join. Eliminates intermediate map array.
+5. [frontend] F-67 — renderer.js L217: credit.models.map(m=>...).join('') → _optParts for-of push + join. L3024: recent.map(ev=>...).join('') → _lcParts for-of push + join.
+6. [quality_tests] T-282 — cycle299-coverage.test.js: S-176 session-summary _ssLines strip; S-177 compliance _mcLines strip.
+7. [quality_tests] T-283 — cycle299-coverage.test.js: P-116 _ribParts for-of; B-70 _ciParts indexed for-loop.
+8. [quality_tests] T-284 — cycle299-coverage.test.js: F-67 _optParts and _lcParts for-of.

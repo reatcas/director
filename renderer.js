@@ -214,7 +214,7 @@ function updateAiControl() {
     modelSelect.parentElement.style.display = 'inline-block'
     modelSelect.style.display = 'inline-block'
     const prevModel = modelSelect.value
-    modelSelect.innerHTML = credit.models.map(m => `<option value="${esc(m.id)}">${esc(m.label)}</option>`).join('')
+    const _optParts = []; for (const m of credit.models) _optParts.push(`<option value="${esc(m.id)}">${esc(m.label)}</option>`); modelSelect.innerHTML = _optParts.join('')
     if (credit.models.some(m => m.id === prevModel)) {
       modelSelect.value = prevModel
     } else {
@@ -1289,10 +1289,7 @@ function buildMixRibbon(focus) {
   }
   if (total === 0) return '<div class="mix-ribbon"><div class="mix-ribbon-seg" style="width:100%;background:var(--dim2)"></div></div>'
   const _colorSafe = c => (typeof c === 'string' && /^[a-zA-Z0-9#(),. %]+$/.test(c)) ? c : 'var(--dim2)'
-  const html = segments.map(s => {
-    const pct = Math.max(2, Math.round(s.value / total * 100))
-    return `<div class="mix-ribbon-seg" style="width:${pct}%;background:${_colorSafe(s.color)}"></div>`
-  }).join('')
+  const _ribParts = []; for (const s of segments) { const pct = Math.max(2, Math.round(s.value / total * 100)); _ribParts.push(`<div class="mix-ribbon-seg" style="width:${pct}%;background:${_colorSafe(s.color)}"></div>`) }; const html = _ribParts.join('')
   return `<div class="mix-ribbon">${html}</div>`
 }
 
@@ -3021,12 +3018,7 @@ async function loadLifecycleTimeline() {
   if (countEl) { countEl.textContent = String(_unfTotal); countEl.setAttribute('aria-label', `${_unfTotal} eventos en ciclo de vida`) }
 
   const _hint = _unfTotal > recent.length ? `<div class="lc-hint" aria-label="${_unfTotal - recent.length} eventos anteriores disponibles">+ ${_unfTotal - recent.length} anteriores</div>` : ''
-  el.innerHTML = _hint + recent.map(ev => {
-    const d = new Date(ev.ts)
-    const ts = isNaN(d.getTime()) ? ev.ts.slice(0, 16) : d.toLocaleTimeString('es', { hour12: false }) + ' ' + d.toLocaleDateString('es', { day: '2-digit', month: 'short' })
-    const icon = LC_ICONS[ev.type] ?? '·'
-    return `<div class="lc-event" role="listitem" data-type="${esc(ev.type)}"><time class="lc-ts" datetime="${esc(ev.ts)}">${esc(ts)}</time><span class="lc-icon" aria-hidden="true">${icon}</span><span class="lc-label">${esc(ev.label)}</span><span class="lc-msg" title="${esc(ev.message)}">${esc(ev.message)}</span></div>`
-  }).join('')
+  const _lcParts = []; for (const ev of recent) { const d = new Date(ev.ts); const ts = isNaN(d.getTime()) ? ev.ts.slice(0, 16) : d.toLocaleTimeString('es', { hour12: false }) + ' ' + d.toLocaleDateString('es', { day: '2-digit', month: 'short' }); const icon = LC_ICONS[ev.type] ?? '·'; _lcParts.push(`<div class="lc-event" role="listitem" data-type="${esc(ev.type)}"><time class="lc-ts" datetime="${esc(ev.ts)}">${esc(ts)}</time><span class="lc-icon" aria-hidden="true">${icon}</span><span class="lc-label">${esc(ev.label)}</span><span class="lc-msg" title="${esc(ev.message)}">${esc(ev.message)}</span></div>`) }; el.innerHTML = _hint + _lcParts.join('')
 }
 
 function bpStartSession() {
@@ -3495,9 +3487,7 @@ async function renderCmdResults(q) {
   items.push({ type: 'ACTION', label: 'Export', action: 'export' })
   let filtered; if (q) { const _cmdFiltered = []; const _qLow = q.toLowerCase(); for (const i of items) { if (i.label.toLowerCase().includes(_qLow)) _cmdFiltered.push(i) }; filtered = _cmdFiltered } else { filtered = items }
   const sliced = filtered.slice(0, 10)
-  res.innerHTML = sliced.map((it, i) =>
-    `<div class="cmd-item${i === 0 ? ' active' : ''}" id="cmd-item-${i}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`
-  ).join('')
+  const _ciParts = []; for (let i = 0; i < sliced.length; i++) { const it = sliced[i]; _ciParts.push(`<div class="cmd-item${i === 0 ? ' active' : ''}" id="cmd-item-${i}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`) }; res.innerHTML = _ciParts.join('')
   const _cmdItemEls = res.querySelectorAll('.cmd-item')
   for (let _ci = 0; _ci < _cmdItemEls.length; _ci++) { _cmdItemEls[_ci].onclick = () => { executeCmdItem(filtered[_ci]); closeCmdPalette() } }
   const inp = $('#cmdInput')
