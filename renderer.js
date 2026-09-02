@@ -3204,7 +3204,7 @@ if ($('#atrilModal')) $('#atrilModal').addEventListener('keydown', e => {
   if (!modal || modal.hidden) return
   if (e.key === 'Escape') { modal.hidden = true; if (_atrilPrevFocus && typeof _atrilPrevFocus.focus === 'function') { _atrilPrevFocus.focus(); _atrilPrevFocus = null }; return }
   if (e.key === 'Tab') {
-    const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    const focusable = [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
     if (!focusable.length) return
     e.preventDefault()
     const idx = focusable.indexOf(document.activeElement)
@@ -3364,7 +3364,7 @@ if ($('#settingsModal')) $('#settingsModal').addEventListener('keydown', e => {
   if (!modal || modal.hidden) return
   if (e.key === 'Escape') { modal.hidden = true; const _stBtn = $('#settingsBtn'); if (_stBtn) _stBtn.focus(); return }
   if (e.key === 'Tab') {
-    const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    const focusable = [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
     if (!focusable.length) return
     e.preventDefault()
     const idx = focusable.indexOf(document.activeElement)
@@ -3377,12 +3377,12 @@ async function loadSettings() {
   if (!current) return
   const cfg = await window.director.mixerRead(current) || {}
   if ($('#stgCaveman')) $('#stgCaveman').checked = cfg.caveman !== false
-  if ($('#stgCompactAt')) $('#stgCompactAt').value = cfg.compactAt || 50
+  if ($('#stgCompactAt')) $('#stgCompactAt').value = cfg.compactAt ?? 50
   if ($('#stgRunMode')) $('#stgRunMode').value = cfg.mode || 'perpetual'
   if ($('#stgMaxIter')) $('#stgMaxIter').value = cfg.maxIterations || 0
   if ($('#stgDefaultAi')) $('#stgDefaultAi').value = cfg.agent || 'claude'
   if ($('#stgAutoSwitch')) $('#stgAutoSwitch').checked = cfg.autoSwitch !== false
-  if ($('#stgKeepLogs')) $('#stgKeepLogs').value = cfg.keepLogs || 50
+  if ($('#stgKeepLogs')) $('#stgKeepLogs').value = cfg.keepLogs ?? 50
   if ($('#stgAutoScroll')) $('#stgAutoScroll').checked = autoScrollEnabled
   if ($('#stgMaxHallStreak')) $('#stgMaxHallStreak').value = cfg.maxHallucinationStreak || 5
   try {
@@ -3454,7 +3454,7 @@ if ($('#aboutModal')) $('#aboutModal').addEventListener('keydown', e => {
   if (!modal || modal.hidden) return
   if (e.key === 'Escape') { modal.hidden = true; const _abBtn = $('#aboutBtn'); if (_abBtn) _abBtn.focus(); return }
   if (e.key === 'Tab') {
-    const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    const focusable = [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
     if (!focusable.length) return
     e.preventDefault()
     const idx = focusable.indexOf(document.activeElement)
@@ -3472,7 +3472,7 @@ if ($('#shortcutsModal')) $('#shortcutsModal').addEventListener('keydown', e => 
   if (!modal || modal.hidden) return
   if (e.key === 'Escape') { modal.hidden = true; if (_scmPrevFocus) { _scmPrevFocus.focus(); _scmPrevFocus = null }; return }
   if (e.key === 'Tab') {
-    const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    const focusable = [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
     if (!focusable.length) return
     e.preventDefault()
     const idx = focusable.indexOf(document.activeElement)

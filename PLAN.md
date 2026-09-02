@@ -1158,3 +1158,32 @@ Total: 8 units — IMPROVEMENT MODE (5 banned; BL/UX/DD available)
 6. [ux_accessibility] A-59 — renderer.js atril modal: colorGrid.querySelectorAll.forEach + iconGrid.querySelectorAll.forEach → for...of
 7. [data_db] DD-09 — renderer.js repertoire keydown: Array.from(ul.querySelectorAll('li')) → spread [...ul.querySelectorAll('li')]
 8. [data_db] DD-10 — renderer.js drag events: two ['dragover','dragenter'].forEach / ['dragleave','drop'].forEach → for...of
+
+---
+# Cycle 279 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 279 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (budget trim) |
+| ux_accessibility | 5 | 0 | SKIP (budget trim) |
+| data_db | 5 | 0 | SKIP (budget trim) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C278 broke streak; all available)
+
+## Units
+1. [security] S-150 — main.js cachedProjects() filter: add !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(p.name) check (currently validates length but not control chars)
+2. [security] S-151 — main.js parseComplianceLine(): validate category key pm[1] with /^[\w\-]+$/ allowlist before using as object key
+3. [performance] P-103 — renderer.js modal focus traps (4 occurrences): Array.from(modal.querySelectorAll(...)) → spread [...modal.querySelectorAll(...)]
+4. [backend] B-57 — main.js orchestra:analyze: cat[k] = (cat[k] || 0)+1 → cat[k] = (cat[k] ?? 0)+1 (nullish coalescing)
+5. [frontend] F-54 — renderer.js loadSettings(): cfg.compactAt || 50 → cfg.compactAt ?? 50; cfg.keepLogs || 50 → cfg.keepLogs ?? 50
+6. [quality_tests] T-243 — cycle279-coverage.test.js: S-150 cachedProjects name control-char; S-151 parseComplianceLine allowlist
+7. [quality_tests] T-244 — cycle279-coverage.test.js: P-103 modal spread patterns
+8. [quality_tests] T-245 — cycle279-coverage.test.js: B-57 cat[k]??0; F-54 cfg settings ??

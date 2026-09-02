@@ -230,7 +230,7 @@ function cachedProjects() {
   let _rpData = []
   try { if (fs.statSync(_rpPath).size <= 512_000) _rpData = readJSON(_rpPath, []) } catch {}
   if (!Array.isArray(_rpData)) _rpData = []
-  _rpData = _rpData.filter(p => p && typeof p.path === 'string' && (!p.name || typeof p.name === 'string') && (!p.id || typeof p.id === 'string') && (!p.name || p.name.length <= 256) && (!p.id || p.id.length <= 64))
+  _rpData = _rpData.filter(p => p && typeof p.path === 'string' && (!p.name || typeof p.name === 'string') && (!p.id || typeof p.id === 'string') && (!p.name || p.name.length <= 256) && (!p.id || p.id.length <= 64) && (!p.name || !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(p.name)))
   _projectsCache = _rpData
   const _kps = new Set(); for (const p of _rpData) _kps.add(p.path); _knownPathsSet = _kps
   return _projectsCache
@@ -1605,7 +1605,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
       for (const c of commits) {
         const m = c.match(/ (feat|fix|test|refactor|chore|security|sec|perf|docs|style|i18n)[:(]/)
         const k = m ? m[1] : 'other'
-        cat[k] = (cat[k] || 0) + 1
+        cat[k] = (cat[k] ?? 0) + 1
       }
       // Fetch local metrics
       const usage = getClaudeUsage(dir)
@@ -1853,6 +1853,7 @@ function parseComplianceLine(line) {
     const pm = p.match(/([^:]+):(\d+)\/(\d+)/)
     if (!pm) continue
     const actual = Math.min(Math.max(0, parseInt(pm[2], 10)), 9999), planned = Math.min(Math.max(0, parseInt(pm[3], 10)), 9999)
+    if (!/^[\w\-]+$/.test(pm[1])) continue
     categories[pm[1].slice(0, 64)] = { actual, planned }
     totalPlanned += planned
     totalActual += Math.min(actual, planned)
