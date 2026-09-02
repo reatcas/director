@@ -26,7 +26,7 @@ describe('blueprint:readiness answeredFields typeof guard (I-407)', () => {
   const block = mainJs.split("'blueprint:readiness'")[1]?.split('\nipcMain')[0] || ''
 
   it('uses typeof string check before calling trim()', () => {
-    expect(block).toContain("typeof a[k] === 'string'")
+    expect(block).toContain("typeof v === 'string'")
     expect(block).toContain('answeredFields')
   })
 

@@ -2847,10 +2847,8 @@ function renderBpPhases() {
   if (!el) return
   el.innerHTML = ''
   for (const phase of BP_PHASES) {
-    const _bpQPhase = []; for (const q of BP_QUESTIONS) { if (q.phase === phase.id) _bpQPhase.push(q) }
-    const questions = _bpQPhase
-    let _bpQAnswered = 0; for (const q of questions) { if (bpState.answers[q.key] && bpState.answers[q.key].trim()) _bpQAnswered++ }
-    const answered = _bpQAnswered
+    const questions = BP_QUESTIONS.filter(q => q.phase === phase.id)
+    const answered = questions.filter(q => bpState.answers[q.key]?.trim()).length
     const total = questions.length
     const pct = total > 0 ? Math.round(answered / total * 100) : 0
     const isCurrent = BP_QUESTIONS[bpState.currentQuestion]?.phase === phase.id

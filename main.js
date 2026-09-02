@@ -1390,7 +1390,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
     try { if (fs.statSync(_dmPath).size <= 512_000) _defaultMixesCache = readJSON(_dmPath, []) } catch {}
   }
   const existingIds = new Set(); for (const m of userMixes) existingIds.add(m.id)
-  const _vdFiltered = []; for (const p of _defaultMixesCache) { if (p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^[0-9a-z_\-]+$/.test(p.id) && p.id.length <= 64 && typeof p.name === 'string' && p.name.length > 0 && p.name.length <= 256 && p.focus && typeof p.focus === 'object' && !Array.isArray(p.focus) && !existingIds.has(p.id)) _vdFiltered.push(p) }
+  const _vdFiltered = []; for (const p of _defaultMixesCache) { if (p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^[0-9a-z_\-]+$/.test(p.id) && p.id.length <= 64 && typeof p.name === 'string' && p.name.length > 0 && p.name.length <= 256 && p.focus && typeof p.focus === 'object' && !Array.isArray(p.focus) && !existingIds.has(p.id)) _vdFiltered.push({ ...p, name: p.name.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }
   const merged = [..._vdFiltered, ...userMixes]
   const _slResult = merged.slice(0, 200)
   if (_savedMixesCache.size >= 100) _savedMixesCache.delete(_savedMixesCache.keys().next().value)
@@ -1449,7 +1449,8 @@ ipcMain.handle('mixer:saved:export', (_e, dir, id) => {
   const mix = mixes.find(m => m && typeof m === 'object' && m.id === id)
   if (!mix) return null
   if (!mix.focus || typeof mix.focus !== 'object' || Object.values(mix.focus).some(v => typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100)) return null
-  return JSON.stringify(mix, null, 2)
+  const _exMix = { ...mix, ...(typeof mix.name === 'string' && { name: mix.name.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }
+  return JSON.stringify(_exMix, null, 2)
 })
 
 // ─── Mixer history (F-17) ───────────────────────────────────────────────────
@@ -2314,7 +2315,7 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
     completeness: Number.isFinite(bp.completeness) ? Math.min(100, Math.max(0, bp.completeness)) : 0,
     sessions: (bp.sessions ?? []).length,
     modules: (bp.modules ?? []).length,
-    answeredFields: (() => { let _answeredCount = 0; for (const k of Object.keys(a)) { if (typeof a[k] === 'string' && a[k].trim()) _answeredCount++ }; return _answeredCount })()
+    answeredFields: Object.values(a).filter(v => typeof v === 'string' && v.trim()).length
   }
   if (_readinessCache.size >= 100) _readinessCache.delete(_readinessCache.keys().next().value); _readinessCache.set(dir, { ts: now, val })
   return val

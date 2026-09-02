@@ -279,28 +279,31 @@ window.mixerGraph = (() => {
     // Hub + active glow handled via _pulseLayer rings; sprites not used
 
     // Expand rings
-    for (let i = _rings.length - 1; i >= 0; i--) {
-      const r = _rings[i]
+    const _nextRings = []
+    for (const r of _rings) {
       r.elapsed += DT
       const p = Math.min(r.elapsed / r.duration, 1)
       const ease = 1 - (1 - p) * (1 - p)           // ease-out quad
       r.sp.scale.setScalar(6 + ease * r.maxScale)
       r.mat.opacity = (1 - ease) * 0.85
-      if (p >= 1) { _pulseLayer.remove(r.sp); r.mat.dispose(); _rings.splice(i, 1) }
+      if (p >= 1) { _pulseLayer.remove(r.sp); r.mat.dispose() } else _nextRings.push(r)
     }
+    _rings = _nextRings
 
     // Move sparks
-    for (let i = _sparks.length - 1; i >= 0; i--) {
-      const s = _sparks[i]
+    const _nextSparks = []
+    for (const s of _sparks) {
       s.life -= s.decay
-      if (s.life <= 0) { _pulseLayer.remove(s.sp); s.mat.dispose(); _sparks.splice(i, 1); continue }
+      if (s.life <= 0) { _pulseLayer.remove(s.sp); s.mat.dispose(); continue }
       s.sp.position.x += s.vx
       s.sp.position.y += s.vy
       s.vx *= 0.91; s.vy *= 0.91
       s.mat.opacity = Math.pow(s.life, 0.5) * 0.85
       const sc = s.sp.scale.x * 1.015
       s.sp.scale.setScalar(sc)
+      _nextSparks.push(s)
     }
+    _sparks = _nextSparks
 
     // Auto-rotate: gentle camera wobble while running
     if (_autoRotate && graph) {
