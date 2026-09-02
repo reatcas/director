@@ -864,7 +864,7 @@ function playOrchestra(dir, agent = 'claude') {
 
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
 ipcMain.handle('repertoire:list', () => {
-  return cachedProjects().map(p => ({ ...p, ...projectInfo(p.path) }))
+  const _rlProjs = []; for (const p of cachedProjects()) _rlProjs.push({ ...p, ...projectInfo(p.path) }); return _rlProjs
 })
 
 ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
@@ -2027,7 +2027,7 @@ ipcMain.handle('atriles:list', () => {
   let data = []
   try { if (fs.statSync(p).size <= 512_000) data = readJSON(p, []) } catch {}
   if (!Array.isArray(data)) data = []
-  data = data.filter(a => a && typeof a === 'object' && typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) && typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))
+  data = data.filter(a => a && typeof a === 'object' && typeof a.name === 'string' && a.name.length > 0 && a.name.length <= 256 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) && typeof a.path === 'string' && a.path.length > 0 && a.path.length <= 4096 && !/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path) && !(typeof a.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.description)) && !(typeof a.icon === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.icon)) && !(typeof a.color === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.color)))
   _atrilesCache = data
   _atrilesCacheTs = Date.now()
   return _atrilesCache
@@ -2049,6 +2049,7 @@ ipcMain.handle('atriles:save', (_e, atriles) => {
   if (atriles.some(a => /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.name) || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.path))) return false
   if (atriles.some(a => typeof a.description === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.description))) return false
   if (atriles.some(a => typeof a.icon === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.icon))) return false
+  if (atriles.some(a => typeof a.color === 'string' && /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(a.color))) return false
   const _asPathSet = new Set(); for (const a of atriles) { if (_asPathSet.has(a.path)) return false; _asPathSet.add(a.path) }
   const _asSer = JSON.stringify(atriles)
   if (_asSer.length > 512_000) return false

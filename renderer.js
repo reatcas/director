@@ -3336,9 +3336,7 @@ function applyTheme(mode) {
   }
   localStorage.setItem('director-theme', mode)
   // Update toggle group
-  document.querySelectorAll('#themeGroup .stg-btn').forEach(b => {
-    b.classList.toggle('on', b.dataset.theme === mode)
-  })
+  for (const b of document.querySelectorAll('#themeGroup .stg-btn')) b.classList.toggle('on', b.dataset.theme === mode)
 }
 if ($('#themeToggle')) {
   $('#themeToggle').onclick = () => {
@@ -3352,9 +3350,7 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', ()
   if (getStoredTheme() === 'auto') applyTheme('auto')
 })
 if ($('#themeGroup')) {
-  document.querySelectorAll('#themeGroup .stg-btn').forEach(b => {
-    b.onclick = () => applyTheme(b.dataset.theme)
-  })
+  for (const b of document.querySelectorAll('#themeGroup .stg-btn')) b.onclick = () => applyTheme(b.dataset.theme)
 }
 applyTheme(getStoredTheme())
 
@@ -3425,9 +3421,7 @@ async function saveSettings() {
   } catch {}
 }
 // Auto-save settings on change
-document.querySelectorAll('#settingsModal input, #settingsModal select').forEach(el => {
-  el.addEventListener('change', saveSettings)
-})
+for (const el of document.querySelectorAll('#settingsModal input, #settingsModal select')) el.addEventListener('change', saveSettings)
 
 // About & settings buttons
 if ($('#aboutBtn')) $('#aboutBtn').onclick = () => {

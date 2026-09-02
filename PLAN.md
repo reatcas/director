@@ -1,3 +1,33 @@
+# Cycle 271 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 271 (no bans — C270 resumed standard rotation)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| quality_tests | 35 | 3 | 0/3 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (at budget) |
+| ux_accessibility | 5 | 0 | SKIP (at budget) |
+| data_db | 5 | 0 | SKIP (at budget) |
+| product | 10 | 0 | SKIP (F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE
+
+## Units
+1. [security] S-140 — preload.js `readFile` subpath `s`: add control-char rejection `/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(s)` before IPC — defense-in-depth matching main.js pattern
+2. [security] S-141 — preload.js `readIterLog` logPath `l`: add control-char rejection `/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(l)` before IPC — mirrors main.js readIterLog handler check
+3. [performance] P-98 — main.js `orchestra:play`: `sortedFocus.forEach(([key, weight]) => {...})` → `for (const [key, weight] of sortedFocus)` — eliminates forEach closure allocation
+4. [backend] B-52 — main.js `orchestra:clearLog`: `iterLogs.slice(0, ...).forEach(f => {...})` → `for (const f of iterLogs.slice(...))` — consistent with B-51 pattern
+5. [frontend] F-49 — renderer.js `updateSmartAuroraColors()`: `strips.forEach(s => {...})` → `for (const s of strips)` — eliminates NodeList forEach
+6. [quality_tests] T-222 — cycle271-coverage.test.js: S-140 readFile subpath control-char check source coverage
+7. [quality_tests] T-223 — cycle271-coverage.test.js: S-141 readIterLog logPath control-char check; P-98 sortedFocus for...of source coverage
+8. [quality_tests] T-224 — cycle271-coverage.test.js: B-52 iterLogs for...of; F-49 updateSmartAuroraColors for...of
+
+---
+
 # Cycle 270 Plan — IMPROVEMENT MODE
 
 ## MIXER BUDGET — Cycle 270 (no bans — C269 broke 7-cycle security/perf/backend/frontend/quality streak)
@@ -925,3 +955,177 @@ Total: 8 units — IMPROVEMENT MODE (F-01 HARNESS-blocked)
 - 4302 tests at cycle open → 4320 at close
 
 ▸ ◼ Cycle 235 cerrado — COMPLIANCE performance:1/1 business_logic:1/1 data_db:1/1 quality_tests:5/5 DRIFT:none TESTS:green
+
+---
+# Cycle 272 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 272 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C270+C271 consecutive) |
+| performance | 10 | 0 | BAN (C270+C271 consecutive) |
+| backend | 5 | 0 | BAN (C270+C271 consecutive) |
+| frontend | 5 | 0 | BAN (C270+C271 consecutive) |
+| quality_tests | 35 | 0 | BAN (C270+C271 consecutive) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (5 banned, 3 active)
+
+## Units
+1. [business_logic] BL-36 — coordination-protocol.js `detectConflicts()`: `Array.from(this.instances.entries())` → for...of accumulate `_dcEntries` — no intermediate spread
+2. [business_logic] BL-37 — coordination-protocol.js `_rebalance()`: `Array.from(this.instances.entries())` → for...of accumulate `_rbEntries`
+3. [business_logic] BL-38 — coordination-protocol.js `getStatus()`: `Object.fromEntries(this.locks)` → explicit for...of `_locksObj` — consistent Map iteration pattern
+4. [ux_accessibility] A-51 — index.html `#rawLogContent` pre: add `tabindex="0"` + `aria-label="Contenido del log completo"` — keyboard-scrollable + sr-announced
+5. [ux_accessibility] A-52 — index.html `#mixerSaved` span: add `role="status" aria-live="polite"` — unused live region activated for sr save confirmation
+6. [ux_accessibility] A-53 — renderer.js `#saveMixer` onclick: activate `#mixerSaved` with '✓ Mezcla guardada' text + auto-hide 2s — pairs with A-52 to give sr users save feedback
+7. [data_db] DD-05 — main.js line 1648: `_anFiles.slice(...).forEach(f => ...)` → `for (const f of _anFiles.slice(...))` — analysis file prune for...of
+8. [data_db] DD-06 — main.js `_sortedJson` helper: `.sort().map(k => [k,o[k]])` → for...of `_sjArr` accumulation — consistent serialization pattern
+
+---
+# Cycle 273 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 273 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (budget trim) |
+| ux_accessibility | 5 | 0 | SKIP (budget trim) |
+| data_db | 5 | 0 | SKIP (budget trim) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (no bans; C272 broke previous streak)
+
+## Units
+1. [security] S-142 — preload.js lifecycleAdd: add /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(l) control-char check on label l (same pattern as S-140/S-141)
+2. [security] S-143 — preload.js lifecycleAdd: add same control-char check on message m
+3. [performance] P-99 — renderer.js activateMixerStand(): nested .forEach(el) + .forEach(s) → for...of eliminating closure allocations on hot mixer path
+4. [backend] B-53 — main.js orchestra:tail: .map(l => ...) line-cap chain → for...of _cappedLines accumulation
+5. [frontend] F-50 — renderer.js #saveMixer onclick: querySelectorAll...forEach(i => {...}) → for...of
+6. [quality_tests] T-228 — cycle273-coverage.test.js: S-142/S-143 label+message control-char check in preload
+7. [quality_tests] T-229 — cycle273-coverage.test.js: P-99 activateMixerStand for-of; F-50 saveMixer for-of in renderer
+8. [quality_tests] T-230 — cycle273-coverage.test.js: B-53 tail _cappedLines for-of in main
+
+---
+# Cycle 274 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 274 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (budget trim) |
+| ux_accessibility | 5 | 0 | SKIP (budget trim) |
+| data_db | 5 | 0 | SKIP (budget trim) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C273 streak=1, no bans)
+
+## Units
+1. [security] S-144 — preload.js atrilesSave: add /[\x00-\x1F\x7F]/.test(el.name) control-char check on atril names (UI-displayed strings)
+2. [security] S-145 — preload.js notesWrite: add /\x00/.test(c) null-byte guard on notes content before file write
+3. [performance] P-100 — renderer.js updateMixerGraph(): .forEach(s => {...}) → for...of eliminating closure on mixer graph hot path
+4. [backend] B-54 — main.js allowedDirs: .map(p => p.path).filter(Boolean) → for...of _allowedDirs accumulation in protocol handler
+5. [frontend] F-51 — renderer.js renderBpModules(): two forEach (bp-mod-name inputs + bp-mod-del buttons) → for...of
+6. [quality_tests] T-231 — cycle274-coverage.test.js: S-144 atrilesSave name control-char; S-145 notesWrite null-byte
+7. [quality_tests] T-232 — cycle274-coverage.test.js: P-100 updateMixerGraph for-of; F-51 renderBpModules for-of
+8. [quality_tests] T-233 — cycle274-coverage.test.js: B-54 allowedDirs for-of in main
+
+---
+# Cycle 275 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 275 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C273+C274 consecutive) |
+| performance | 10 | 0 | BAN (C273+C274 consecutive) |
+| backend | 5 | 0 | BAN (C273+C274 consecutive) |
+| frontend | 5 | 0 | BAN (C273+C274 consecutive) |
+| quality_tests | 35 | 0 | BAN (C273+C274 consecutive) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (5 banned; BL/UX/DD available)
+
+## Units
+1. [business_logic] BL-39 — coordination-protocol.js persistTelemetry(): hist.splice(0, hist.length-300) → hist = hist.slice(-300) — eliminates in-place mutation
+2. [business_logic] BL-40 — resource-scheduler.js getActiveDirectories(): Array.from(this.allocations.keys()) → for...of _ad accumulation
+3. [business_logic] BL-41 — context-protocol.js _estimateTokens(): (text.match(/^#+\s/gm) || []).length → (text.match(/^#+\s/gm) ?? []).length — nullish coalescing
+4. [ux_accessibility] A-54 — renderer.js loadKnowledge(): 3× _knBtns.forEach(b => ...) → for...of (manages aria-pressed + disabled)
+5. [ux_accessibility] A-55 — renderer.js switchTab(): 2× querySelectorAll.forEach → for...of (manages aria-selected + aria-hidden)
+6. [ux_accessibility] A-56 — renderer.js cmd palette Tab nav: _cpItems.forEach((el,i) => ...) → indexed for loop (manages aria-selected)
+7. [data_db] DD-07 — context-protocol.js _estimateTokens(): (text.match(/\n/g) || []).length → text.split('\n').length - 1 (no intermediate match array)
+8. [data_db] DD-08 — context-protocol.js _splitSections(): titleCount.get(rawTitle) || 0 → titleCount.get(rawTitle) ?? 0 (semantic correctness for zero counts)
+
+---
+# Cycle 276 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 276 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (budget trim) |
+| ux_accessibility | 5 | 0 | SKIP (budget trim) |
+| data_db | 5 | 0 | SKIP (budget trim) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C275 broke streak; all available)
+
+## Units
+1. [security] S-146 — preload.js atrilesSave: add /[\x00-\x1F\x7F]/.test(el.description) control-char check on description
+2. [security] S-147 — preload.js atrilesSave: add /[\x00-\x1F\x7F]/.test(el.icon) + /.test(el.color) control-char checks
+3. [performance] P-101 — renderer.js mixer-tab keyboard nav: Array.from(querySelectorAll) → spread [...] for tab array; indexOf → manual for loop
+4. [backend] B-55 — main.js _knownPathsSet: new Set(_rpData.map(p => p.path)) → for...of Set.add accumulation
+5. [frontend] F-52 — renderer.js renderCmdResults(): res.querySelectorAll('.cmd-item').forEach((el,i) => ...) → indexed for loop
+6. [quality_tests] T-237 — cycle276-coverage.test.js: S-146/S-147 atrilesSave description/icon/color control-char
+7. [quality_tests] T-238 — cycle276-coverage.test.js: P-101 mixer-tab spread + B-55 _knownPathsSet for-of
+8. [quality_tests] T-239 — cycle276-coverage.test.js: F-52 renderCmdResults indexed for loop
+
+---
+# Cycle 277 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 277 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (budget trim) |
+| ux_accessibility | 5 | 0 | SKIP (budget trim) |
+| data_db | 5 | 0 | SKIP (budget trim) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C276 streak=1; all available)
+
+## Units
+1. [security] S-148 — main.js atriles:save: add explicit color control-char check after icon check (line 2051); matches icon check pattern
+2. [security] S-149 — main.js atriles:list: extend filter to also reject entries where description/icon/color contain control chars (defense against tampered disk JSON)
+3. [performance] P-102 — renderer.js applyTheme()+themeGroup init: two .forEach(b=>{}) → for...of (two occurrences at lines 3339+3355)
+4. [backend] B-56 — main.js repertoire:list: cachedProjects().map(p=>({...p,...projectInfo(p.path)})) → for...of _rlProjs accumulation
+5. [frontend] F-53 — renderer.js auto-save settings: querySelectorAll('#settingsModal input,...').forEach(el=>{}) → for...of
+6. [quality_tests] T-240 — cycle277-coverage.test.js: S-148 atriles:save color check; S-149 atriles:list description/icon/color filter
+7. [quality_tests] T-241 — cycle277-coverage.test.js: P-102 themeGroup for-of; F-53 settingsModal for-of
+8. [quality_tests] T-242 — cycle277-coverage.test.js: B-56 repertoire:list for-of accumulation
