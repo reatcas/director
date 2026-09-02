@@ -1767,3 +1767,32 @@ Total: 8 units — IMPROVEMENT MODE (streak=1)
 6. [quality_tests] T-282 — cycle299-coverage.test.js: S-176 session-summary _ssLines strip; S-177 compliance _mcLines strip.
 7. [quality_tests] T-283 — cycle299-coverage.test.js: P-116 _ribParts for-of; B-70 _ciParts indexed for-loop.
 8. [quality_tests] T-284 — cycle299-coverage.test.js: F-67 _optParts and _lcParts for-of.
+
+---
+# Cycle 300 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 300 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (BL/UX/DD next C301 — streak=2 after C299+C300) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=2 → C301 must be BL/UX/DD)
+
+## Units
+1. [security] S-178 — main.js orchestra:analyze L1636: _orchestraReport.split('\n').slice(-150).join('\n') → for-of IIFE with ctrl-char strip per line.
+2. [security] S-179 — main.js orchestra:analyze L1638,1640: read('ROADMAP.md') and read('PENDING.md') raw content → add narrow ctrl-char strip before || fallback.
+3. [performance] P-117 — renderer.js L336 initials function: .map(w => w[0]).join('') → for-of push + join. Eliminates intermediate map array.
+4. [backend] B-71 — main.js orchestra:analyze L1643,1646: PLAN.md and orchestra.log reads → for-of IIFE with ctrl-char strip per line.
+5. [frontend] F-68 — mixer-chart.js L43+45: e.focus[cat]||0 → ??0; lastVal = ...||0 → ??0. mixer-graph.js L247+264: category||HUB_ID → ??HUB_ID; _activeCategory||HUB_ID → ??HUB_ID.
+6. [quality_tests] T-285 — cycle300-coverage.test.js: S-178 _orParts ctrl-char strip; S-179 ROADMAP/PENDING strip.
+7. [quality_tests] T-286 — cycle300-coverage.test.js: P-117 initials for-of; B-71 PLAN/log for-of strip.
+8. [quality_tests] T-287 — cycle300-coverage.test.js: F-68 ?? batch in mixer-chart+mixer-graph.

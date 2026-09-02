@@ -40,9 +40,9 @@
     const legend = []
     for (const cat of cats) {
       const color = COLORS[cat] ?? '#888'
-      const _ptParts = []; for (const [i, e] of playEntries.entries()) _ptParts.push(`${xScale(i).toFixed(1)},${yScale(e.focus[cat] || 0).toFixed(1)}`)
+      const _ptParts = []; for (const [i, e] of playEntries.entries()) _ptParts.push(`${xScale(i).toFixed(1)},${yScale(e.focus[cat] ?? 0).toFixed(1)}`)
       lines.push(`<polyline points="${_ptParts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.85"/>`)
-      const lastVal = playEntries[playEntries.length - 1].focus[cat] || 0
+      const lastVal = playEntries[playEntries.length - 1].focus[cat] ?? 0
       if (lastVal > 0) {
         legend.push(`<span class="mh-leg" style="color:${color}">${esc(cat.replace('_', ' '))} ${esc(String(lastVal))}%</span>`)
       }

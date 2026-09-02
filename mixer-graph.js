@@ -243,7 +243,7 @@ window.mixerGraph = (() => {
       if (typeof category !== 'string' || category.length > 64) category = null
     }
 
-    const targetId = cfg.target === 'hub' ? HUB_ID : (category || HUB_ID)
+    const targetId = cfg.target === 'hub' ? HUB_ID : (category ?? HUB_ID)
     const pos = nodePos(targetId) || (targetId === HUB_ID ? { x: 0, y: 0 } : null)
     if (!pos) return
 
@@ -261,7 +261,7 @@ window.mixerGraph = (() => {
       _linkFlash = { cat: targetId, strength: 1.0 }
     } else {
       // Hub events flash all active links briefly
-      _linkFlash = { cat: _activeCategory || HUB_ID, strength: 0.6 }
+      _linkFlash = { cat: _activeCategory ?? HUB_ID, strength: 0.6 }
     }
     _ensureAnimLoop()
   }

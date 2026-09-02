@@ -333,7 +333,7 @@ function setStatus(text) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const initials = n => n.replace(/[^a-zA-Z0-9 ]/g, '').split(/[\s_-]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '♪'
+const initials = n => { const _iParts = []; for (const w of n.replace(/[^a-zA-Z0-9 ]/g, '').split(/[\s_-]+/)) { if (w[0]) _iParts.push(w[0]) }; return _iParts.join('').slice(0, 2).toUpperCase() || '♪' }
 const hue = s => { let h = 0; for (const c of s) h += c.charCodeAt(0); return h % 360 }
 
 function logoHTML(p, sm) {
