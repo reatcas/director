@@ -2744,7 +2744,7 @@ async function loadProcs() {
   list.appendChild(gaugeEl)
 
   for (const p of procs) {
-    const s = PROC_TYPE_STYLE[p.type] || PROC_TYPE_STYLE.claude
+    const s = PROC_TYPE_STYLE[p.type] ?? PROC_TYPE_STYLE.claude
     const row = document.createElement('div')
     row.className = 'proc-row'
     row.setAttribute('role', 'listitem')
@@ -2876,8 +2876,10 @@ function renderBpPhases() {
   if (!el) return
   el.innerHTML = ''
   for (const phase of BP_PHASES) {
-    const questions = BP_QUESTIONS.filter(q => q.phase === phase.id)
-    const answered = questions.filter(q => bpState.answers[q.key] && bpState.answers[q.key].trim()).length
+    const _bpQPhase = []; for (const q of BP_QUESTIONS) { if (q.phase === phase.id) _bpQPhase.push(q) }
+    const questions = _bpQPhase
+    let _bpQAnswered = 0; for (const q of questions) { if (bpState.answers[q.key] && bpState.answers[q.key].trim()) _bpQAnswered++ }
+    const answered = _bpQAnswered
     const total = questions.length
     const pct = total > 0 ? Math.round(answered / total * 100) : 0
     const isCurrent = BP_QUESTIONS[bpState.currentQuestion]?.phase === phase.id
@@ -3510,7 +3512,7 @@ async function renderCmdResults(q) {
   items.push({ type: 'ACTION', label: 'Play / Stop', action: 'toggle' })
   items.push({ type: 'ACTION', label: 'Kill', action: 'kill' })
   items.push({ type: 'ACTION', label: 'Export', action: 'export' })
-  const filtered = q ? items.filter(i => i.label.toLowerCase().includes(q.toLowerCase())) : items
+  let filtered; if (q) { const _cmdFiltered = []; const _qLow = q.toLowerCase(); for (const i of items) { if (i.label.toLowerCase().includes(_qLow)) _cmdFiltered.push(i) }; filtered = _cmdFiltered } else { filtered = items }
   const sliced = filtered.slice(0, 10)
   res.innerHTML = sliced.map((it, i) =>
     `<div class="cmd-item${i === 0 ? ' active' : ''}" id="cmd-item-${i}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`

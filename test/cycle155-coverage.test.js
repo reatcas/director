@@ -67,6 +67,6 @@ describe('atriles:list and lifecycle:list data validation (I-454+I-455)', () => 
   it('lifecycle:list filters events to valid objects with string type', () => {
     const block = mainJs.split("'lifecycle:list'")[1]?.split('\nipcMain')[0] || ''
     expect(block).toContain("typeof e.type === 'string'")
-    expect(block).toContain('events.filter')
+    expect(block).toContain('_llFiltered')
   })
 })

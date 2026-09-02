@@ -666,9 +666,8 @@ function playOrchestra(dir, agent = 'claude') {
   const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')
   
   // Sort focus weights descending
-  const sortedFocus = Object.entries(focus)
-    .filter(([_, w]) => w > 0)
-    .sort((a, b) => b[1] - a[1])
+  const _sfEntries = []; for (const [k, w] of Object.entries(focus)) { if (w > 0) _sfEntries.push([k, w]) }
+  const sortedFocus = _sfEntries.sort((a, b) => b[1] - a[1])
 
   if (sortedFocus.length > 0) {
     const topW = sortedFocus[0][1]
@@ -1479,9 +1478,9 @@ ipcMain.handle('metrics:session-summary', () => {
         if (_ssSt.size > 1_048_576) continue
         let _ssLast = null
         if (_complianceMtimeCache.get(p.path) !== _ssSt.mtimeMs) {
-          const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
-          if (lines.length) {
-            _ssLast = parseComplianceLine(lines[lines.length - 1])
+          const _ssLines = []; for (const l of fs.readFileSync(reportPath, 'utf8').split('\n')) { if (l.includes('COMPLIANCE')) _ssLines.push(l) }
+          if (_ssLines.length) {
+            _ssLast = parseComplianceLine(_ssLines[_ssLines.length - 1])
             if (_ssLast) { if (_worstComplianceCache.size >= 200) _worstComplianceCache.delete(_worstComplianceCache.keys().next().value); _worstComplianceCache.set(p.path, _ssLast) }
             if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(p.path, _ssSt.mtimeMs)
           }
@@ -1706,9 +1705,10 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   let events = []
   try { if (fs.statSync(p).size <= 2_097_152) events = readJSON(p, []) } catch {}
   if (!Array.isArray(events)) events = []
-  events = events.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string')
+  const _llFiltered = []; for (const e of events) { if (e && typeof e === 'object' && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string') _llFiltered.push(e) }
+  events = _llFiltered
   const _llUnfilteredTotal = events.length
-  if (_llBefore || _llType) events = events.filter(e => (!_llBefore || e.ts < _llBefore) && (!_llType || e.type === _llType))
+  if (_llBefore || _llType) { const _llCursorFiltered = []; for (const e of events) { if ((!_llBefore || e.ts < _llBefore) && (!_llType || e.type === _llType)) _llCursorFiltered.push(e) }; events = _llCursorFiltered }
   const _llSlice = events.length > _llLimit ? events.slice(-_llLimit) : events
   const _llEvents = []
   for (const e of _llSlice) { _llEvents.push(Buffer.byteLength(e.message, 'utf8') > 4096 ? { ...e, message: Buffer.from(e.message, 'utf8').slice(0, 4096).toString('utf8') } : e) }
@@ -1878,7 +1878,8 @@ ipcMain.handle('metrics:compliance', (_e, dir) => {
   const lastMtime = _complianceMtimeCache.get(dir)
   if (hit !== null && lastMtime === st.mtimeMs) return hit
   try {
-    const lines = fs.readFileSync(reportPath, 'utf8').split('\n').filter(l => l.includes('COMPLIANCE'))
+    const _mcLines = []; for (const l of fs.readFileSync(reportPath, 'utf8').split('\n')) { if (l.includes('COMPLIANCE')) _mcLines.push(l) }
+    const lines = _mcLines
     if (!lines.length) { if (_complianceMtimeCache.size >= 200) _complianceMtimeCache.delete(_complianceMtimeCache.keys().next().value); _complianceMtimeCache.set(dir, st.mtimeMs); return metricsSet('compliance:' + dir, null, _SLOW_METRICS_TTL) }
     const recent = lines.slice(-10)
     const scores = []; for (const l of recent) { const _p = parseComplianceLine(l); if (_p && _p.score !== null) scores.push(_p.score) }
