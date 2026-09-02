@@ -1203,7 +1203,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
     const _lcClearCutoffISO = _lcCutoff()
     let events = []
     try { if (fs.statSync(lcFile).size <= 2_097_152) events = readJSON(lcFile, []) } catch {}
-    let pruned = events.filter(e => e && typeof e === 'object' && typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.label === 'string' && typeof e.message === 'string')
+    const _lcPruned = []; for (const e of events) { if (e && typeof e === 'object' && typeof e.ts === 'string' && e.ts >= _lcClearCutoffISO && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.label === 'string' && typeof e.message === 'string') _lcPruned.push(e) }
+    let pruned = _lcPruned
     if (pruned.length > 300) pruned = pruned.slice(-300)
     const _prSer = JSON.stringify(pruned)
     if (pruned.length < events.length && _prSer.length <= 2_097_152) writeJSON(lcFile, pruned)
@@ -1410,7 +1411,8 @@ ipcMain.handle('mixer:saved:save', (_e, dir, name, focus) => {
   let mixes = []
   try { if (fs.statSync(p).size <= 512_000) mixes = readJSON(p, []) } catch {}
   if (!Array.isArray(mixes)) mixes = []
-  mixes = mixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object')
+  const _mssFiltered = []; for (const m of mixes) { if (m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object') _mssFiltered.push(m) }
+  mixes = _mssFiltered
   if (mixes.length >= 100) return false
   if (mixes.some(m => m.name.trim().toLowerCase() === name.trim().toLowerCase())) return false
   mixes.push({ id: Date.now().toString(36), name: name.trim(), ts: new Date().toISOString(), focus })
@@ -1678,7 +1680,8 @@ function persistLifecycleEvent(dir, type, label, message) {
     let events = []
     try { if (fs.statSync(file).size <= 2_097_152) events = readJSON(file, []) } catch {}
     const cutoffISO = _lcCutoff()
-    const pruned = events.filter(e => typeof e.ts === 'string' && e.ts >= cutoffISO && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.label === 'string' && typeof e.message === 'string')
+    const _pePruned = []; for (const e of events) { if (typeof e.ts === 'string' && e.ts >= cutoffISO && typeof e.type === 'string' && _LC_TYPES.has(e.type) && typeof e.label === 'string' && typeof e.message === 'string') _pePruned.push(e) }
+    const pruned = _pePruned
     const _evType = typeof type === 'string' && _LC_TYPES.has(type) ? type : null
     if (!_evType) return
     const _evLabel = (typeof label === 'string' ? label : String(label)).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').slice(0, 128)
@@ -1793,7 +1796,8 @@ ipcMain.handle('metrics:context', (_e, dir) => {
   const file = path.join(dir, '.claude', 'telemetry', 'context-metrics.json')
   let hist = []
   try { if (fs.statSync(file).size <= 1_048_576) hist = readJSON(file, []) } catch {}
-  hist = hist.filter(h => h && typeof h === 'object' && (h.ts === undefined || typeof h.ts === 'string'))
+  const _mcContextFiltered = []; for (const h of hist) { if (h && typeof h === 'object' && (h.ts === undefined || typeof h.ts === 'string')) _mcContextFiltered.push(h) }
+  hist = _mcContextFiltered
   const _mcHist = hist.length > 500 ? hist.slice(-500) : hist
   if (_mcHist.length > 0) {
     const last = _mcHist[_mcHist.length - 1]
@@ -2300,7 +2304,7 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
     completeness: Number.isFinite(bp.completeness) ? Math.min(100, Math.max(0, bp.completeness)) : 0,
     sessions: (bp.sessions ?? []).length,
     modules: (bp.modules ?? []).length,
-    answeredFields: Object.keys(a).filter(k => typeof a[k] === 'string' && a[k].trim()).length
+    answeredFields: (() => { let _answeredCount = 0; for (const k of Object.keys(a)) { if (typeof a[k] === 'string' && a[k].trim()) _answeredCount++ }; return _answeredCount })()
   }
   if (_readinessCache.size >= 100) _readinessCache.delete(_readinessCache.keys().next().value); _readinessCache.set(dir, { ts: now, val })
   return val

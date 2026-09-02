@@ -199,7 +199,7 @@ function updateAiControl() {
     codex:  { char: '❂', class: 'openai' },
     aider:  { char: '⚡', class: 'aider' }
   }
-  const icon = AI_ICONS[id] || { char: '✦', class: 'antigravity' }
+  const icon = AI_ICONS[id] ?? { char: '✦', class: 'antigravity' }
   
   if ($('#aiIconMain')) {
     $('#aiIconMain').textContent = icon.char
@@ -2255,7 +2255,7 @@ function updateMetricsDisplay(data) {
     if (tokensEl) { tokensEl.textContent = '—'; tokensEl.className = 'mm-val' }
     if (comprEl) { comprEl.textContent = '—'; comprEl.className = 'mm-val' }
   }
-  updateCompressionPanel(data.context || null)
+  updateCompressionPanel(data.context ?? null)
 
   // Coordination
   if (data.coordination) {
@@ -2270,7 +2270,7 @@ function updateMetricsDisplay(data) {
   }
 
   // Token burn rate (F-19)
-  updateBurnRate(data.claudeUsage || null)
+  updateBurnRate(data.claudeUsage ?? null)
 
   // Claude API Usage
   if (data.claudeUsage) {

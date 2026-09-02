@@ -92,8 +92,8 @@ describe('persistLifecycleEvent pruning filter evicts unknown-type events (DD-01
 
   it('filter evicts events with type not in _LC_TYPES', () => {
     const persistBlock = mainJs.split('function persistLifecycleEvent')[1]?.split('\nfunction')[0] || ''
-    const filterLine = persistBlock.split('\n').find(l => l.includes('events.filter') && l.includes('_LC_TYPES.has')) || ''
-    expect(filterLine.length).toBeGreaterThan(0)
+    expect(persistBlock).toContain('_pePruned')
+    expect(persistBlock).toContain('_LC_TYPES.has')
   })
 })
 

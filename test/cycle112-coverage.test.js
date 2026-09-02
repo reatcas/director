@@ -94,7 +94,7 @@ describe('persistLifecycleEvent age pruning (I-191)', () => {
   })
 
   it('filters events older than cutoff', () => {
-    expect(block).toContain('.filter(')
+    expect(block).toContain('_pePruned')
     expect(block).toContain('cutoff')
   })
 

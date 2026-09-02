@@ -39,7 +39,7 @@ describe('metrics:context history object filter (I-446)', () => {
   const block = mainJs.split("'metrics:context'")[1]?.split('\nipcMain')[0] || ''
 
   it('filters history to only valid objects', () => {
-    expect(block).toMatch(/hist\.filter\(h => h && typeof h === 'object'/)
+    expect(block).toContain('_mcContextFiltered')
   })
 })
 
