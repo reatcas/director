@@ -1208,7 +1208,7 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   // Prune iter-*.log files: keep only newest 200
   try {
     const logDir = path.join(dir, '.claude', 'logs')
-    const iterLogs = fs.readdirSync(logDir).filter(f => f.startsWith('iter-') && f.endsWith('.log'))
+    const iterLogs = []; for (const f of fs.readdirSync(logDir)) { if (f.startsWith('iter-') && f.endsWith('.log')) iterLogs.push(f) }
     if (iterLogs.length > 200) {
       iterLogs.sort()
       for (const f of iterLogs.slice(0, iterLogs.length - 200)) { try { fs.unlinkSync(path.join(logDir, f)) } catch {} }
@@ -1377,15 +1377,16 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   let userMixes = []
   try { if (fs.statSync(p).size <= 512_000) userMixes = readJSON(p, []) } catch {}
   if (!Array.isArray(userMixes)) userMixes = []
-  userMixes = userMixes.filter(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object' && Object.values(m.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100))
+  const _umFiltered = []; for (const m of userMixes) { if (m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object' && Object.values(m.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _umFiltered.push(m) }
+  userMixes = _umFiltered
   if (!_defaultMixesCache) {
     const _dmPath = path.join(orchestraSrc(), '.claude/default-mixes.json')
     _defaultMixesCache = []
     try { if (fs.statSync(_dmPath).size <= 512_000) _defaultMixesCache = readJSON(_dmPath, []) } catch {}
   }
   const existingIds = new Set(); for (const m of userMixes) existingIds.add(m.id)
-  const validDefaults = _defaultMixesCache.filter(p => p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^[0-9a-z_\-]+$/.test(p.id) && p.id.length <= 64 && typeof p.name === 'string' && p.name.length > 0 && p.name.length <= 256 && p.focus && typeof p.focus === 'object' && !Array.isArray(p.focus))
-  const merged = [...validDefaults.filter(p => !existingIds.has(p.id)), ...userMixes]
+  const _vdFiltered = []; for (const p of _defaultMixesCache) { if (p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^[0-9a-z_\-]+$/.test(p.id) && p.id.length <= 64 && typeof p.name === 'string' && p.name.length > 0 && p.name.length <= 256 && p.focus && typeof p.focus === 'object' && !Array.isArray(p.focus) && !existingIds.has(p.id)) _vdFiltered.push(p) }
+  const merged = [..._vdFiltered, ...userMixes]
   const _slResult = merged.slice(0, 200)
   if (_savedMixesCache.size >= 100) _savedMixesCache.delete(_savedMixesCache.keys().next().value)
   _savedMixesCache.set(dir, _slResult)
@@ -1565,12 +1566,12 @@ ipcMain.handle('export:session', async (_e, dir) => {
     project: path.basename(dir),
     projectPath: dir,
     orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) || 'unknown',
-    runStarted: read('.claude/RUN_STARTED').trim() || null,
+    runStarted: read('.claude/RUN_STARTED').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) || null,
     lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string') : [] })(),
     mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return (d && typeof d === 'object' && !Array.isArray(d)) ? d : {} })(),
     mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object' && typeof e.ts === 'string' && typeof e.event === 'string' && e.focus && typeof e.focus === 'object') : [] })(),
     claudeUsage: getClaudeUsage(dir),
-    compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')).slice(-50),
+    compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')).map(l => l.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 512)).slice(-50),
     roadmap: read('ROADMAP.md'),
     plan: read('PLAN.md'),
     pending: read('PENDING.md')

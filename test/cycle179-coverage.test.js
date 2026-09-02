@@ -28,7 +28,7 @@ describe('blueprint:save module features+dependencies control-char guard (S-06)'
 describe('mixer:saved:list _defaultMixesCache type guard (I-537)', () => {
   it('filters _defaultMixesCache to valid objects with string id before merge', () => {
     const block = mainJs.split("'mixer:saved:list'")[1]?.split('\n})\n')[0] || ''
-    expect(block).toContain('validDefaults')
+    expect(block).toContain('_vdFiltered')
     expect(block).toContain("typeof p.id === 'string'")
   })
 })

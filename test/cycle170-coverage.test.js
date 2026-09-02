@@ -16,7 +16,7 @@ describe('export:session compliance array cap (I-512)', () => {
   const block = mainJs.split("'export:session'")[1]?.split('\n})')[0] || ''
 
   it('caps compliance lines at 50', () => {
-    expect(block).toContain(".filter(l => l.includes('COMPLIANCE')).slice(-50)")
+    expect(block).toContain(".slice(-50)")
   })
 })
 
