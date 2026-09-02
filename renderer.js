@@ -882,7 +882,7 @@ async function loadMixer() {
   updateSmartMixIndicator(!!cfg.smartMix)
   updateSmartModelToggle(!!cfg.smartModel)
 
-  const focus = (cfg && cfg.focus) || {}
+  const focus = cfg?.focus ?? {}
   const box = $('#mixerStrips')
   if (!box) return
   box.innerHTML = ''
@@ -3591,7 +3591,7 @@ document.addEventListener('keydown', (e) => {
     if ($('#aboutModal') && !$('#aboutModal').hidden) { $('#aboutModal').hidden = true; const _abBtn = $('#aboutBtn'); if (_abBtn) _abBtn.focus(); return }
     return
   }
-  const tag = (e.target.tagName || '').toLowerCase()
+  const tag = (e.target.tagName ?? '').toLowerCase()
   if (tag === 'input' || tag === 'textarea' || tag === 'select') return
   if (e.metaKey && e.shiftKey && e.key === 'p') { e.preventDefault(); openCmdPalette(); return }
   if (e.ctrlKey && e.key === 'p') { e.preventDefault(); const b = $('#playBtn'); if (b && current) b.click(); return }

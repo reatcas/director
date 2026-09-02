@@ -36,7 +36,7 @@ describe('mixer:history valid-object filter (I-466)', () => {
 
   it('filters history entries to valid objects', () => {
     expect(block).toContain("typeof h === 'object'")
-    expect(block).toContain('hist.filter')
+    expect(block).toContain('_mhFiltered')
   })
 })
 

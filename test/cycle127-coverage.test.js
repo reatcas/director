@@ -41,7 +41,7 @@ describe('mixer:history size guard (I-307)', () => {
   })
 
   it('still applies limit and slice', () => {
-    expect(block).toContain('hist.slice(-n)')
+    expect(block).toContain('.slice(-n)')
   })
 })
 

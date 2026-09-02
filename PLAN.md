@@ -1390,3 +1390,32 @@ Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
 6. [ux_accessibility] A-68 — renderer.js renderCommitBreakdown: COMMIT_TYPE_COLORS[type] || '#484a56' → ?? '#484a56' (both occurrences; undefined lookup vs falsy)
 7. [data_db] DD-15 — main.js orchestra:analyze: (gitOut || '').trim() → (gitOut ?? '').trim() (null-guard on execFile stdout)
 8. [data_db] DD-16 — renderer.js renderBpQuestion: inp.value = existing || '' → ?? '' (blueprint answer stored as string; undefined→empty)
+
+---
+# Cycle 287 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 287 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (rotation) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C286 broke BL/UX/DD streak; sec/perf fresh streak=1)
+
+## Units
+1. [security] S-160 — main.js export:session: read('.claude/ORCHESTRA_VERSION').trim() || 'unknown' → add .replace(/[\x00-\x1F\x7F]/g,'').slice(0,64) (third unguarded ORCHESTRA_VERSION read)
+2. [security] S-161 — main.js repertoire:add: path.basename(dir) stored as project name without ctrl-char strip → add .replace(/[\x00-\x1F\x7F]/g,'').slice(0,256)
+3. [performance] P-108 — main.js orchestra:analyze: readdirSync(_clDir).filter(...).sort() → for-of accumulation + sort (eliminates intermediate filter array)
+4. [backend] B-62 — main.js mixer:history: hist.filter(h => ...) → for-of + push (eliminates filter intermediate array; same pattern as P-105)
+5. [frontend] F-59 — renderer.js: (cfg && cfg.focus) || {} → cfg?.focus ?? {} (L885); (e.target.tagName || '').toLowerCase() → (e.target.tagName ?? '').toLowerCase() (L3594) — batch
+6. [quality_tests] T-258 — cycle287-coverage.test.js: S-160 export:session ORCHESTRA_VERSION ctrl-char strip
+7. [quality_tests] T-259 — cycle287-coverage.test.js: S-161 repertoire:add basename ctrl-char strip
+8. [quality_tests] T-260 — cycle287-coverage.test.js: P-108 readdirSync for-of; B-62 mixer:history for-of; F-59 cfg?.focus??{} + tagName??''

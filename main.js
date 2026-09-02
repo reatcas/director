@@ -881,7 +881,7 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
   try { if (fs.statSync(store()).size <= 512_000) projects = readJSON(store(), []) } catch {}
   if (!projects.find(p => p.path === dir)) {
     if (projects.length >= 100) return dir
-    projects.push({ id: Date.now().toString(36), name: path.basename(dir), path: dir, added: new Date().toISOString() })
+    projects.push({ id: Date.now().toString(36), name: path.basename(dir).replace(/[\x00-\x1F\x7F]/g, '').slice(0, 256), path: dir, added: new Date().toISOString() })
     const _rapSer = JSON.stringify(projects)
     if (_rapSer.length <= 512_000) writeJSON(store(), JSON.parse(_rapSer))
     invalidateProjectsCache()
@@ -1454,8 +1454,8 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
   const p = path.join(dir, '.claude/mixer-history.json')
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
-  hist = Array.isArray(hist) ? hist.filter(h => h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) : []
-  return metricsSet(_mhKey, hist.slice(-n))
+  const _mhFiltered = []; if (Array.isArray(hist)) { for (const h of hist) { if (h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _mhFiltered.push(h) } }
+  return metricsSet(_mhKey, _mhFiltered.slice(-n))
 })
 
 // ─── Cross-project session summary (F-18) ───────────────────────────────────
@@ -1564,7 +1564,7 @@ ipcMain.handle('export:session', async (_e, dir) => {
     exportedAt: new Date().toISOString(),
     project: path.basename(dir),
     projectPath: dir,
-    orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim() || 'unknown',
+    orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) || 'unknown',
     runStarted: read('.claude/RUN_STARTED').trim() || null,
     lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string') : [] })(),
     mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return (d && typeof d === 'object' && !Array.isArray(d)) ? d : {} })(),
@@ -1646,7 +1646,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         fs.writeFileSync(_anTmp, _reportCapped)
         fs.renameSync(_anTmp, outFile)
         const _clDir = path.join(dir, '.claude')
-        const _anFiles = fs.readdirSync(_clDir).filter(f => /^analysis-\d+\.txt$/.test(f)).sort()
+        const _anFiles = []; for (const f of fs.readdirSync(_clDir)) { if (/^analysis-\d+\.txt$/.test(f)) _anFiles.push(f) }; _anFiles.sort()
         if (_anFiles.length > 10) { for (const f of _anFiles.slice(0, _anFiles.length - 10)) { try { fs.unlinkSync(path.join(_clDir, f)) } catch {} } }
       } catch {}
       const _anResult = { report: _reportCapped, file: outFile }
