@@ -1274,3 +1274,32 @@ Total: 8 units — IMPROVEMENT MODE (C281 broke streak; all available)
 6. [quality_tests] T-249 — cycle282-coverage.test.js: S-154 project ctrl-char; S-155 cmd ctrl-char
 7. [quality_tests] T-250 — cycle282-coverage.test.js: P-105 for-of files; B-59 dailyBudget ??
 8. [quality_tests] T-251 — cycle282-coverage.test.js: F-56 session summary ?? 0
+
+---
+# Cycle 283 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 283 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C280+C282 rotation — force BL/UX/DD) |
+| performance | 10 | 0 | BAN (C280+C282 rotation — force BL/UX/DD) |
+| backend | 5 | 0 | BAN (C280+C282 rotation — force BL/UX/DD) |
+| frontend | 5 | 0 | BAN (C280+C282 rotation — force BL/UX/DD) |
+| quality_tests | 35 | 0 | SKIP (rotation — no quality this cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation cycle)
+
+## Units
+1. [business_logic] BL-48 — renderer.js updateMetrics: data.coordination.activeInstances || 0 → ?? 0 (nullish coalescing; 0 is valid instance count)
+2. [business_logic] BL-49 — renderer.js telemetry render: lastTelemetryUsage.percent || 0 → ?? 0 (0% is valid usage)
+3. [business_logic] BL-50 — renderer.js context breakdown: cats[b].weight || 0, c.normalizedShare || 0, c.contextRetentionFactor || 0 → ?? 0 (batch; 0 values are semantically distinct from null)
+4. [ux_accessibility] A-63 — renderer.js atrile render: a.description || '' → ?? '' (empty string is valid description)
+5. [ux_accessibility] A-64 — renderer.js renderBpQuestion: phase?.color || '#888' → ?? '#888'; phase?.name || '' → ?? '' (fallback only on null/undefined)
+6. [ux_accessibility] A-65 — renderer.js renderBpModules: mod.name || '' → ?? ''; mod.description || '' → ?? '' (null-safe field access)
+7. [data_db] DD-13 — renderer.js log streaming: logCache.get(dir) || '' → ?? '' (Map returns undefined for miss; empty string is valid cached log)
+8. [data_db] DD-14 — renderer.js blueprintReadiness: r.completeness || 0 → ?? 0 (0% completeness is valid)

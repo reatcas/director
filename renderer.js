@@ -137,7 +137,7 @@ function getAllSections() {
     if (!all.find(s => s[0] === a.id)) {
       const iconEntry = ICON_LIBRARY.find(i => i[0] === a.icon)
       const svg = iconEntry ? iconEntry[1] : ICON_LIBRARY[0][1]
-      all.push([a.id, a.name, a.color, svg, a.description || ''])
+      all.push([a.id, a.name, a.color, svg, a.description ?? ''])
     }
   }
   _sectionsCache = all
@@ -2265,7 +2265,7 @@ function updateMetricsDisplay(data) {
   // Coordination
   if (data.coordination) {
     if (instEl) {
-      const n = data.coordination.activeInstances || 0
+      const n = data.coordination.activeInstances ?? 0
       const conflicts = (data.coordination.conflicts ?? []).length
       instEl.textContent = n + (conflicts > 0 ? ` · ${conflicts} conflict${conflicts > 1 ? 's' : ''}` : '')
       instEl.className = 'mm-val' + (conflicts > 0 ? ' warn' : n > 0 ? ' active' : '')
@@ -2308,7 +2308,7 @@ function updateAiUsageDisplay(creditData, telemetryUsage) {
   if (isExhausted) {
     pct = 100
   } else if (id === 'claude' && lastTelemetryUsage) {
-    pct = lastTelemetryUsage.percent || 0
+    pct = lastTelemetryUsage.percent ?? 0
   } else {
     pct = 0 // unlimited or unknown
   }
@@ -2400,13 +2400,13 @@ function updateAllocInspector(allocation) {
   ].join('')
 
   const cats = allocation.categoryBudgets ?? {}
-  const keys = Object.keys(cats).sort((a, b) => (cats[b].weight || 0) - (cats[a].weight || 0))
+  const keys = Object.keys(cats).sort((a, b) => (cats[b].weight ?? 0) - (cats[a].weight ?? 0))
   if (keys.length === 0) { catEl.innerHTML = ''; return }
 
   catEl.innerHTML = keys.map(k => {
     const c = cats[k]
-    const pct = Math.round((c.normalizedShare || 0) * 100)
-    const ret = Math.round((c.contextRetentionFactor || 0) * 100)
+    const pct = Math.round((c.normalizedShare ?? 0) * 100)
+    const ret = Math.round((c.contextRetentionFactor ?? 0) * 100)
     const hot = c.hotPath ? ' <span class="ac-hot">HOT</span>' : ''
     return `<span class="alloc-cat"><span class="ac-name">${esc(k)}</span><span class="ac-val">${esc(String(c.weight))}% · ${esc(String(pct))}% share · ${esc(String(ret))}% ret</span>${hot}</span>`
   }).join('')
@@ -2670,7 +2670,7 @@ window.director.onLine(({ dir, line }) => {
       if (l.trim()) parseLogLine(dir, l)
     }
   } else {
-    const prev = logCache.get(dir) || ''
+    const prev = logCache.get(dir) ?? ''
     const updated = prev + line + '\n'
     logCache.set(dir, updated.length > 200000 ? updated.slice(-150000) : updated)
   }
@@ -2927,7 +2927,7 @@ function bpAskCurrent() {
   }
   const phase = BP_PHASES.find(p => p.id === q.phase)
   const existing = bpState.answers[q.key]
-  let prompt = `<span class="bp-q-phase" style="color:${phase?.color || '#888'}">[${phase?.name || ''}]</span> ${q.q}`
+  let prompt = `<span class="bp-q-phase" style="color:${phase?.color ?? '#888'}">[${phase?.name ?? ''}]</span> ${q.q}`
   if (q.hint) prompt += `<br><span class="bp-q-hint">${q.hint}</span>`
   if (existing) prompt += `<br><span class="bp-q-prev">Previous answer: ${esc(existing)}</span>`
   bpAddMessage('agent', prompt)
@@ -2996,7 +2996,7 @@ async function loadBpReadiness() {
   if (!el) return
   const r = await window.director.blueprintReadiness(current)
   if (!r || !r.hasBlueprint) { el.style.display = 'none'; return }
-  const pct = r.completeness || 0
+  const pct = r.completeness ?? 0
   const color = r.ready ? '#40c840' : pct >= 50 ? '#ddba00' : '#e03030'
   const parts = [`${r.answeredFields} campos`, `${r.modules} módulos`, `${r.sessions} sesiones`]
   el.innerHTML = `<span style="color:${color}">● ${pct}%</span> <span style="color:var(--dim)">${parts.join(' · ')}</span>`
@@ -3085,10 +3085,10 @@ function renderBpModules() {
     card.className = 'bp-mod-card'
     card.innerHTML = `
       <div class="bp-mod-header">
-        <input class="bp-mod-name mono" value="${esc(mod.name || '')}" placeholder="Module name" data-i="${i}" data-field="name">
+        <input class="bp-mod-name mono" value="${esc(mod.name ?? '')}" placeholder="Module name" data-i="${i}" data-field="name">
         <button class="bp-mod-del" data-i="${i}" aria-label="Eliminar módulo">✕</button>
       </div>
-      <textarea class="bp-mod-desc mono" rows="2" placeholder="Description — what it does, responsibilities…" data-i="${i}" data-field="description">${esc(mod.description || '')}</textarea>
+      <textarea class="bp-mod-desc mono" rows="2" placeholder="Description — what it does, responsibilities…" data-i="${i}" data-field="description">${esc(mod.description ?? '')}</textarea>
       <input class="bp-mod-features mono" value="${esc((mod.features ?? []).join(', '))}" placeholder="Features: feat1, feat2, feat3…" data-i="${i}" data-field="features">
       <input class="bp-mod-deps mono" value="${esc((mod.dependencies ?? []).join(', '))}" placeholder="Depends on: module1, module2…" data-i="${i}" data-field="dependencies">
     `
