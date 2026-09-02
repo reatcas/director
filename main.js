@@ -620,7 +620,7 @@ function playOrchestra(dir, agent = 'claude') {
 
   // ── Resource allocation from mixer weights ──────────────────────────────
   const cfg = readOrchJson(dir)
-  const focus = cfg.focus || {}
+  const focus = cfg.focus ?? {}
   const allocation = scheduler.computeAllocation(dir, focus)
 
   // Initial context delta (baseline snapshot)
@@ -691,7 +691,7 @@ function playOrchestra(dir, agent = 'claude') {
         }
       }
       
-      const productW = (focus.product || 0)
+      const productW = (focus.product ?? 0)
       if (productW >= 50) {
         lines.push('')
         lines.push('## PRODUCT MODE ACTIVE')
@@ -700,7 +700,7 @@ function playOrchestra(dir, agent = 'claude') {
         lines.push('Do NOT fill product slots with tests, refactors, or coverage.')
       }
 
-      const qualityW = (focus.quality_tests || 0)
+      const qualityW = (focus.quality_tests ?? 0)
       if (qualityW >= 50) {
         lines.push('')
         lines.push('## QUALITY MODE ACTIVE')

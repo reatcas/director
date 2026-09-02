@@ -454,7 +454,7 @@ async function refresh() {
   }
   ul.onkeydown = e => {
     if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
-    const items = Array.from(ul.querySelectorAll('li'))
+    const items = [...ul.querySelectorAll('li')]
     if (!items.length) return
     e.preventDefault()
     const idx = items.indexOf(document.activeElement)
@@ -2695,14 +2695,8 @@ window.director.onExit(({ dir, code }) => {
 
 // ─── Drag & drop ──────────────────────────────────────────────────────────────
 const dz = $('#dropzone')
-;['dragover', 'dragenter'].forEach(ev => document.addEventListener(ev, e => {
-  e.preventDefault();
-  if (dz) dz.classList.add('hot')
-}))
-;['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => {
-  e.preventDefault();
-  if (dz) dz.classList.remove('hot')
-}))
+for (const ev of ['dragover', 'dragenter']) document.addEventListener(ev, e => { e.preventDefault(); if (dz) dz.classList.add('hot') })
+for (const ev of ['dragleave', 'drop']) document.addEventListener(ev, e => { e.preventDefault(); if (dz) dz.classList.remove('hot') })
 document.addEventListener('drop', async e => {
   const f = e.dataTransfer.files[0]
   if (!f) return
@@ -2765,7 +2759,7 @@ async function loadProcs() {
     `
     list.appendChild(row)
   }
-  list.querySelectorAll('.proc-kill-btn').forEach(btn => {
+  for (const btn of list.querySelectorAll('.proc-kill-btn')) {
     btn.onclick = async () => {
       const pid = parseInt(btn.dataset.pid, 10)
       const sig = btn.dataset.sig
@@ -2775,7 +2769,7 @@ async function loadProcs() {
       showToast(r.ok ? `Signal ${sig} sent to PID ${pid}` : `Error: ${r.err}`)
       setTimeout(loadProcs, 1200)
     }
-  })
+  }
 }
 
 if ($('#procsRefresh')) $('#procsRefresh').onclick = loadProcs
@@ -3177,7 +3171,7 @@ function openAtrilModal() {
       swatch.style.background = c
       swatch.onclick = () => {
         selectedAtrilColor = c
-        colorGrid.querySelectorAll('.atril-color-swatch').forEach(s => s.classList.remove('selected'))
+        for (const s of colorGrid.querySelectorAll('.atril-color-swatch')) s.classList.remove('selected')
         swatch.classList.add('selected')
       }
       colorGrid.appendChild(swatch)
@@ -3194,7 +3188,7 @@ function openAtrilModal() {
       opt.innerHTML = svg
       opt.onclick = () => {
         selectedAtrilIcon = name
-        iconGrid.querySelectorAll('.atril-icon-opt').forEach(o => o.classList.remove('selected'))
+        for (const o of iconGrid.querySelectorAll('.atril-icon-opt')) o.classList.remove('selected')
         opt.classList.add('selected')
       }
       iconGrid.appendChild(opt)
@@ -3552,14 +3546,14 @@ if ($('#cmdInput')) {
     }
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault()
-      const items = Array.from(document.querySelectorAll('#cmdResults .cmd-item'))
+      const items = [...document.querySelectorAll('#cmdResults .cmd-item')]
       if (!items.length) return
       const activeIdx = items.findIndex(el => el.classList.contains('active'))
       const nextIdx = e.key === 'ArrowDown' ? (activeIdx + 1) % items.length : (activeIdx - 1 + items.length) % items.length
-      items.forEach((el, i) => {
-        el.classList.toggle('active', i === nextIdx)
-        el.setAttribute('aria-selected', String(i === nextIdx))
-      })
+      for (let _arI = 0; _arI < items.length; _arI++) {
+        items[_arI].classList.toggle('active', _arI === nextIdx)
+        items[_arI].setAttribute('aria-selected', String(_arI === nextIdx))
+      }
       items[nextIdx].scrollIntoView({ block: 'nearest' })
       e.currentTarget.setAttribute('aria-activedescendant', 'cmd-item-' + nextIdx)
     }

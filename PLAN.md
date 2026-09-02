@@ -1129,3 +1129,32 @@ Total: 8 units — IMPROVEMENT MODE (C276 streak=1; all available)
 6. [quality_tests] T-240 — cycle277-coverage.test.js: S-148 atriles:save color check; S-149 atriles:list description/icon/color filter
 7. [quality_tests] T-241 — cycle277-coverage.test.js: P-102 themeGroup for-of; F-53 settingsModal for-of
 8. [quality_tests] T-242 — cycle277-coverage.test.js: B-56 repertoire:list for-of accumulation
+
+---
+# Cycle 278 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 278 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C276+C277 consecutive) |
+| performance | 10 | 0 | BAN (C276+C277 consecutive) |
+| backend | 5 | 0 | BAN (C276+C277 consecutive) |
+| frontend | 5 | 0 | BAN (C276+C277 consecutive) |
+| quality_tests | 35 | 0 | BAN (C276+C277 consecutive) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (5 banned; BL/UX/DD available)
+
+## Units
+1. [business_logic] BL-42 — main.js line 623: cfg.focus || {} → cfg.focus ?? {} (nullish coalescing; focus=0 should not fall through)
+2. [business_logic] BL-43 — main.js line 694: focus.product || 0 → focus.product ?? 0
+3. [business_logic] BL-44 — main.js line 703: focus.quality_tests || 0 → focus.quality_tests ?? 0
+4. [ux_accessibility] A-57 — renderer.js cmd palette ArrowDown/Up: Array.from(querySelectorAll).forEach((el,i)=>{}) → indexed for loop
+5. [ux_accessibility] A-58 — renderer.js systemProcs: .proc-kill-btn.forEach(btn=>{}) → for...of
+6. [ux_accessibility] A-59 — renderer.js atril modal: colorGrid.querySelectorAll.forEach + iconGrid.querySelectorAll.forEach → for...of
+7. [data_db] DD-09 — renderer.js repertoire keydown: Array.from(ul.querySelectorAll('li')) → spread [...ul.querySelectorAll('li')]
+8. [data_db] DD-10 — renderer.js drag events: two ['dragover','dragenter'].forEach / ['dragleave','drop'].forEach → for...of
