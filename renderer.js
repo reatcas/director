@@ -17,7 +17,8 @@
   window.addEventListener('resize', resize)
   resize()
 
-  const particles = Array.from({ length: N }, () => ({
+  const particles = []
+  for (let _pi = 0; _pi < N; _pi++) particles.push({
     x:   Math.random() * window.innerWidth,
     y:   Math.random() * window.innerHeight,
     vx:  (Math.random() - .5) * .35,
@@ -25,7 +26,7 @@
     r:   Math.random() * 1.6 + .6,
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     pulse: Math.random() * Math.PI * 2
-  }))
+  })
 
   let _particlesRunning = true
 
@@ -3289,7 +3290,7 @@ async function loadNotes() {
   if (!current) return
   const area = $('#notesArea')
   if (!area) return
-  area.value = await window.director.notesRead(current) || ''
+  area.value = await window.director.notesRead(current) ?? ''
   _notesUpdateCount()
 }
 
@@ -3379,7 +3380,7 @@ async function loadSettings() {
   if ($('#stgCaveman')) $('#stgCaveman').checked = cfg.caveman !== false
   if ($('#stgCompactAt')) $('#stgCompactAt').value = cfg.compactAt ?? 50
   if ($('#stgRunMode')) $('#stgRunMode').value = cfg.mode || 'perpetual'
-  if ($('#stgMaxIter')) $('#stgMaxIter').value = cfg.maxIterations || 0
+  if ($('#stgMaxIter')) $('#stgMaxIter').value = cfg.maxIterations ?? 0
   if ($('#stgDefaultAi')) $('#stgDefaultAi').value = cfg.agent || 'claude'
   if ($('#stgAutoSwitch')) $('#stgAutoSwitch').checked = cfg.autoSwitch !== false
   if ($('#stgKeepLogs')) $('#stgKeepLogs').value = cfg.keepLogs ?? 50

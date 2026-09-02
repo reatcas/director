@@ -434,8 +434,8 @@ function copyDir(src, dst) {
       let a = {}, b = {}
       try { if (fs.statSync(d).size <= 512_000) a = readJSON(d, {}) } catch {}
       try { if (fs.statSync(s).size <= 512_000) b = readJSON(s, {}) } catch {}
-      a.hooks = a.hooks || {}
-      for (const k of Object.keys(b.hooks || {})) a.hooks[k] = [...(a.hooks[k] || []), ...b.hooks[k]]
+      a.hooks = a.hooks ?? {}
+      for (const k of Object.keys(b.hooks ?? {})) a.hooks[k] = [...(a.hooks[k] ?? []), ...b.hooks[k]]
       const _cdMergeSer = JSON.stringify(a)
       if (_cdMergeSer.length <= 512_000) writeJSON(d, JSON.parse(_cdMergeSer))
     }
@@ -504,7 +504,7 @@ function startMetricsSampling(dir) {
     scheduler.sampleProcess(dir)
     // Compute context delta
     const cfg = readOrchJson(dir)
-    contextProto.computeDelta(dir, cfg.focus || {})
+    contextProto.computeDelta(dir, cfg.focus ?? {})
     // Push metrics to renderer
     if (win) {
       const resourceMetrics = scheduler.getMetrics(dir)
@@ -1041,7 +1041,8 @@ ipcMain.handle('ai:auth-status', (_e, id) => {
     if (id === 'claude') {
       const out = runCmd('claude', ['auth', 'status'])
       const logged = out.includes('"loggedIn": true') || out.includes('"loggedIn":true')
-      const email = (out.match(/"email":\s*"([^"]+)"/) || [])[1] || null
+      const _emailRaw = (out.match(/"email":\s*"([^"]+)"/) || [])[1] || null
+      const email = _emailRaw ? _emailRaw.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 254) : null
       return { loggedIn: logged, email }
     }
     if (id === 'codex') {
@@ -2209,8 +2210,8 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
   if (modules.length > 0) {
     lines.push('## MODULES')
     for (const mod of modules) {
-      lines.push(`### ${mod.name}`)
-      if (mod.description) lines.push(`${mod.description}`)
+      lines.push(`### ${_bpInline(mod.name)}`)
+      if (mod.description) lines.push(`${_bpInline(mod.description)}`)
       if (mod.features && mod.features.length) {
         lines.push('Features:')
         for (const f of mod.features) lines.push(`- ${f}`)
@@ -2218,7 +2219,7 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
       if (mod.dependencies && mod.dependencies.length) {
         lines.push(`Dependencies: ${mod.dependencies.join(', ')}`)
       }
-      if (mod.notes) lines.push(`Notes: ${mod.notes}`)
+      if (mod.notes) lines.push(`Notes: ${_bpInline(mod.notes)}`)
       lines.push('')
     }
   }

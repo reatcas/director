@@ -1332,3 +1332,32 @@ Total: 8 units — IMPROVEMENT MODE (C283 broke BL/UX/DD streak; sec/perf rotati
 6. [quality_tests] T-252 — cycle284-coverage.test.js: S-156 drift ctrl-char strip in parseComplianceLine
 7. [quality_tests] T-253 — cycle284-coverage.test.js: S-157 ORCHESTRA_VERSION ctrl-char strip in orchestra:analyze report
 8. [quality_tests] T-254 — cycle284-coverage.test.js: P-106 Array.from→spread; B-60 bp.modules/sessions??[]; F-57 focus[k]??0
+
+---
+# Cycle 285 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 285 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (rotation — BL/UX/DD cycle next) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C284 streak=1; C285 streak=2 → C286 must be BL/UX/DD)
+
+## Units
+1. [security] S-158 — main.js blueprint:generate-brief: mod.name/mod.description/mod.notes written to markdown without _bpInline(); can corrupt brief if file has LF/CR in fields (narrow validator allows them). Wrap all three with _bpInline().
+2. [security] S-159 — main.js ai:auth-status: email extracted from 'claude auth status' CLI output not stripped of ctrl-chars or length-capped before returning to renderer. Add .replace(/[\x00-\x1F\x7F]/g,'').slice(0,254).
+3. [performance] P-107 — renderer.js initParticles: Array.from({ length: N }, () => ({...})) → for loop with push (eliminates functional Array.from allocation overhead)
+4. [backend] B-61 — main.js copyDir settings.json merge: a.hooks || {} → ?? {}; b.hooks || {} → ?? {}; a.hooks[k] || [] → ?? []; L507 cfg.focus || {} → ?? {} (batch 4 nullish fixes)
+5. [frontend] F-58 — renderer.js: cfg.maxIterations || 0 → ?? 0 (L3382); notesRead(current) || '' → ?? '' (L3292) — both falsy-fallthrough issues
+6. [quality_tests] T-255 — cycle285-coverage.test.js: S-158 mod.name/description/notes _bpInline wrap in generate-brief
+7. [quality_tests] T-256 — cycle285-coverage.test.js: S-159 email ctrl-char strip in ai:auth-status
+8. [quality_tests] T-257 — cycle285-coverage.test.js: P-107 Array.from→for loop; B-61 hooks??{}; F-58 maxIterations??0 / notesRead??''
