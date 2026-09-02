@@ -396,7 +396,7 @@ function projectInfo(dir) {
     const _stat = f => { try { fs.statSync(path.join(dir, f)); return true } catch { return false } }
     installed = _stat('run.sh') && _stat('.claude/commands/loop.md')
     const vf = path.join(dir, '.claude/ORCHESTRA_VERSION')
-    version = installed ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim() || '1.x') : '1.x' } catch { return '1.x' } })() : null
+    version = installed ? (() => { try { const st = fs.statSync(vf); return st.size <= 1024 ? (fs.readFileSync(vf, 'utf8').trim().replace(/[\x00-\x1F\x7F]/g, '') || '1.x') : '1.x' } catch { return '1.x' } })() : null
     hasLogs = _stat('.claude/logs/orchestra-stdout.log') || _stat('.claude/logs/orchestra.log')
     if (_piStaticCache.size >= 100) _piStaticCache.delete(_piStaticCache.keys().next().value); _piStaticCache.set(dir, { installed, version, hasLogs, ts: now })
   }
@@ -1493,7 +1493,7 @@ ipcMain.handle('metrics:session-summary', () => {
     } catch {}
   }
   const aiCredits = aiState()
-  let creditsRemaining = 0; for (const v of Object.values(aiCredits)) { if (typeof v === 'object' && v !== null && 'credits' in v) creditsRemaining += (v.credits || 0) }; if (creditsRemaining < 0) creditsRemaining = 0
+  let creditsRemaining = 0; for (const v of Object.values(aiCredits)) { if (typeof v === 'object' && v !== null && 'credits' in v) creditsRemaining += (v.credits ?? 0) }; if (creditsRemaining < 0) creditsRemaining = 0
   return metricsSet('session-summary', { active, idle, total: projects.length, totalTokens, worstCompliance, creditsRemaining }, _SLOW_METRICS_TTL)
 })
 
@@ -1598,7 +1598,8 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
   if (_anHit && Date.now() - _anHit.ts < _ANALYZE_TTL) return Promise.resolve(_anHit.result)
   return new Promise(resolve => {
     const read = f => { try { const p = path.join(dir, f); if (fs.statSync(p).size > 1_048_576) return ''; return fs.readFileSync(p, 'utf8') } catch { return '' } }
-    const started = read('.claude/RUN_STARTED').trim().slice(0, 64)
+    const _startedRaw = read('.claude/RUN_STARTED').trim().slice(0, 64)
+    const started = /^\d{4}-\d{2}-\d{2}T/.test(_startedRaw) ? _startedRaw : ''
     execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000, maxBuffer: 262_144 }, (gitErr, gitOut) => {
       const commits = gitErr ? [] : (gitOut || '').trim().split('\n').filter(Boolean)
       const cat = {}

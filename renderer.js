@@ -2266,7 +2266,7 @@ function updateMetricsDisplay(data) {
   if (data.coordination) {
     if (instEl) {
       const n = data.coordination.activeInstances || 0
-      const conflicts = (data.coordination.conflicts || []).length
+      const conflicts = (data.coordination.conflicts ?? []).length
       instEl.textContent = n + (conflicts > 0 ? ` · ${conflicts} conflict${conflicts > 1 ? 's' : ''}` : '')
       instEl.className = 'mm-val' + (conflicts > 0 ? ' warn' : n > 0 ? ' active' : '')
     }
@@ -3100,7 +3100,7 @@ function renderBpModules() {
       const i = parseInt(inp.dataset.i, 10)
       const field = inp.dataset.field
       if (field === 'features' || field === 'dependencies') {
-        bpState.modules[i][field] = inp.value.split(',').map(s => s.trim()).filter(Boolean)
+        const _csvParts = inp.value.split(','); const _csvResult = []; for (const s of _csvParts) { const t = s.trim(); if (t) _csvResult.push(t) }; bpState.modules[i][field] = _csvResult
       } else {
         bpState.modules[i][field] = inp.value
       }

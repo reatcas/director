@@ -1187,3 +1187,32 @@ Total: 8 units — IMPROVEMENT MODE (C278 broke streak; all available)
 6. [quality_tests] T-243 — cycle279-coverage.test.js: S-150 cachedProjects name control-char; S-151 parseComplianceLine allowlist
 7. [quality_tests] T-244 — cycle279-coverage.test.js: P-103 modal spread patterns
 8. [quality_tests] T-245 — cycle279-coverage.test.js: B-57 cat[k]??0; F-54 cfg settings ??
+
+---
+# Cycle 280 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 280 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (budget trim) |
+| ux_accessibility | 5 | 0 | SKIP (budget trim) |
+| data_db | 5 | 0 | SKIP (budget trim) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C279 streak=1; all available)
+
+## Units
+1. [security] S-152 — main.js projectInfo(): strip control chars from ORCHESTRA_VERSION file content before returning version string
+2. [security] S-153 — main.js orchestra:analyze: validate started string is ISO format before using as git --since argument
+3. [performance] P-104 — renderer.js renderBpModules(): .split(',').map(s=>s.trim()).filter(Boolean) → for...of accumulation eliminating 2 intermediate arrays
+4. [backend] B-58 — main.js metrics:session-summary: v.credits || 0 → v.credits ?? 0 (nullish coalescing for credit counter)
+5. [frontend] F-55 — renderer.js updateMetrics(): data.coordination.conflicts || [] → data.coordination.conflicts ?? [] (semantic correctness)
+6. [quality_tests] T-246 — cycle280-coverage.test.js: S-152 ORCHESTRA_VERSION strip; S-153 started ISO validation
+7. [quality_tests] T-247 — cycle280-coverage.test.js: P-104 csv for-of; F-55 conflicts ??
+8. [quality_tests] T-248 — cycle280-coverage.test.js: B-58 credits ??
