@@ -198,7 +198,7 @@ window.mixerGraph = (() => {
     if (!window.THREE || !_pulseLayer) return
     const tex = makeGlowTexture(color)
     if (!tex) return
-    for (let i = 0; i < count; i++) {
+    for (const _ of Array.from({length: count})) {
       if (_sparks.length >= _MAX_SPARKS) {
         const old = _sparks.shift()
         _pulseLayer.remove(old.sp); old.mat.dispose()

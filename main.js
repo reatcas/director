@@ -1306,7 +1306,7 @@ ipcMain.handle('mixer:read',  (_e, dir) => {
   let cfg = readOrchJson(dir, null)
   if (cfg && cfg.focus && typeof cfg.focus === 'object') {
     const _mrFocus = {}
-    for (const k of Object.keys(cfg.focus)) { if (_VALID_CATS.has(k) && Number.isFinite(cfg.focus[k])) _mrFocus[k] = cfg.focus[k] }
+    for (const [k, v] of Object.entries(cfg.focus)) { if (_VALID_CATS.has(k) && Number.isFinite(v)) _mrFocus[k] = v }
     cfg = { ...cfg, focus: _mrFocus }
   }
   return cfg
@@ -1382,7 +1382,7 @@ ipcMain.handle('mixer:saved:list', (_e, dir) => {
   let userMixes = []
   try { if (fs.statSync(p).size <= 512_000) userMixes = readJSON(p, []) } catch {}
   if (!Array.isArray(userMixes)) userMixes = []
-  const _umFiltered = []; for (const m of userMixes) { if (m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object' && Object.values(m.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _umFiltered.push(m) }
+  const _umFiltered = []; for (const m of userMixes) { if (m && typeof m === 'object' && !Array.isArray(m) && typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 256 && typeof m.id === 'string' && m.id.length > 0 && m.focus && typeof m.focus === 'object' && Object.values(m.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _umFiltered.push({ ...m, name: m.name.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }
   userMixes = _umFiltered
   if (!_defaultMixesCache) {
     const _dmPath = path.join(orchestraSrc(), '.claude/default-mixes.json')
@@ -1462,7 +1462,7 @@ ipcMain.handle('mixer:history', (_e, dir, limit) => {
   const p = path.join(dir, '.claude/mixer-history.json')
   let hist = []
   try { if (fs.statSync(p).size <= 512_000) hist = readJSON(p, []) } catch {}
-  const _mhFiltered = []; if (Array.isArray(hist)) { for (const h of hist) { if (h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _mhFiltered.push({ ...h, event: h.event.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) } }
+  const _mhFiltered = []; if (Array.isArray(hist)) { for (const h of hist) { if (h && typeof h === 'object' && typeof h.ts === 'string' && typeof h.event === 'string' && h.focus && typeof h.focus === 'object' && Object.values(h.focus).every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100)) _mhFiltered.push({ ...h, ts: h.ts.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''), event: h.event.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) } }
   return metricsSet(_mhKey, _mhFiltered.slice(-n))
 })
 

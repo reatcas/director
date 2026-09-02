@@ -117,7 +117,7 @@ describe('emitSparks() caps _sparks at _MAX_SPARKS (D-01)', () => {
   })
 
   it('cap check is inside the per-spark for loop', () => {
-    const loopIdx = sparksBlock.indexOf('for (let i = 0')
+    const loopIdx = sparksBlock.indexOf('for (const _ of Array.from({length: count})')
     const capIdx  = sparksBlock.indexOf('_sparks.length >= _MAX_SPARKS')
     expect(loopIdx).toBeGreaterThan(-1)
     expect(capIdx).toBeGreaterThan(loopIdx)

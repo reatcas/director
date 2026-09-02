@@ -32,9 +32,10 @@ describe('T-279: S-175 mixer:history strips ctrl-chars from h.event before push'
     expect(block).toContain("h.event.replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '')")
   })
 
-  it('uses spread to copy entry with sanitized event', () => {
+  it('uses spread to copy entry with sanitized fields', () => {
     const block = mainJs.split("'mixer:history'")[1]?.split('\nipcMain')[0] || ''
-    expect(block).toContain('{ ...h, event:')
+    expect(block).toContain('{ ...h, ts:')
+    expect(block).toContain(', event:')
   })
 })
 

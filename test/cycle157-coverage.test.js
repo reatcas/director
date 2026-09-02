@@ -41,7 +41,7 @@ describe('mixer:read focus sanitization (I-462)', () => {
   })
 
   it('guards focus values with Number.isFinite', () => {
-    expect(block).toContain('Number.isFinite(cfg.focus[k])')
+    expect(block).toContain('Number.isFinite(v))')
   })
 })
 

@@ -991,7 +991,7 @@ function activateMixerStand(category) {
     if (!bar) return
     const rect = bar.getBoundingClientRect()
     const stripRect = strip.getBoundingClientRect()
-    for (let i = 0; i < 2; i++) {
+    for (const _ of [0, 1]) {
       const spark = document.createElement('span')
       spark.className = 'stand-spark'
       const x = Math.random() * rect.width
