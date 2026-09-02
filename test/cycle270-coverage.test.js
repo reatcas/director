@@ -56,7 +56,7 @@ describe('T-220: P-97 rebalanceMixer uses for...of strips and indexed for loop f
   })
 
   it('uses indexed for loop for others (no others.forEach)', () => {
-    expect(rendererJs).toContain('for (let _ri = 0; _ri < others.length; _ri++)')
+    expect(rendererJs).toContain('for (const [_ri, o] of others.entries())')
     const block = rendererJs.split('rebalanceMixer')[1]?.split('\n}')[0] || ''
     expect(block).not.toContain('others.forEach')
   })

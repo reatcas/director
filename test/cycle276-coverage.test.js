@@ -59,7 +59,7 @@ describe('T-238: B-55 _knownPathsSet uses for...of instead of .map()', () => {
 describe('T-239: F-52 renderCmdResults uses indexed for loop instead of forEach', () => {
   it('uses _cmdItemEls with indexed for loop', () => {
     expect(rendererJs).toContain('_cmdItemEls')
-    expect(rendererJs).toContain('for (let _ci = 0; _ci < _cmdItemEls.length; _ci++)')
+    expect(rendererJs).toContain('for (const [_ci, el] of _cmdItemEls.entries())')
   })
 
   it('does not use res.querySelectorAll .cmd-item forEach', () => {

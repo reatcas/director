@@ -65,7 +65,7 @@ describe('T-235: A-55 switchTab uses for...of for aria-selected + aria-hidden', 
 
 describe('T-235: A-56 cmd palette Tab uses indexed for loop for aria-selected', () => {
   it('uses indexed for loop with _cpi instead of _cpItems.forEach', () => {
-    expect(rendererJs).toContain('for (let _cpi = 0; _cpi < _cpItems.length; _cpi++)')
+    expect(rendererJs).toContain('for (const [_cpi, el] of _cpItems.entries())')
     expect(rendererJs).not.toContain('_cpItems.forEach((el, i) =>')
   })
 })

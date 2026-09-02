@@ -293,8 +293,7 @@ class CoordinationProtocol {
     const inversePriorities = []
     for (const [, info] of entries) { const inv = 101 - info.priority; totalInverse += inv; inversePriorities.push(inv) }
     totalInverse = totalInverse || 1
-    for (let idx = 0; idx < entries.length; idx++) {
-      const [, info] = entries[idx]
+    for (const [idx, [, info]] of entries.entries()) {
       info.rank = idx + 1
       info.totalInstances = entries.length
       info.resourceShare = Math.round((inversePriorities[idx] / totalInverse) * 1000) / 1000

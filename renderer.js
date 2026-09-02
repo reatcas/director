@@ -1028,21 +1028,18 @@ function normalizeMixerValues(focus, sections) {
   if (total === 0) {
     const each = Math.floor(100 / sections.length)
     const result = {}
-    let i = 0
-    for (const [k] of sections) { result[k] = i === 0 ? 100 - each * (sections.length - 1) : each; i++ }
+    for (const [i, [k]] of sections.entries()) { result[k] = i === 0 ? 100 - each * (sections.length - 1) : each }
     return result
   }
   const result = {}
   let assigned = 0
-  let i = 0
-  for (const [k] of sections) {
+  for (const [i, [k]] of sections.entries()) {
     if (i === sections.length - 1) {
       result[k] = 100 - assigned
     } else {
       result[k] = Math.round(((Number.isFinite(focus[k]) ? focus[k] : 0) / total) * 100)
       assigned += result[k]
     }
-    i++
   }
   return result
 }
@@ -1070,8 +1067,7 @@ function rebalanceMixer(changedKey, newVal) {
 
   // Distribute remaining among others proportionally
   let assigned = 0
-  for (let _ri = 0; _ri < others.length; _ri++) {
-    const o = others[_ri]
+  for (const [_ri, o] of others.entries()) {
     let share
     if (_ri === others.length - 1) {
       share = remaining - assigned
@@ -2277,7 +2273,7 @@ let lastTelemetryUsage = null;
 function updateAiUsageDisplay(creditData, telemetryUsage) {
   if (telemetryUsage !== undefined) lastTelemetryUsage = telemetryUsage;
 
-  const valEl  = _mmAiUsageEl || $('#mmAiUsageVal')
+  const valEl  = _mmAiUsageEl ?? $('#mmAiUsageVal')
   if (!_aiSelectEl) _aiSelectEl = $('#aiSelect')
   if (!_usageBarFillEl) _usageBarFillEl = $('#usageBarFill')
   const barEl  = _usageBarFillEl
@@ -2400,7 +2396,7 @@ let _prevBurnTokens = 0
 let _burnSparkEl = null
 
 function updateBurnRate(usage) {
-  const valEl = _mmBurnEl || $('#mmBurnVal')
+  const valEl = _mmBurnEl ?? $('#mmBurnVal')
   if (!_burnSparkEl) _burnSparkEl = $('#burnSpark')
   const sparkEl = _burnSparkEl
   if (!valEl) return
@@ -2523,7 +2519,7 @@ function renderSparkline(svgEl, scores) {
 }
 
 function updateComplianceDisplay(data) {
-  const el = _mmComplianceEl || $('#mmComplianceVal')
+  const el = _mmComplianceEl ?? $('#mmComplianceVal')
   if (!el) return
   if (!_complianceSparkEl) _complianceSparkEl = $('#complianceSpark')
   const sparkEl = _complianceSparkEl
@@ -2565,7 +2561,7 @@ async function loadCompliance() {
 
 async function loadRoadmapFreshness() {
   if (!current) return
-  const el = _mmRoadmapEl || $('#mmRoadmapVal')
+  const el = _mmRoadmapEl ?? $('#mmRoadmapVal')
   if (!el) return
   const data = await window.director.roadmapFreshness(current)
   const fsEl = $('#featureStrip')
@@ -3055,8 +3051,7 @@ function renderBpModules() {
     list.innerHTML = '<div style="padding:8px 12px;color:var(--dim);font:9px var(--mono)">No modules defined. Add the main project components.</div>'
     return
   }
-  for (let i = 0; i < bpState.modules.length; i++) {
-    const mod = bpState.modules[i]
+  for (const [i, mod] of bpState.modules.entries()) {
     const card = document.createElement('div')
     card.className = 'bp-mod-card'
     card.innerHTML = `
@@ -3489,7 +3484,7 @@ async function renderCmdResults(q) {
   const sliced = filtered.slice(0, 10)
   const _ciParts = []; for (let i = 0; i < sliced.length; i++) { const it = sliced[i]; _ciParts.push(`<div class="cmd-item${i === 0 ? ' active' : ''}" id="cmd-item-${i}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`) }; res.innerHTML = _ciParts.join('')
   const _cmdItemEls = res.querySelectorAll('.cmd-item')
-  for (let _ci = 0; _ci < _cmdItemEls.length; _ci++) { _cmdItemEls[_ci].onclick = () => { executeCmdItem(filtered[_ci]); closeCmdPalette() } }
+  for (const [_ci, el] of _cmdItemEls.entries()) { el.onclick = () => { executeCmdItem(filtered[_ci]); closeCmdPalette() } }
   const inp = $('#cmdInput')
   if (inp) {
     inp.setAttribute('aria-expanded', String(sliced.length > 0))
@@ -3524,9 +3519,9 @@ if ($('#cmdInput')) {
       if (!items.length) return
       const activeIdx = items.findIndex(el => el.classList.contains('active'))
       const nextIdx = e.key === 'ArrowDown' ? (activeIdx + 1) % items.length : (activeIdx - 1 + items.length) % items.length
-      for (let _arI = 0; _arI < items.length; _arI++) {
-        items[_arI].classList.toggle('active', _arI === nextIdx)
-        items[_arI].setAttribute('aria-selected', String(_arI === nextIdx))
+      for (const [_arI, el] of items.entries()) {
+        el.classList.toggle('active', _arI === nextIdx)
+        el.setAttribute('aria-selected', String(_arI === nextIdx))
       }
       items[nextIdx].scrollIntoView({ block: 'nearest' })
       e.currentTarget.setAttribute('aria-activedescendant', 'cmd-item-' + nextIdx)
@@ -3537,7 +3532,7 @@ if ($('#cmdInput')) {
       if (!_cpItems.length) return
       const _cpActive = _cpItems.findIndex(el => el.classList.contains('active'))
       const _cpNext = e.shiftKey ? (_cpActive - 1 + _cpItems.length) % _cpItems.length : (_cpActive + 1) % _cpItems.length
-      for (let _cpi = 0; _cpi < _cpItems.length; _cpi++) { const el = _cpItems[_cpi]; el.classList.toggle('active', _cpi === _cpNext); el.setAttribute('aria-selected', String(_cpi === _cpNext)) }
+      for (const [_cpi, el] of _cpItems.entries()) { el.classList.toggle('active', _cpi === _cpNext); el.setAttribute('aria-selected', String(_cpi === _cpNext)) }
       _cpItems[_cpNext].scrollIntoView({ block: 'nearest' })
       e.currentTarget.setAttribute('aria-activedescendant', 'cmd-item-' + _cpNext)
     }

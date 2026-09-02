@@ -117,13 +117,13 @@ describe('T-185: F-35 addActionEntry uses _logEl cached ref', () => {
 describe('T-185: BL-28 _rebalance for loop replaces forEach', () => {
   it('_rebalance uses for loop instead of forEach', () => {
     const body = coordJs.split('_rebalance() {')[1]?.split('\n  }')[0] || ''
-    expect(body).toContain('for (let idx = 0; idx < entries.length; idx++)')
+    expect(body).toContain('for (const [idx, [, info]] of entries.entries())')
     expect(body).not.toContain('entries.forEach(')
   })
 
   it('_rebalance for loop accesses entries[idx] destructure', () => {
     const body = coordJs.split('_rebalance() {')[1]?.split('\n  }')[0] || ''
-    expect(body).toContain('entries[idx]')
+    expect(body).toContain('entries.entries()')
   })
 })
 

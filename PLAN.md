@@ -1796,3 +1796,32 @@ Total: 8 units — IMPROVEMENT MODE (streak=2 → C301 must be BL/UX/DD)
 6. [quality_tests] T-285 — cycle300-coverage.test.js: S-178 _orParts ctrl-char strip; S-179 ROADMAP/PENDING strip.
 7. [quality_tests] T-286 — cycle300-coverage.test.js: P-117 initials for-of; B-71 PLAN/log for-of strip.
 8. [quality_tests] T-287 — cycle300-coverage.test.js: F-68 ?? batch in mixer-chart+mixer-graph.
+
+---
+# Cycle 301 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 301 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C299+C300 streak=2 → force BL/UX/DD) |
+| performance | 10 | 0 | BAN (streak) |
+| backend | 5 | 0 | BAN (streak) |
+| frontend | 5 | 0 | BAN (streak) |
+| quality_tests | 35 | 0 | SKIP (BL/UX/DD rotation cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
+
+## Units
+1. [business_logic] BL-69 — renderer.js L2280,2403,2526,2568: _mmXxx||$(...) → ??$(...) batch. Cached DOM element `||` → `??`.
+2. [business_logic] BL-70 — renderer.js L1073: for(let _ri=0;_ri<others.length;_ri++) → for(const [_ri,o] of others.entries()). rebalanceMixer proportional loop.
+3. [business_logic] BL-71 — renderer.js L3058: for(let i=0;i<bpState.modules.length;i++) → for(const [i,mod] of bpState.modules.entries()). Blueprint modules render.
+4. [ux_accessibility] A-81 — renderer.js L3527: for(let _arI=0;_arI<items.length;_arI++) → for(const [_arI,el] of items.entries()). ArrowDown/ArrowUp cmd nav.
+5. [ux_accessibility] A-82 — renderer.js L3540: for(let _cpi=0;_cpi<_cpItems.length;_cpi++) → for(const [_cpi,el] of _cpItems.entries()). Tab cmd nav.
+6. [ux_accessibility] A-83 — renderer.js L3492: for(let _ci=0;_ci<_cmdItemEls.length;_ci++) → for(const [_ci,el] of _cmdItemEls.entries()). Cmd onclick handlers.
+7. [data_db] DD-25 — coordination-protocol.js L296: for(let idx=0;idx<entries.length;idx++) → for(const [idx,[,info]] of entries.entries()). Resource share computation.
+8. [data_db] DD-26 — renderer.js normalizeMixerValues L1031+1037: let i=0;i++ counter → sections.entries() in both for-of loops. Mixer weight normalization.
