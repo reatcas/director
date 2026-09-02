@@ -1615,7 +1615,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
       const report = [
         `=== ORCHESTRA ANALYSIS — ${new Date().toISOString()} ===`,
         `Project: ${dir}`,
-        `Orchestra version: ${read('.claude/ORCHESTRA_VERSION').trim() || 'unknown'}`,
+        `Orchestra version: ${read('.claude/ORCHESTRA_VERSION').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) || 'unknown'}`,
         `Run started: ${started || 'unknown'}`,
         `Commits since start: ${commits.length}`,
         `By type: ${JSON.stringify(cat)}`,
@@ -1845,7 +1845,7 @@ function parseComplianceLine(line) {
   const m = line.match(/COMPLIANCE\s+(.+?)(?:\s+DRIFT:(.*?))?(?:\s+TESTS:(\w+))?$/)
   if (!m) return null
   const pairs = m[1].trim().split(/\s+/)
-  const drift = m[2] ? m[2].trim().slice(0, 128) : 'none'
+  const drift = m[2] ? m[2].trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 128) : 'none'
   const tests = m[3] || 'unknown'
   let totalPlanned = 0, totalActual = 0
   const categories = {}
@@ -2133,8 +2133,8 @@ ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
   if (!bp || !bp.answers) return null
 
   const a = bp.answers
-  const modules = bp.modules || []
-  const sessions = bp.sessions || []
+  const modules = bp.modules ?? []
+  const sessions = bp.sessions ?? []
   const ts = new Date().toISOString()
   const _bpInline = s => typeof s === 'string' ? s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').replace(/[\r\n]+/g, ' ').slice(0, 200) : ''
 
@@ -2290,8 +2290,8 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
     missing,
     hasBlueprint: true,
     completeness: Number.isFinite(bp.completeness) ? Math.min(100, Math.max(0, bp.completeness)) : 0,
-    sessions: (bp.sessions || []).length,
-    modules: (bp.modules || []).length,
+    sessions: (bp.sessions ?? []).length,
+    modules: (bp.modules ?? []).length,
     answeredFields: Object.keys(a).filter(k => typeof a[k] === 'string' && a[k].trim()).length
   }
   if (_readinessCache.size >= 100) _readinessCache.delete(_readinessCache.keys().next().value); _readinessCache.set(dir, { ts: now, val })

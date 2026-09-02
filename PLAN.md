@@ -1303,3 +1303,32 @@ Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation cycle)
 6. [ux_accessibility] A-65 — renderer.js renderBpModules: mod.name || '' → ?? ''; mod.description || '' → ?? '' (null-safe field access)
 7. [data_db] DD-13 — renderer.js log streaming: logCache.get(dir) || '' → ?? '' (Map returns undefined for miss; empty string is valid cached log)
 8. [data_db] DD-14 — renderer.js blueprintReadiness: r.completeness || 0 → ?? 0 (0% completeness is valid)
+
+---
+# Cycle 284 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 284 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (rotation — BL/UX/DD cycle was C283) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C283 broke BL/UX/DD streak; sec/perf rotation)
+
+## Units
+1. [security] S-156 — main.js parseComplianceLine: drift field m[2].trim().slice(0,128) → add .replace(/[\x00-\x1F\x7F]/g,'') (ORCHESTRA_REPORT.md is external, untrusted)
+2. [security] S-157 — main.js orchestra:analyze: read('.claude/ORCHESTRA_VERSION').trim() → add .replace(/[\x00-\x1F\x7F]/g,'').slice(0,64) before embedding in analyze report string
+3. [performance] P-106 — renderer.js cmdPalette Tab handler: Array.from(querySelectorAll('#cmdResults .cmd-item')) → [...querySelectorAll(...)] (eliminates Array.from allocation)
+4. [backend] B-60 — main.js blueprint:generate-brief: bp.modules || [] → ?? [] and bp.sessions || [] → ?? []; blueprint:readiness: (bp.sessions||[]).length → (bp.sessions??[]).length; (bp.modules||[]).length → (bp.modules??[]).length (batch)
+5. [frontend] F-57 — renderer.js mixer slider render: focus[k] || 0 → focus[k] ?? 0 (0 is valid mixer weight, not falsy-fallthrough worthy)
+6. [quality_tests] T-252 — cycle284-coverage.test.js: S-156 drift ctrl-char strip in parseComplianceLine
+7. [quality_tests] T-253 — cycle284-coverage.test.js: S-157 ORCHESTRA_VERSION ctrl-char strip in orchestra:analyze report
+8. [quality_tests] T-254 — cycle284-coverage.test.js: P-106 Array.from→spread; B-60 bp.modules/sessions??[]; F-57 focus[k]??0

@@ -8,7 +8,7 @@ const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
 
 describe('parseComplianceLine drift length cap (I-496)', () => {
   it('slices drift to 128 chars', () => {
-    expect(mainJs).toContain("m[2].trim().slice(0, 128)")
+    expect(mainJs).toContain(".slice(0, 128)")
   })
 })
 

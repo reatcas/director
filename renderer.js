@@ -1284,7 +1284,7 @@ function buildMixRibbon(focus) {
   const segments = []
   let total = 0
   for (const [k, , color] of allSecs) {
-    const v = focus[k] || 0
+    const v = focus[k] ?? 0
     if (v > 0) {
       segments.push({ color, value: v })
       total += v
@@ -3559,7 +3559,7 @@ if ($('#cmdInput')) {
     }
     if (e.key === 'Tab') {
       e.preventDefault()
-      const _cpItems = Array.from(document.querySelectorAll('#cmdResults .cmd-item'))
+      const _cpItems = [...document.querySelectorAll('#cmdResults .cmd-item')]
       if (!_cpItems.length) return
       const _cpActive = _cpItems.findIndex(el => el.classList.contains('active'))
       const _cpNext = e.shiftKey ? (_cpActive - 1 + _cpItems.length) % _cpItems.length : (_cpActive + 1) % _cpItems.length
