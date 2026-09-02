@@ -62,8 +62,8 @@ describe('T-283: B-70 renderCmdResults uses _ciParts indexed for-loop instead of
     expect(rendererJs).not.toContain('sliced.map(')
   })
 
-  it('uses indexed for-loop over sliced', () => {
-    expect(rendererJs).toContain('for (let i = 0; i < sliced.length; i++)')
+  it('uses entries() loop over sliced', () => {
+    expect(rendererJs).toContain('for (const [i, it] of sliced.entries())')
   })
 })
 

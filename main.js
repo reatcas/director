@@ -826,7 +826,7 @@ function playOrchestra(dir, agent = 'claude') {
         let _rmStat = null; try { _rmStat = fs.statSync(roadmapPath) } catch {}
         if (_rmStat && _rmStat.size <= 1_048_576) {
           const lines = fs.readFileSync(roadmapPath, 'utf8').split('\n')
-          const nextItem = (lines.find(l => l.trim().startsWith('- [ ]')) || '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+          const nextItem = (lines.find(l => l.trim().startsWith('- [ ]')) ?? '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
           if (nextItem) {
             persistLifecycleEvent(dir, 'directive', 'DIRECTOR', `Siguiente item indicado: ${nextItem}`)
             const directivePath = path.join(dir, '.claude', 'PRODUCT_DIRECTIVE.md')

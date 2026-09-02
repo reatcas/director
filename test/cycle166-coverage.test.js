@@ -35,6 +35,6 @@ describe('orchestra:writeConfig version validation (I-494)', () => {
 
 describe('bp-mod-del aria-label (I-495)', () => {
   it('bp-mod-del button has Spanish aria-label', () => {
-    expect(rendererJs).toContain('aria-label="Eliminar módulo"')
+    expect(rendererJs).toContain('Eliminar módulo')
   })
 })

@@ -3057,12 +3057,12 @@ function renderBpModules() {
     card.className = 'bp-mod-card'
     card.innerHTML = `
       <div class="bp-mod-header">
-        <input class="bp-mod-name mono" value="${esc(mod.name ?? '')}" placeholder="Module name" data-i="${i}" data-field="name">
-        <button class="bp-mod-del" data-i="${i}" aria-label="Eliminar módulo">✕</button>
+        <input class="bp-mod-name mono" value="${esc(mod.name ?? '')}" placeholder="Module name" data-i="${i}" data-field="name" aria-label="Nombre del módulo ${i + 1}">
+        <button class="bp-mod-del" data-i="${i}" aria-label="Eliminar módulo ${i + 1}">✕</button>
       </div>
-      <textarea class="bp-mod-desc mono" rows="2" placeholder="Description — what it does, responsibilities…" data-i="${i}" data-field="description">${esc(mod.description ?? '')}</textarea>
-      <input class="bp-mod-features mono" value="${esc((mod.features ?? []).join(', '))}" placeholder="Features: feat1, feat2, feat3…" data-i="${i}" data-field="features">
-      <input class="bp-mod-deps mono" value="${esc((mod.dependencies ?? []).join(', '))}" placeholder="Depends on: module1, module2…" data-i="${i}" data-field="dependencies">
+      <textarea class="bp-mod-desc mono" rows="2" placeholder="Description — what it does, responsibilities…" data-i="${i}" data-field="description" aria-label="Descripción del módulo ${i + 1}">${esc(mod.description ?? '')}</textarea>
+      <input class="bp-mod-features mono" value="${esc((mod.features ?? []).join(', '))}" placeholder="Features: feat1, feat2, feat3…" data-i="${i}" data-field="features" aria-label="Características del módulo ${i + 1}">
+      <input class="bp-mod-deps mono" value="${esc((mod.dependencies ?? []).join(', '))}" placeholder="Depends on: module1, module2…" data-i="${i}" data-field="dependencies" aria-label="Dependencias del módulo ${i + 1}">
     `
     list.appendChild(card)
   }
@@ -3137,15 +3137,22 @@ function openAtrilModal() {
   const colorGrid = $('#atrilColors')
   if (colorGrid) {
     colorGrid.innerHTML = ''
+    colorGrid.setAttribute('role', 'radiogroup')
+    colorGrid.setAttribute('aria-label', 'Color del stand')
     for (const c of COLOR_PALETTE) {
       const swatch = document.createElement('div')
       swatch.className = 'atril-color-swatch' + (c === selectedAtrilColor ? ' selected' : '')
       swatch.style.background = c
+      swatch.setAttribute('role', 'radio')
+      swatch.setAttribute('tabindex', '0')
+      swatch.setAttribute('aria-label', `Color ${c}`)
+      swatch.setAttribute('aria-checked', String(c === selectedAtrilColor))
       swatch.onclick = () => {
         selectedAtrilColor = c
-        for (const s of colorGrid.querySelectorAll('.atril-color-swatch')) s.classList.remove('selected')
-        swatch.classList.add('selected')
+        for (const s of colorGrid.querySelectorAll('.atril-color-swatch')) { s.classList.remove('selected'); s.setAttribute('aria-checked', 'false') }
+        swatch.classList.add('selected'); swatch.setAttribute('aria-checked', 'true')
       }
+      swatch.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); swatch.click() } }
       colorGrid.appendChild(swatch)
     }
   }
@@ -3154,15 +3161,22 @@ function openAtrilModal() {
   const iconGrid = $('#atrilIcons')
   if (iconGrid) {
     iconGrid.innerHTML = ''
+    iconGrid.setAttribute('role', 'radiogroup')
+    iconGrid.setAttribute('aria-label', 'Ícono del stand')
     for (const [name, svg] of ICON_LIBRARY) {
       const opt = document.createElement('div')
       opt.className = 'atril-icon-opt' + (name === selectedAtrilIcon ? ' selected' : '')
       opt.innerHTML = svg
+      opt.setAttribute('role', 'radio')
+      opt.setAttribute('tabindex', '0')
+      opt.setAttribute('aria-label', name)
+      opt.setAttribute('aria-checked', String(name === selectedAtrilIcon))
       opt.onclick = () => {
         selectedAtrilIcon = name
-        for (const o of iconGrid.querySelectorAll('.atril-icon-opt')) o.classList.remove('selected')
-        opt.classList.add('selected')
+        for (const o of iconGrid.querySelectorAll('.atril-icon-opt')) { o.classList.remove('selected'); o.setAttribute('aria-checked', 'false') }
+        opt.classList.add('selected'); opt.setAttribute('aria-checked', 'true')
       }
+      opt.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); opt.click() } }
       iconGrid.appendChild(opt)
     }
   }
@@ -3483,7 +3497,7 @@ async function renderCmdResults(q) {
   items.push({ type: 'ACTION', label: 'Export', action: 'export' })
   let filtered; if (q) { const _cmdFiltered = []; const _qLow = q.toLowerCase(); for (const i of items) { if (i.label.toLowerCase().includes(_qLow)) _cmdFiltered.push(i) }; filtered = _cmdFiltered } else { filtered = items }
   const sliced = filtered.slice(0, 10)
-  const _ciParts = []; for (let i = 0; i < sliced.length; i++) { const it = sliced[i]; _ciParts.push(`<div class="cmd-item${i === 0 ? ' active' : ''}" id="cmd-item-${i}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`) }; res.innerHTML = _ciParts.join('')
+  const _ciParts = []; for (const [i, it] of sliced.entries()) { _ciParts.push(`<div class="cmd-item${i === 0 ? ' active' : ''}" id="cmd-item-${i}" role="option" aria-selected="${i === 0}" aria-label="${esc(it.label)}${it.running ? ' (en ejecución)' : ''}" data-idx="${i}"><span class="cmd-type">${esc(it.type)}</span><span>${esc(it.label)}${it.running ? ' ●' : ''}</span></div>`) }; res.innerHTML = _ciParts.join('')
   const _cmdItemEls = res.querySelectorAll('.cmd-item')
   for (const [_ci, el] of _cmdItemEls.entries()) { el.onclick = () => { executeCmdItem(filtered[_ci]); closeCmdPalette() } }
   const inp = $('#cmdInput')

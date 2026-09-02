@@ -219,8 +219,7 @@ class CoordinationProtocol {
     if (this._cachedConflicts) return this._cachedConflicts
     if (this.instances.size < 2) return []
 
-    const _dcEntries = []; for (const [d, i] of this.instances) _dcEntries.push([d, i])
-    const entries = _dcEntries
+    const entries = [...this.instances]
     const conflicts = []
 
     for (const [i, [dirA, infoA]] of entries.entries()) {
@@ -281,8 +280,7 @@ class CoordinationProtocol {
   _rebalance() {
     this._cachedConflicts = null
     this._rebalanceCount++
-    const _rbEntries = []; for (const [d, i] of this.instances) _rbEntries.push([d, i])
-    const entries = _rbEntries
+    const entries = [...this.instances]
     if (entries.length <= 1) return
 
     // Sort by priority (ascending = highest priority first)

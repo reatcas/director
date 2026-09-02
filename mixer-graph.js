@@ -244,10 +244,10 @@ window.mixerGraph = (() => {
     }
 
     const targetId = cfg.target === 'hub' ? HUB_ID : (category ?? HUB_ID)
-    const pos = nodePos(targetId) || (targetId === HUB_ID ? { x: 0, y: 0 } : null)
+    const pos = nodePos(targetId) ?? (targetId === HUB_ID ? { x: 0, y: 0 } : null)
     if (!pos) return
 
-    const color = cfg.color || (() => {
+    const color = cfg.color ?? (() => {
       if (targetId === HUB_ID) return HUB_COLOR
       const s = _sectionMap.get(targetId)
       return s ? s[2] : HUB_COLOR

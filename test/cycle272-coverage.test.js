@@ -16,11 +16,11 @@ const rendererJs = readFileSync(join(root, 'renderer.js'), 'utf8')
 const mainJs     = readFileSync(join(root, 'main.js'), 'utf8')
 
 // ─── T-225: BL-36 + BL-37 + BL-38 ───────────────────────────────────────────
-describe('T-225: BL-36 detectConflicts uses for...of _dcEntries', () => {
-  it('builds _dcEntries with for...of instead of Array.from in detectConflicts', () => {
+describe('T-225: BL-36 detectConflicts uses spread instead of _dcEntries push-loop', () => {
+  it('uses [...this.instances] spread in detectConflicts', () => {
     const block = coordJs.split('  detectConflicts() {')[1]?.split('  _rebalance()')[0] || ''
-    expect(block).toContain('_dcEntries')
-    expect(block).toContain('for (const [d, i] of this.instances) _dcEntries.push')
+    expect(block).toContain('[...this.instances]')
+    expect(block).not.toContain('_dcEntries')
   })
 
   it('does not use Array.from in detectConflicts', () => {
@@ -29,11 +29,11 @@ describe('T-225: BL-36 detectConflicts uses for...of _dcEntries', () => {
   })
 })
 
-describe('T-225: BL-37 _rebalance uses for...of _rbEntries', () => {
-  it('builds _rbEntries with for...of instead of Array.from in _rebalance', () => {
+describe('T-225: BL-37 _rebalance uses spread instead of _rbEntries push-loop', () => {
+  it('uses [...this.instances] spread in _rebalance', () => {
     const block = coordJs.split('  _rebalance() {')[1]?.split('  invalidateConflictCache')[0] || ''
-    expect(block).toContain('_rbEntries')
-    expect(block).toContain('for (const [d, i] of this.instances) _rbEntries.push')
+    expect(block).toContain('[...this.instances]')
+    expect(block).not.toContain('_rbEntries')
   })
 
   it('does not use Array.from in _rebalance', () => {

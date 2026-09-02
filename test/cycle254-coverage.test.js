@@ -26,7 +26,7 @@ describe('T-177: P-81 detectConflicts() fast-path when instances.size < 2', () =
   it('fast-path appears before entries accumulation in detectConflicts', () => {
     const body = coordJs.split('detectConflicts() {')[1]?.split('// ─── Dynamic')[0] || ''
     const fastIdx    = body.indexOf('this.instances.size < 2')
-    const entriesIdx = body.indexOf('_dcEntries')
+    const entriesIdx = body.indexOf('[...this.instances]')
     expect(fastIdx).toBeGreaterThan(-1)
     expect(entriesIdx).toBeGreaterThan(-1)
     expect(fastIdx).toBeLessThan(entriesIdx)

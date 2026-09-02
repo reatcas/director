@@ -449,7 +449,7 @@ describe('mixer-graph.js — pulse() guards', () => {
   })
 
   it('defaults target position to origin for hub', () => {
-    expect(graphJs).toContain("|| (targetId === HUB_ID ? { x: 0, y: 0 } : null)")
+    expect(graphJs).toContain("?? (targetId === HUB_ID ? { x: 0, y: 0 } : null)")
   })
 })
 
