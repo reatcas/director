@@ -973,8 +973,8 @@ function nextAvailableAi(state, currentAgent) {
   const providers = Object.keys(AI_DEFAULTS)
   const idx = providers.indexOf(currentAgent)
   const start = idx >= 0 ? idx : -1
-  for (let offset = 1; offset <= providers.length; offset++) {
-    const candidate = providers[(start + offset + providers.length) % providers.length]
+  const _rotated = [...providers.slice(start + 1), ...providers.slice(0, start + 1)]
+  for (const candidate of _rotated) {
     if (state[candidate] && state[candidate].credits > 0) return candidate
   }
   return null
@@ -1579,9 +1579,9 @@ ipcMain.handle('export:session', async (_e, dir) => {
     mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; if (!Array.isArray(d)) return []; const _expMhFiltered = []; for (const e of d) { if (e && typeof e === 'object' && typeof e.ts === 'string' && typeof e.event === 'string' && e.focus && typeof e.focus === 'object') _expMhFiltered.push({ ...e, event: e.event.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }; return _expMhFiltered })(),
     claudeUsage: getClaudeUsage(dir),
     compliance: (() => { const _compFiltered = []; for (const l of read('ORCHESTRA_REPORT.md').split('\n')) { if (l.includes('COMPLIANCE')) _compFiltered.push(l.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 512)) }; return _compFiltered.slice(-50) })(),
-    roadmap: read('ROADMAP.md'),
-    plan: read('PLAN.md'),
-    pending: read('PENDING.md')
+    roadmap: read('ROADMAP.md').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''),
+    plan: read('PLAN.md').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''),
+    pending: read('PENDING.md').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
   }
   const serialized = JSON.stringify(snapshot, null, 2)
   if (serialized.length > 10_485_760) return { ok: false, err: 'Export too large (>10MB)' }
@@ -1646,7 +1646,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         (() => { const _lgParts = []; for (const l of read('.claude/logs/orchestra.log').split('\n').slice(-60)) _lgParts.push(l.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')); return _lgParts.join('\n') })(),
         ``,
         `--- mixer-history.json ---`,
-        read('.claude/mixer-history.json') || '(no history)'
+        read('.claude/mixer-history.json').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') || '(no history)'
       ].join('\n')
       const outFile = path.join(dir, '.claude', `analysis-${Date.now()}.txt`)
       const _reportCapped = report.length > 4_194_304 ? report.slice(0, 4_194_304) : report

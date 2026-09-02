@@ -347,7 +347,7 @@ describe('mixer-graph.js — destroy() cleanup', () => {
   })
 
   it('disposes glowCache textures', () => {
-    expect(graphJs).toContain('glowCache.forEach(t => t.dispose && t.dispose())')
+    expect(graphJs).toContain('for (const t of glowCache) { if (t.dispose) t.dispose() }')
     expect(graphJs).toContain('glowCache.clear()')
   })
 

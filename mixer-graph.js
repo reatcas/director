@@ -464,7 +464,7 @@ window.mixerGraph = (() => {
       if (_container) _container.innerHTML = ''
       graph = null
     }
-    glowCache.forEach(t => t.dispose && t.dispose())
+    for (const t of glowCache) { if (t.dispose) t.dispose() }
     glowCache.clear()
     _pulseLayer = null; _gData = null; _mounted = false
     _activeCategory = null; _recentPair = []

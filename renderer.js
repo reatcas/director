@@ -38,17 +38,18 @@
       if (p.x < 0 || p.x > canvas.width)  p.vx *= -1
       if (p.y < 0 || p.y > canvas.height) p.vy *= -1
     }
-    for (let i = 0; i < N; i++) {
-      for (let j = i + 1; j < N; j++) {
-        const dx = particles[i].x - particles[j].x
-        const dy = particles[i].y - particles[j].y
+    for (const [i, pi] of particles.entries()) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const pj = particles[j]
+        const dx = pi.x - pj.x
+        const dy = pi.y - pj.y
         const d  = Math.sqrt(dx * dx + dy * dy)
         if (d > MAX_DIST) continue
         const alpha = (1 - d / MAX_DIST) * .18
         ctx.beginPath()
-        ctx.moveTo(particles[i].x, particles[i].y)
-        ctx.lineTo(particles[j].x, particles[j].y)
-        ctx.strokeStyle = particles[i].color + Math.round(alpha * 255).toString(16).padStart(2, '0')
+        ctx.moveTo(pi.x, pi.y)
+        ctx.lineTo(pj.x, pj.y)
+        ctx.strokeStyle = pi.color + Math.round(alpha * 255).toString(16).padStart(2, '0')
         ctx.lineWidth = .5
         ctx.stroke()
       }

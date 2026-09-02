@@ -295,8 +295,9 @@ describe('nextAvailableAi — round-robin provider selection', () => {
     expect(body).toContain('indexOf(currentAgent)')
   })
 
-  it('uses modular arithmetic for round-robin', () => {
-    expect(body).toContain('% providers.length')
+  it('uses rotated slice for round-robin', () => {
+    expect(body).toContain('_rotated')
+    expect(body).toContain('providers.slice(start + 1)')
   })
 
   it('checks credits > 0 for candidate', () => {
@@ -307,8 +308,8 @@ describe('nextAvailableAi — round-robin provider selection', () => {
     expect(body).toContain('return null')
   })
 
-  it('skips current agent (offset starts at 1)', () => {
-    expect(body).toContain('offset = 1')
+  it('skips current agent via rotated slice starting at start+1', () => {
+    expect(body).toContain('start + 1')
   })
 })
 
