@@ -219,7 +219,8 @@ class CoordinationProtocol {
     if (this._cachedConflicts) return this._cachedConflicts
     if (this.instances.size < 2) return []
 
-    const entries = Array.from(this.instances.entries())
+    const _dcEntries = []; for (const [d, i] of this.instances) _dcEntries.push([d, i])
+    const entries = _dcEntries
     const conflicts = []
 
     for (let i = 0; i < entries.length; i++) {
@@ -281,7 +282,8 @@ class CoordinationProtocol {
   _rebalance() {
     this._cachedConflicts = null
     this._rebalanceCount++
-    const entries = Array.from(this.instances.entries())
+    const _rbEntries = []; for (const [d, i] of this.instances) _rbEntries.push([d, i])
+    const entries = _rbEntries
     if (entries.length <= 1) return
 
     // Sort by priority (ascending = highest priority first)
@@ -329,7 +331,7 @@ class CoordinationProtocol {
       activeInstances:  this.instances.size,
       instances:        _gsInstObj,
       rebalanceCount:   this._rebalanceCount,
-      activeLocks:             Object.fromEntries(this.locks),
+      activeLocks:             (() => { const _locksObj = {}; for (const [r, l] of this.locks) _locksObj[r] = l; return _locksObj })(),
       conflicts,
       conflictSeveritySummary: _csvSummary,
       recentEvents:            this.events.slice(-20),

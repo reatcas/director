@@ -385,7 +385,7 @@
                 <button id="copyRawBtn" class="ms-copy" aria-label="Copiar todo el log">COPY ALL</button>
                 <button id="selectAllRawBtn" class="ms-copy" aria-label="Seleccionar todo el log">SELECT ALL</button>
               </div>
-              <pre id="rawLogContent"></pre>
+              <pre id="rawLogContent" tabindex="0" aria-label="Contenido del log completo"></pre>
             </div>
           </div>
 
@@ -471,7 +471,7 @@
             <button id="addAtrilBtn" class="tp-action" title="Add custom stand" aria-label="Agregar stand personalizado">+ STAND</button>
             <button id="exportMixesBtn" class="tp-action dim" title="Export all mixes to JSON" aria-label="Exportar mezclas">↥</button>
             <button id="importMixesBtn" class="tp-action dim" title="Import mixes library from JSON" aria-label="Importar mezclas">↧</button>
-            <span id="mixerSaved" class="saved-msg" hidden>✓</span>
+            <span id="mixerSaved" class="saved-msg" role="status" aria-live="polite" hidden>✓</span>
           </div>
         </div>
 

@@ -1284,7 +1284,7 @@ function snapshotMixer(dir, event) {
   const _ssFocus = {}; for (const [k, v] of Object.entries(cfg.focus)) { if (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100) _ssFocus[k] = v }
   if (Object.keys(_ssFocus).length === 0) return
   const _ssLast = hist.length > 0 ? hist[hist.length - 1] : null
-  const _sortedJson = o => JSON.stringify(Object.fromEntries(Object.keys(o).sort().map(k => [k, o[k]])))
+  const _sortedJson = o => { const _sjArr = []; for (const k of Object.keys(o).sort()) _sjArr.push([k, o[k]]); return JSON.stringify(Object.fromEntries(_sjArr)) }
   if (_ssLast && _ssLast.event === _ssEvent && _sortedJson(_ssLast.focus) === _sortedJson(_ssFocus)) return
   hist.push({ ts: new Date().toISOString(), event: _ssEvent, focus: _ssFocus })
   if (hist.length > 100) hist.splice(0, hist.length - 100)
@@ -1645,7 +1645,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
         fs.renameSync(_anTmp, outFile)
         const _clDir = path.join(dir, '.claude')
         const _anFiles = fs.readdirSync(_clDir).filter(f => /^analysis-\d+\.txt$/.test(f)).sort()
-        if (_anFiles.length > 10) _anFiles.slice(0, _anFiles.length - 10).forEach(f => { try { fs.unlinkSync(path.join(_clDir, f)) } catch {} })
+        if (_anFiles.length > 10) { for (const f of _anFiles.slice(0, _anFiles.length - 10)) { try { fs.unlinkSync(path.join(_clDir, f)) } catch {} } }
       } catch {}
       const _anResult = { report: _reportCapped, file: outFile }
       if (_analyzeCache.size >= 100) _analyzeCache.delete(_analyzeCache.keys().next().value); _analyzeCache.set(dir, { result: _anResult, ts: Date.now() })

@@ -1133,6 +1133,8 @@ if ($('#saveMixer')) $('#saveMixer').onclick = async () => {
 
   if (nameInput) nameInput.value = ''
 
+  const _msSaved = $('#mixerSaved')
+  if (_msSaved) { _msSaved.textContent = '✓ Mezcla guardada'; _msSaved.removeAttribute('hidden'); setTimeout(() => { _msSaved.setAttribute('hidden', ''); _msSaved.textContent = '✓' }, 2000) }
   showToast('Mix "' + name + '" saved ✓')
   loadMixes()
 }
