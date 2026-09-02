@@ -286,7 +286,8 @@ class CoordinationProtocol {
     entries.sort((a, b) => a[1].priority - b[1].priority)
 
     let totalInverse = 0
-    const inversePriorities = entries.map(([, info]) => { const inv = 101 - info.priority; totalInverse += inv; return inv })
+    const inversePriorities = []
+    for (const [, info] of entries) { const inv = 101 - info.priority; totalInverse += inv; inversePriorities.push(inv) }
     totalInverse = totalInverse || 1
     for (let idx = 0; idx < entries.length; idx++) {
       const [, info] = entries[idx]

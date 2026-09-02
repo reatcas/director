@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('director', {
   remove:  p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:remove', p) },
   openDir: p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false); return ipcRenderer.invoke('repertoire:open', p) },
   readFile: (p, s) => {
-    if (typeof p !== 'string' || !p) return Promise.resolve('')
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve('')
     if (s !== undefined && (typeof s !== 'string' || s.length > 512)) return Promise.resolve('')
     return ipcRenderer.invoke('repertoire:readFile', p, s)
   },
@@ -86,7 +86,7 @@ contextBridge.exposeInMainWorld('director', {
     return ipcRenderer.invoke('lifecycle:list', p, _llLimit, _llType, _llBefore)
   },
   lifecycleAdd:        (p, t, l, m) => {
-    if (typeof p !== 'string' || !p) return Promise.resolve(false)
+    if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false)
     if (typeof t !== 'string' || t.length > 64) return Promise.resolve(false)
     if (!new Set(['play','fine','kill','commit','exit','usage_limit','directive','auto_resume','error','note','cycle_close','feature']).has(t)) return Promise.resolve(false)
     if (typeof l !== 'string' || l.length > 128 || l.trim().length === 0) return Promise.resolve(false)

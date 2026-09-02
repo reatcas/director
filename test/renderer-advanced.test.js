@@ -236,7 +236,7 @@ describe('renderCommitBreakdown — stacked bar chart (F-10)', () => {
   })
 
   it('calculates total across categories', () => {
-    expect(body).toContain('reduce((a, b) => a + b, 0)')
+    expect(body).toContain('for (const v of Object.values(cat)) total += v')
   })
 
   it('sorts categories by count descending', () => {

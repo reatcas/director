@@ -333,7 +333,7 @@ function setStatus(text) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const initials = n => n.replace(/[^a-zA-Z0-9 ]/g, '').split(/[\s_-]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '♪'
-const hue = s => [...s].reduce((a, c) => a + c.charCodeAt(0), 0) % 360
+const hue = s => { let h = 0; for (const c of s) h += c.charCodeAt(0); return h % 360 }
 
 function logoHTML(p, sm) {
   if (p.logo) {
@@ -817,7 +817,7 @@ function renderCommitBreakdown(report) {
   if (!m) { el.style.display = 'none'; return }
   try {
     const cat = JSON.parse(m[1])
-    const total = Object.values(cat).reduce((a, b) => a + b, 0)
+    let total = 0; for (const v of Object.values(cat)) total += v
     if (total === 0) { el.style.display = 'none'; return }
     const sorted = Object.entries(cat).sort((a, b) => b[1] - a[1])
     let html = '<div style="display:flex;height:16px;border-radius:3px;overflow:hidden;margin-bottom:6px">'
