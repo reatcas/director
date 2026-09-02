@@ -1419,3 +1419,322 @@ Total: 8 units — IMPROVEMENT MODE (C286 broke BL/UX/DD streak; sec/perf fresh 
 6. [quality_tests] T-258 — cycle287-coverage.test.js: S-160 export:session ORCHESTRA_VERSION ctrl-char strip
 7. [quality_tests] T-259 — cycle287-coverage.test.js: S-161 repertoire:add basename ctrl-char strip
 8. [quality_tests] T-260 — cycle287-coverage.test.js: P-108 readdirSync for-of; B-62 mixer:history for-of; F-59 cfg?.focus??{} + tagName??''
+
+---
+# Cycle 288 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 288 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (rotation — BL/UX/DD cycle next) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C287 streak=2 → C289 must be BL/UX/DD)
+
+## Units
+1. [security] S-162 — main.js export:session: compliance lines (from ORCHESTRA_REPORT.md) returned without ctrl-char strip. Map each line through .replace(/[\x00-\x1F\x7F]/g,'').slice(0,512).
+2. [security] S-163 — main.js export:session: runStarted: read('.claude/RUN_STARTED').trim() || null — no ctrl-char strip or length cap. Add .replace(/[\x00-\x1F\x7F]/g,'').slice(0,64).
+3. [performance] P-109 — main.js clearLog prune: readdirSync(logDir).filter(f => f.startsWith('iter-') && f.endsWith('.log')) → for-of accumulation (eliminates intermediate filter array).
+4. [backend] B-63 — main.js mixer:saved:list: two long .filter() chains (userMixes, validDefaults) → for-of + push (eliminates intermediate arrays).
+5. [frontend] F-60 — renderer.js L3044: LC_ICONS[ev.type] || '·' → LC_ICONS[ev.type] ?? '·' (undefined lookup → nullish, not falsy).
+6. [quality_tests] T-261 — cycle288-coverage.test.js: S-162 compliance ctrl-char strip + S-163 runStarted strip in export:session.
+7. [quality_tests] T-262 — cycle288-coverage.test.js: P-109 readdirSync for-of in clearLog prune.
+8. [quality_tests] T-263 — cycle288-coverage.test.js: B-63 mixer:saved:list for-of; F-60 LC_ICONS ?? '·'.
+
+---
+# Cycle 289 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 289 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C287+C288 streak=2 → force BL/UX/DD) |
+| performance | 10 | 0 | BAN (streak) |
+| backend | 5 | 0 | BAN (streak) |
+| frontend | 5 | 0 | BAN (streak) |
+| quality_tests | 35 | 0 | SKIP (BL/UX/DD rotation cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
+
+## Units
+1. [business_logic] BL-57 — main.js lifecycle:list L1709: events type-guard .filter() → for-of + push (_llFiltered). Eliminates intermediate array.
+2. [business_logic] BL-58 — main.js lifecycle:list L1711: conditional cursor/type .filter() → for-of + push (_llCursorFiltered). Combined with BL-57 in single pass where possible.
+3. [business_logic] BL-59 — main.js metrics:session-summary L1482: readFileSync.split('\n').filter(COMPLIANCE) → for-of + push (_ssLines).
+4. [ux_accessibility] A-69 — renderer.js L2747: PROC_TYPE_STYLE[p.type] || PROC_TYPE_STYLE.claude → ?? (undefined dictionary lookup, not falsy guard).
+5. [ux_accessibility] A-70 — renderer.js L2879-2880: updateBpPhases two .filter() calls inside for loop → for-of + push (_bpQPhase, _bpQAnswered) — eliminates two intermediate arrays per phase.
+6. [ux_accessibility] A-71 — renderer.js L3513: items.filter(i => i.label.toLowerCase().includes(q)) → for-of + push (_cmdFiltered) — eliminates intermediate filter array.
+7. [data_db] DD-17 — main.js L670: Object.entries(focus).filter(([_, w]) => w > 0).sort() → for-of accumulate + sort — eliminates filter intermediate array.
+8. [data_db] DD-18 — main.js metrics:compliance L1881: readFileSync.split('\n').filter(COMPLIANCE) → for-of + push (_mcLines).
+
+---
+# Cycle 290 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 290 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (rotation — BL/UX/DD next after C291) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C289 broke BL/UX/DD streak; sec/perf fresh streak=1)
+
+## Units
+1. [security] S-164 — main.js orchestra:analyze L1602: read('.claude/RUN_STARTED').trim().slice(0, 64) missing ctrl-char strip. Add .replace(/[\x00-\x1F\x7F]/g, '') between trim() and slice (same fix as C288/S-163 for export:session).
+2. [security] S-165 — main.js orchestra:readIterLog L1513: content.split('\n').filter(l => l.trim()) → for-of with narrow ctrl-char strip per line ([\x00-\x08\x0B\x0C\x0E-\x1F\x7F]) before returning.
+3. [performance] P-110 — main.js clearLog L1190: readdirSync(claudeDir).filter(f => f.startsWith('analysis-') && f.endsWith('.txt')) → for-of + push (_caFiles). Eliminates intermediate filter array.
+4. [backend] B-64 — main.js repertoire:remove L895: _rrProjects.filter(p => p.path !== dir) → for-of + push (_rrRemaining). Eliminates intermediate filter array.
+5. [frontend] F-61 — renderer.js L1910+1913: two .filter() chains (lines + meaningful) → for-of + push (_rlLines, _rlMeaningful). Eliminates two intermediate arrays in log viewer.
+6. [quality_tests] T-264 — cycle290-coverage.test.js: S-164 orchestra:analyze RUN_STARTED ctrl-char strip; S-165 readIterLog ctrl-char strip.
+7. [quality_tests] T-265 — cycle290-coverage.test.js: P-110 analysis readdirSync for-of; B-64 repertoire:remove for-of.
+8. [quality_tests] T-266 — cycle290-coverage.test.js: F-61 log viewer for-of (_rlLines/_rlMeaningful).
+
+---
+# Cycle 291 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 291 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| quality_tests | 35 | 3 | 0/3 |
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| business_logic | 5 | 0 | SKIP (rotation — BL/UX/DD next C292) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (C290 streak=1 → C291 streak=2 → C292 BL/UX/DD)
+
+## Units
+1. [security] S-166 — main.js persistLifecycleEvent L1681-1682: label/message stored without narrow ctrl-char strip. Apply .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,'') to _evLabel and _evMsgRaw before storage.
+2. [security] S-167 — main.js pollGitCommits L109-117: commit lines (c) from git --oneline passed to webContents.send + persistLifecycleEvent without ctrl-char strip. Apply narrow strip to c before use.
+3. [performance] P-111 — main.js cachedProjects() L233: _rpData.filter(p => ...) → for-of + push (_rpFiltered). Eliminates intermediate filter array on every project list call.
+4. [backend] B-65 — main.js snapshotMixer L1282: hist.filter(h => ...) → for-of + push (_smFiltered). Eliminates intermediate filter array.
+5. [frontend] F-62 — renderer.js L2958: BP_QUESTIONS.filter(q => ...).length in bpUpdateCompleteness → for-of count (_bpAnswered). Eliminates intermediate array.
+6. [quality_tests] T-267 — cycle291-coverage.test.js: S-166 persistLifecycleEvent ctrl-char strip on label/message.
+7. [quality_tests] T-268 — cycle291-coverage.test.js: S-167 newCommits ctrl-char strip; P-111 cachedProjects for-of (_rpFiltered).
+8. [quality_tests] T-269 — cycle291-coverage.test.js: B-65 snapshotMixer for-of (_smFiltered); F-62 bpUpdateCompleteness for-of.
+
+---
+# Cycle 292 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 292 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C290+C291 streak=2 → force BL/UX/DD) |
+| performance | 10 | 0 | BAN (streak) |
+| backend | 5 | 0 | BAN (streak) |
+| frontend | 5 | 0 | BAN (streak) |
+| quality_tests | 35 | 0 | SKIP (BL/UX/DD rotation cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
+
+## Units
+1. [business_logic] BL-60 — main.js clearLog L1206: events.filter(e => ...) → for-of + push (_lcPruned). Eliminates intermediate pruning array.
+2. [business_logic] BL-61 — main.js persistLifecycleEvent L1681: events.filter(e => ...) → for-of + push (_pePruned). Eliminates intermediate pruning array.
+3. [business_logic] BL-62 — main.js metrics:context L1796: hist.filter(h => ...) → for-of + push (_mcContextFiltered). Eliminates intermediate filter array.
+4. [ux_accessibility] A-72 — renderer.js L2258: data.context || null → data.context ?? null (data.context is object or undefined, not falsy primitive).
+5. [ux_accessibility] A-73 — renderer.js L2273: data.claudeUsage || null → data.claudeUsage ?? null (same pattern, metric data object).
+6. [ux_accessibility] A-74 — renderer.js L202: AI_ICONS[id] || {...} → AI_ICONS[id] ?? {...} (dictionary lookup — undefined case, not falsy case).
+7. [data_db] DD-19 — main.js blueprint:readiness L2303: Object.keys(a).filter(k => ...).length → for-of count (_answeredCount). Eliminates intermediate filter array.
+8. [data_db] DD-20 — main.js mixer:saved:save L1413: mixes.filter(m => ...) → for-of + push (_mssFiltered). Eliminates intermediate filter array.
+
+---
+# Cycle 293 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 293 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (BL/UX/DD last C292 → SEC/PERF/BE/FE/QA streak=1) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=1)
+
+## Units
+1. [security] S-168 — main.js L418 startedStr: fs.readFileSync(startFile, 'utf8').trim() fed into new Date() without ctrl-char strip. Add .replace(/[\x00-\x1F\x7F]/g,'') before new Date().
+2. [security] S-169 — main.js L460 getClaudeUsage RUN_STARTED: fs.readFileSync(_rsp, 'utf8').trim() fed into new Date() without ctrl-char strip. Add .replace(/[\x00-\x1F\x7F]/g,'').
+3. [performance] P-112 — main.js L2044 atriles:list: data.filter(a => ...) → for-of + push (_ataFiltered). Eliminates intermediate array on every atriles read.
+4. [backend] B-66 — main.js L1434 mixer:saved:delete: mixes.filter(m => ...) → for-of + push (_msdFiltered). Eliminates intermediate filter array.
+5. [frontend] F-63 — renderer.js L2167: HISTORY_STYLES[ev.type] || {icon:'·',color:'#666'} → ?? (dictionary lookup — undefined case, not falsy case).
+6. [quality_tests] T-270 — cycle293-coverage.test.js: S-168 startedStr strip; S-169 getClaudeUsage strip.
+7. [quality_tests] T-271 — cycle293-coverage.test.js: P-112 atriles:list for-of (_ataFiltered); B-66 mixer:saved:delete for-of (_msdFiltered).
+8. [quality_tests] T-272 — cycle293-coverage.test.js: F-63 HISTORY_STYLES ?? fallback.
+
+---
+# Cycle 294 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 294 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (BL/UX/DD next C295 — streak=2 after C294) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=2 → C295 must be BL/UX/DD)
+
+## Units
+1. [security] S-170 — main.js L1577 export:session lifecycle IIFE: d.filter(e => ...) → _expLcFiltered for-of. Add narrow ctrl-char strip on e.label and e.message in pushed entries.
+2. [security] S-171 — main.js L1579 export:session mixerHistory IIFE: d.filter(e => ...) → _expMhFiltered for-of. Add narrow ctrl-char strip on e.event in pushed entries.
+3. [performance] P-113 — context-protocol.js L69: text.split(/\s+/).filter(Boolean) + separate for-of loop → single for-of with `if (!word) continue` (eliminates intermediate words array).
+4. [backend] B-67 — main.js L1613 orchestra:analyze: commits.filter(Boolean) → _azCommits for-of + push, then replace `commits` reference with `_azCommits`.
+5. [frontend] F-64 — renderer.js L280 STATES[orchestraState] || STATES.idle → ??; L1396 ACTIONS[type] || ACTIONS.started → ??.
+6. [quality_tests] T-273 — cycle294-coverage.test.js: S-170 _expLcFiltered + label/message strip; S-171 _expMhFiltered + event strip.
+7. [quality_tests] T-274 — cycle294-coverage.test.js: P-113 no filter(Boolean) in _estimateTokens; B-67 _azCommits for-of.
+8. [quality_tests] T-275 — cycle294-coverage.test.js: F-64 STATES?? and ACTIONS?? dict lookups.
+
+---
+# Cycle 295 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 295 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C293+C294 streak=2 → force BL/UX/DD) |
+| performance | 10 | 0 | BAN (streak) |
+| backend | 5 | 0 | BAN (streak) |
+| frontend | 5 | 0 | BAN (streak) |
+| quality_tests | 35 | 0 | SKIP (BL/UX/DD rotation cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
+
+## Units
+1. [business_logic] BL-63 — coordination-protocol.js L61-65: allocation.nice||10, avgIntensity||0, memBudgetMB||0, tokenBudget||0, categoryBudgets||{} → all ??.
+2. [business_logic] BL-64 — coordination-protocol.js L101,103,104,231,232: avgIntensity||0, categoryBudgets||{}, totalWeight||0, categoryWeights||{} → all ??.
+3. [business_logic] BL-65 — main.js L109: newCommits split().filter(Boolean).slice(100) → _ncFiltered for-of + push, then slice.
+4. [ux_accessibility] A-75 — context-protocol.js L142,158,199: snapshots.get||{}, _mtimes.get||{}, sections||[] → all ??.
+5. [ux_accessibility] A-76 — context-protocol.js L273,289,299,301,302: deltaHistory.get||[], focusWeights||{}, FILE_CATEGORY_MAP||'product', fw[cat]||0 → all ??.
+6. [ux_accessibility] A-77 — context-protocol.js L341,344,390,393,399: deltaHistory.get||[], _aggRunning.get||{...}, aggregated.get||null → all ??.
+7. [data_db] DD-21 — main.js L1581: export:session compliance filter(l => l.includes('COMPLIANCE')) → _compFiltered for-of + push.
+8. [data_db] DD-22 — resource-scheduler.js L62,239,255,328-333,352: focus||{}, samples.get||[], allocations/baselines/efficiency.get||null → all ??.
+
+---
+# Cycle 296 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 296 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (BL/UX/DD last C295 → SEC/PERF/BE/FE/QA streak=1) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=1)
+
+## Units
+1. [security] S-172 — main.js notes:read L1540: returned data has no ctrl-char strip. Add .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,'') before returning to renderer.
+2. [security] S-173 — main.js orchestra:tail L1267: _cappedLines loop pushes raw lines without ctrl-char strip. Add narrow strip to each line before push.
+3. [performance] P-114 — renderer.js renderSparkline L2527: Math.min(...scores)/Math.max(...scores) spread → for-of accumulator (min/max tracking). Eliminates spread overhead.
+4. [backend] B-68 — mixer-chart.js L22: entries.filter(e => e.event === 'play' && e.focus) → for-of + push (_ecFiltered). Eliminates intermediate filter array.
+5. [frontend] F-65 — mixer-chart.js L42: COLORS[cat] || '#888' → ?? '#888' (dictionary lookup — undefined case). L58: .filter dedup → new Set(). 
+6. [quality_tests] T-276 — cycle296-coverage.test.js: S-172 notes:read ctrl-char strip; S-173 orchestra:tail ctrl-char strip.
+7. [quality_tests] T-277 — cycle296-coverage.test.js: P-114 renderSparkline no spread; B-68 mixer-chart _ecFiltered for-of.
+8. [quality_tests] T-278 — cycle296-coverage.test.js: F-65 COLORS ?? and xLabels Set dedup.
+
+---
+# Cycle 297 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 297 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| security | 20 | 2 | 0/2 |
+| performance | 10 | 1 | 0/1 |
+| backend | 5 | 1 | 0/1 |
+| frontend | 5 | 1 | 0/1 |
+| quality_tests | 35 | 3 | 0/3 |
+| business_logic | 5 | 0 | SKIP (BL/UX/DD next C298 — streak=2 after C293+C294+C296) |
+| ux_accessibility | 5 | 0 | SKIP (rotation) |
+| data_db | 5 | 0 | SKIP (rotation) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (streak=2 → C298 must be BL/UX/DD)
+
+## Units
+1. [security] S-174 — main.js L949 repertoire:readFile: raw readFileSync returned without ctrl-char strip. Add narrow strip .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,'') before return.
+2. [security] S-175 — main.js L1465 mixer:history: h.event string pushed without ctrl-char strip. Add strip on event field in _mhFiltered push.
+3. [performance] P-115 — mixer-graph.js L151: _gData.links.filter(l => !l._cross) → _lgFiltered for-of + push. Eliminates intermediate array.
+4. [backend] B-69 — mixer-graph.js L342 new Map(_sections.map(s=>[s[0],s])) + L346 new Map(_gData.nodes.map(n=>[n.id,n])) → for-of Map.set() building.
+5. [frontend] F-66 — mixer-graph.js L60,62,72,82,256,341,412: node.weight||0, node.color||'#888888', node.color||'#00ffee', node.weight||0, cfg.rings||[], sections||[], focus||{} → all ??.
+6. [quality_tests] T-279 — cycle297-coverage.test.js: S-174 repertoire:readFile strip; S-175 mixer:history event strip.
+7. [quality_tests] T-280 — cycle297-coverage.test.js: P-115 _lgFiltered for-of; B-69 sectionMap/nodeMap for-of.
+8. [quality_tests] T-281 — cycle297-coverage.test.js: F-66 ?? batch in mixer-graph.js.
+
+---
+# Cycle 298 Plan — IMPROVEMENT MODE
+
+## MIXER BUDGET — Cycle 298 (F-01 HARNESS-blocked)
+| Cat | Peso | Units | Estado |
+|-----|------|-------|--------|
+| business_logic | 5 | 3 | 0/3 |
+| ux_accessibility | 5 | 3 | 0/3 |
+| data_db | 5 | 2 | 0/2 |
+| security | 20 | 0 | BAN (C296+C297 streak=2 → force BL/UX/DD) |
+| performance | 10 | 0 | BAN (streak) |
+| backend | 5 | 0 | BAN (streak) |
+| frontend | 5 | 0 | BAN (streak) |
+| quality_tests | 35 | 0 | SKIP (BL/UX/DD rotation cycle) |
+| product | 10 | 0 | SKIP (ROADMAP empty — F-01 HARNESS-blocked) |
+| devops_infra | 0 | 0 | SKIP |
+| i18n | 0 | 0 | SKIP |
+Total: 8 units — IMPROVEMENT MODE (BL/UX/DD rotation)
+
+## Units
+1. [business_logic] BL-66 — renderer.js L895: eliminate stripData intermediate array — allSections.map(→{k,label,color,svg,v}) + for-of stripData → single for-of over allSections with v computed inline.
+2. [business_logic] BL-67 — renderer.js L2401: keys.map(k => {...}).join('') → _catParts for-of push + join. Eliminates intermediate map array.
+3. [business_logic] BL-68 — renderer.js L3506: projList.map(p => ({...})) → _cmdItems for-of push. Eliminates intermediate map array.
+4. [ux_accessibility] A-78 — renderer.js L838: sorted.map(([t,c])=>`${t} ${c}`).join(', ') → _alParts for-of push + join (aria-label string building).
+5. [ux_accessibility] A-79 — renderer.js L1918: meaningful.slice(-3).map(l => l.trim()).join(' · ') → _smParts for-of push + join.
+6. [ux_accessibility] A-80 — renderer.js L2529: scores.map((s,i) => ...).join(' ') → _spParts indexed for-loop push + join (sparkline points).
+7. [data_db] DD-23 — mixer-chart.js L43: playEntries.map((e,i) => ...) → _ptParts for-of entries() push + join (polyline points per category).
+8. [data_db] DD-24 — mixer-chart.js L52: yTicks.map(v=>{...}).join('') + L59: xLabels.map(i=>{...}).join('') → both for-of/indexed push + join (grid + x-axis SVG building).

@@ -40,8 +40,8 @@
     const legend = []
     for (const cat of cats) {
       const color = COLORS[cat] ?? '#888'
-      const points = playEntries.map((e, i) => `${xScale(i).toFixed(1)},${yScale(e.focus[cat] || 0).toFixed(1)}`)
-      lines.push(`<polyline points="${points.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.85"/>`)
+      const _ptParts = []; for (const [i, e] of playEntries.entries()) _ptParts.push(`${xScale(i).toFixed(1)},${yScale(e.focus[cat] || 0).toFixed(1)}`)
+      lines.push(`<polyline points="${_ptParts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.85"/>`)
       const lastVal = playEntries[playEntries.length - 1].focus[cat] || 0
       if (lastVal > 0) {
         legend.push(`<span class="mh-leg" style="color:${color}">${esc(cat.replace('_', ' '))} ${esc(String(lastVal))}%</span>`)
@@ -49,18 +49,11 @@
     }
 
     const yTicks = [0, 25, 50, 75, 100]
-    const grid = yTicks.map(v => {
-      const y = yScale(v).toFixed(1)
-      return `<line x1="${PAD}" y1="${y}" x2="${W - RIGHT}" y2="${y}" stroke="var(--line, rgba(255,255,255,0.06))" stroke-width="0.5"/><text x="${PAD - 4}" y="${y}" text-anchor="end" fill="var(--dim)" font-size="7" dy="2.5">${v}</text>`
-    }).join('')
+    const _gridParts = []; for (const v of yTicks) { const y = yScale(v).toFixed(1); _gridParts.push(`<line x1="${PAD}" y1="${y}" x2="${W - RIGHT}" y2="${y}" stroke="var(--line, rgba(255,255,255,0.06))" stroke-width="0.5"/><text x="${PAD - 4}" y="${y}" text-anchor="end" fill="var(--dim)" font-size="7" dy="2.5">${v}</text>`) }; const grid = _gridParts.join('')
 
     const nEntries = playEntries.length
     const xLabels = [...new Set([0, Math.floor(nEntries / 2), nEntries - 1])]
-    const xAxis = xLabels.map(i => {
-      const d = new Date(playEntries[i].ts)
-      const label = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-      return `<text x="${xScale(i).toFixed(1)}" y="${H - 2}" text-anchor="middle" fill="var(--dim)" font-size="7">${esc(label)}</text>`
-    }).join('')
+    const _xaParts = []; for (const i of xLabels) { const d = new Date(playEntries[i].ts); const label = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; _xaParts.push(`<text x="${xScale(i).toFixed(1)}" y="${H - 2}" text-anchor="middle" fill="var(--dim)" font-size="7">${esc(label)}</text>`) }; const xAxis = _xaParts.join('')
 
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
     svg.innerHTML = grid + xAxis + lines.join('')

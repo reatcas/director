@@ -835,7 +835,7 @@ function renderCommitBreakdown(report) {
     html += '</div>'
     el.innerHTML = html
     el.style.display = ''
-    el.setAttribute('aria-label', 'Distribución de commits por tipo: ' + sorted.map(([t, c]) => `${t} ${c}`).join(', '))
+    const _alParts = []; for (const [t, c] of sorted) _alParts.push(`${t} ${c}`); el.setAttribute('aria-label', 'Distribución de commits por tipo: ' + _alParts.join(', '))
   } catch { el.style.display = 'none' }
 }
 
@@ -892,12 +892,8 @@ async function loadMixer() {
   const normalizedFocus = normalizeMixerValues(focus, allSections)
 
   // Build strips in predefined order (no sorting)
-  const stripData = allSections.map(([k, label, color, svg]) => {
+  for (const [k, label, color, svg] of allSections) {
     const v = normalizedFocus[k] ?? 0
-    return { k, label, color, svg, v }
-  })
-
-  for (const { k, label, color, svg, v } of stripData) {
     const strip = document.createElement('div')
     strip.className = 'strip-h ' + (v > 0 ? 'on' : 'off')
     strip.style.setProperty('--strip-color', color)
@@ -1915,7 +1911,7 @@ async function fetchIterSummary(logPath) {
     if (meaningful.length === 0) return
 
     // Show last meaningful lines as summary
-    const summary = meaningful.slice(-3).map(l => l.trim()).join(' · ')
+    const _smParts = []; for (const l of meaningful.slice(-3)) _smParts.push(l.trim()); const summary = _smParts.join(' · ')
     addSummaryEntry(summary)
   } catch {}
 }
@@ -2398,13 +2394,7 @@ function updateAllocInspector(allocation) {
   const keys = Object.keys(cats).sort((a, b) => (cats[b].weight ?? 0) - (cats[a].weight ?? 0))
   if (keys.length === 0) { catEl.innerHTML = ''; return }
 
-  catEl.innerHTML = keys.map(k => {
-    const c = cats[k]
-    const pct = Math.round((c.normalizedShare ?? 0) * 100)
-    const ret = Math.round((c.contextRetentionFactor ?? 0) * 100)
-    const hot = c.hotPath ? ' <span class="ac-hot">HOT</span>' : ''
-    return `<span class="alloc-cat"><span class="ac-name">${esc(k)}</span><span class="ac-val">${esc(String(c.weight))}% · ${esc(String(pct))}% share · ${esc(String(ret))}% ret</span>${hot}</span>`
-  }).join('')
+  const _catParts = []; for (const k of keys) { const c = cats[k]; const pct = Math.round((c.normalizedShare ?? 0) * 100); const ret = Math.round((c.contextRetentionFactor ?? 0) * 100); const hot = c.hotPath ? ' <span class="ac-hot">HOT</span>' : ''; _catParts.push(`<span class="alloc-cat"><span class="ac-name">${esc(k)}</span><span class="ac-val">${esc(String(c.weight))}% · ${esc(String(pct))}% share · ${esc(String(ret))}% ret</span>${hot}</span>`) }; catEl.innerHTML = _catParts.join('')
 }
 
 // ─── Token Burn Rate (F-19) ───────────────────────────────────────────────────
@@ -2526,11 +2516,7 @@ function renderSparkline(svgEl, scores) {
   const w = 60, h = 16, pad = 1
   let min = scores[0], max = scores[0]; for (const _sv of scores) { if (_sv < min) min = _sv; if (_sv > max) max = _sv }
   const range = max - min || 1
-  const points = scores.map((s, i) => {
-    const x = pad + (i / (scores.length - 1)) * (w - 2 * pad)
-    const y = h - pad - ((s - min) / range) * (h - 2 * pad)
-    return `${x.toFixed(1)},${y.toFixed(1)}`
-  }).join(' ')
+  const _spParts = []; for (let i = 0; i < scores.length; i++) { const s = scores[i]; const x = pad + (i / (scores.length - 1)) * (w - 2 * pad); const y = h - pad - ((s - min) / range) * (h - 2 * pad); _spParts.push(`${x.toFixed(1)},${y.toFixed(1)}`) }; const points = _spParts.join(' ')
   const lastScore = scores[scores.length - 1]
   const color = lastScore >= 90 ? '#40c840' : lastScore >= 70 ? '#ddba00' : '#e03030'
   svgEl.innerHTML = `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
@@ -3503,7 +3489,7 @@ async function renderCmdResults(q) {
   const res = $('#cmdResults')
   if (!res) return
   const projList = Array.isArray(projects) && projects.length ? projects : await window.director.list()
-  const items = projList.map(p => ({ type: 'PROJECT', label: p.name || p.path, path: p.path, running: p.running }))
+  const items = []; for (const p of projList) items.push({ type: 'PROJECT', label: p.name || p.path, path: p.path, running: p.running })
   items.push({ type: 'ACTION', label: 'Play / Stop', action: 'toggle' })
   items.push({ type: 'ACTION', label: 'Kill', action: 'kill' })
   items.push({ type: 'ACTION', label: 'Export', action: 'export' })
