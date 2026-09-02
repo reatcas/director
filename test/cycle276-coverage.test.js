@@ -41,9 +41,9 @@ describe('T-238: P-101 mixer-tab keyboard nav uses spread instead of Array.from'
     expect(rendererJs).not.toContain("Array.from(document.querySelectorAll('.mixer-tab'))")
   })
 
-  it('uses manual for loop for indexOf instead of .indexOf()', () => {
+  it('uses entries() loop for indexOf instead of .indexOf()', () => {
     const block = rendererJs.split("mixer-tab')]")[1]?.split('e.preventDefault')[0] || ''
-    expect(block).toContain('for (let _ti = 0; _ti < tabs.length; _ti++)')
+    expect(block).toContain('for (const [_ti, tab] of tabs.entries())')
     expect(block).not.toContain('tabs.indexOf(')
   })
 })

@@ -2509,7 +2509,7 @@ function renderSparkline(svgEl, scores) {
   const w = 60, h = 16, pad = 1
   let min = scores[0], max = scores[0]; for (const _sv of scores) { if (_sv < min) min = _sv; if (_sv > max) max = _sv }
   const range = max - min || 1
-  const _spParts = []; for (let i = 0; i < scores.length; i++) { const s = scores[i]; const x = pad + (i / (scores.length - 1)) * (w - 2 * pad); const y = h - pad - ((s - min) / range) * (h - 2 * pad); _spParts.push(`${x.toFixed(1)},${y.toFixed(1)}`) }; const points = _spParts.join(' ')
+  const _spParts = []; for (const [i, s] of scores.entries()) { const x = pad + (i / (scores.length - 1)) * (w - 2 * pad); const y = h - pad - ((s - min) / range) * (h - 2 * pad); _spParts.push(`${x.toFixed(1)},${y.toFixed(1)}`) }; const points = _spParts.join(' ')
   const lastScore = scores[scores.length - 1]
   const color = lastScore >= 90 ? '#40c840' : lastScore >= 70 ? '#ddba00' : '#e03030'
   svgEl.innerHTML = `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
@@ -3207,7 +3207,7 @@ for (const t of document.querySelectorAll('.mixer-tab')) t.addEventListener('cli
 document.querySelector('.mixer-tabs')?.addEventListener('keydown', e => {
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
   const tabs = [...document.querySelectorAll('.mixer-tab')]
-  let idx = -1; for (let _ti = 0; _ti < tabs.length; _ti++) { if (tabs[_ti] === document.activeElement) { idx = _ti; break } }
+  let idx = -1; for (const [_ti, tab] of tabs.entries()) { if (tab === document.activeElement) { idx = _ti; break } }
   if (idx === -1) return
   e.preventDefault()
   const next = e.key === 'ArrowRight' ? (idx + 1) % tabs.length : (idx - 1 + tabs.length) % tabs.length

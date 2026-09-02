@@ -223,9 +223,8 @@ class CoordinationProtocol {
     const entries = _dcEntries
     const conflicts = []
 
-    for (let i = 0; i < entries.length; i++) {
+    for (const [i, [dirA, infoA]] of entries.entries()) {
       for (let j = i + 1; j < entries.length; j++) {
-        const [dirA, infoA] = entries[i]
         const [dirB, infoB] = entries[j]
 
         const weightsA = infoA.categoryWeights ?? {}
