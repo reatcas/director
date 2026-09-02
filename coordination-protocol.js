@@ -361,7 +361,7 @@ class CoordinationProtocol {
         conflictsTotal: this.conflictLog.length,
         recentEvents:   this.events.slice(-10)
       })
-      if (hist.length > 300) hist.splice(0, hist.length - 300)
+      if (hist.length > 300) hist = hist.slice(-300)
       const tmp = file + '.tmp'
       const _coSer = JSON.stringify(hist)
       if (_coSer.length <= 1_048_576) { fs.writeFileSync(tmp, _coSer); fs.renameSync(tmp, file); this._lastPersistEvCount = this.events.length }

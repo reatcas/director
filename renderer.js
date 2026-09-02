@@ -3237,9 +3237,7 @@ if ($('#atrilSaveBtn')) $('#atrilSaveBtn').onclick = async () => {
 }
 
 // ─── Mixer Tab Switching ─────────────────────────────────────────────────────
-document.querySelectorAll('.mixer-tab').forEach(t => {
-  t.addEventListener('click', () => switchTab(t.dataset.mtab))
-})
+for (const t of document.querySelectorAll('.mixer-tab')) t.addEventListener('click', () => switchTab(t.dataset.mtab))
 
 document.querySelector('.mixer-tabs')?.addEventListener('keydown', e => {
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
@@ -3258,11 +3256,11 @@ async function loadKnowledge(file, btnId) {
 
   const _knBtns = document.querySelectorAll('#knowledgeTab .tp-action')
   if (btnId) {
-    _knBtns.forEach(b => { b.classList.remove('warn'); b.setAttribute('aria-pressed', 'false') })
+    for (const b of _knBtns) { b.classList.remove('warn'); b.setAttribute('aria-pressed', 'false') }
     const _knBtn = document.getElementById(btnId)
     if (_knBtn) { _knBtn.classList.add('warn'); _knBtn.setAttribute('aria-pressed', 'true') }
   }
-  _knBtns.forEach(b => { b.disabled = true })
+  for (const b of _knBtns) b.disabled = true
 
   const el = document.getElementById('knowledgeContent')
   if (el) el.textContent = 'Cargando…'
@@ -3277,7 +3275,7 @@ async function loadKnowledge(file, btnId) {
     _knCurrentFile = null
     if (el) el.textContent = `[Error al cargar: ${file}]`
   } finally {
-    _knBtns.forEach(b => { b.disabled = false })
+    for (const b of _knBtns) b.disabled = false
   }
 }
 
@@ -3578,7 +3576,7 @@ if ($('#cmdInput')) {
       if (!_cpItems.length) return
       const _cpActive = _cpItems.findIndex(el => el.classList.contains('active'))
       const _cpNext = e.shiftKey ? (_cpActive - 1 + _cpItems.length) % _cpItems.length : (_cpActive + 1) % _cpItems.length
-      _cpItems.forEach((el, i) => { el.classList.toggle('active', i === _cpNext); el.setAttribute('aria-selected', String(i === _cpNext)) })
+      for (let _cpi = 0; _cpi < _cpItems.length; _cpi++) { const el = _cpItems[_cpi]; el.classList.toggle('active', _cpi === _cpNext); el.setAttribute('aria-selected', String(_cpi === _cpNext)) }
       _cpItems[_cpNext].scrollIntoView({ block: 'nearest' })
       e.currentTarget.setAttribute('aria-activedescendant', 'cmd-item-' + _cpNext)
     }
@@ -3586,8 +3584,8 @@ if ($('#cmdInput')) {
 }
 
 function switchTab(tabId) {
-  document.querySelectorAll('.mixer-tab').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-selected', 'false') })
-  document.querySelectorAll('.mixer-tab-pane').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-hidden', 'true') })
+  for (const x of document.querySelectorAll('.mixer-tab')) { x.classList.remove('on'); x.setAttribute('aria-selected', 'false') }
+  for (const x of document.querySelectorAll('.mixer-tab-pane')) { x.classList.remove('on'); x.setAttribute('aria-hidden', 'true') }
   const tab = document.querySelector(`.mixer-tab[data-mtab="${tabId}"]`)
   const pane = document.getElementById(tabId)
   if (tab) { tab.classList.add('on'); tab.setAttribute('aria-selected', 'true') }

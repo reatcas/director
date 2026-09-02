@@ -354,7 +354,7 @@ class ResourceScheduler {
   }
 
   getActiveDirectories() {
-    return Array.from(this.allocations.keys())
+    const _ad = []; for (const k of this.allocations.keys()) _ad.push(k); return _ad
   }
 
   cleanup(dir) {

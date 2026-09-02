@@ -86,9 +86,9 @@ class ContextProtocol {
     }
 
     // Formatting tokens (newlines, markdown syntax)
-    const newlines = (text.match(/\n/g) || []).length
+    const newlines = text.split('\n').length - 1
     tokens += Math.ceil(newlines * 0.3)
-    const headers = (text.match(/^#+\s/gm) || []).length
+    const headers = (text.match(/^#+\s/gm) ?? []).length
     tokens += headers
 
     return tokens
@@ -122,7 +122,7 @@ class ContextProtocol {
       if (headerMatch) {
         _pushSection()
         const rawTitle = headerMatch[2].trim()
-        const count = titleCount.get(rawTitle) || 0
+        const count = titleCount.get(rawTitle) ?? 0
         titleCount.set(rawTitle, count + 1)
         currentTitle = count === 0 ? rawTitle : `${rawTitle}_${count}`
         currentLines = [line]
