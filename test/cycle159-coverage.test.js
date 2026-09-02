@@ -13,13 +13,13 @@ describe('export:session lifecycle + mixerHistory filter (I-468)', () => {
   it('filters lifecycle array to valid objects', () => {
     const lcBlock = block.split('lifecycle:')[1]?.split('mixerConfig:')[0] || ''
     expect(lcBlock).toContain("typeof e === 'object'")
-    expect(lcBlock).toContain('d.filter')
+    expect(lcBlock).toContain('_expLcFiltered')
   })
 
   it('filters mixerHistory array to valid objects', () => {
     const mhBlock = block.split('mixerHistory:')[1]?.split('claudeUsage:')[0] || ''
     expect(mhBlock).toContain("typeof e === 'object'")
-    expect(mhBlock).toContain('d.filter')
+    expect(mhBlock).toContain('_expMhFiltered')
   })
 })
 

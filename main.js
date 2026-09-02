@@ -1574,9 +1574,9 @@ ipcMain.handle('export:session', async (_e, dir) => {
     projectPath: dir,
     orchestraVersion: read('.claude/ORCHESTRA_VERSION').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) || 'unknown',
     runStarted: read('.claude/RUN_STARTED').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64) || null,
-    lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string') : [] })(),
+    lifecycle: (() => { const p = path.join(dir, '.claude/logs/lifecycle-events.json'); let d = []; try { if (fs.statSync(p).size <= 2_097_152) d = readJSON(p, []) } catch {}; if (!Array.isArray(d)) return []; const _expLcFiltered = []; for (const e of d) { if (e && typeof e === 'object' && typeof e.type === 'string' && typeof e.ts === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(e.ts) && typeof e.label === 'string' && typeof e.message === 'string') _expLcFiltered.push({ ...e, label: e.label.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''), message: e.message.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }; return _expLcFiltered })(),
     mixerConfig: (() => { const p = path.join(dir, '.claude/orchestra.json'); let d = {}; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, {}) } catch {}; return (d && typeof d === 'object' && !Array.isArray(d)) ? d : {} })(),
-    mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; return Array.isArray(d) ? d.filter(e => e && typeof e === 'object' && typeof e.ts === 'string' && typeof e.event === 'string' && e.focus && typeof e.focus === 'object') : [] })(),
+    mixerHistory: (() => { const p = path.join(dir, '.claude/mixer-history.json'); let d = []; try { if (fs.statSync(p).size <= 512_000) d = readJSON(p, []) } catch {}; if (!Array.isArray(d)) return []; const _expMhFiltered = []; for (const e of d) { if (e && typeof e === 'object' && typeof e.ts === 'string' && typeof e.event === 'string' && e.focus && typeof e.focus === 'object') _expMhFiltered.push({ ...e, event: e.event.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') }) }; return _expMhFiltered })(),
     claudeUsage: getClaudeUsage(dir),
     compliance: read('ORCHESTRA_REPORT.md').split('\n').filter(l => l.includes('COMPLIANCE')).map(l => l.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 512)).slice(-50),
     roadmap: read('ROADMAP.md'),
@@ -1610,9 +1610,10 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
     const _startedRaw = read('.claude/RUN_STARTED').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64)
     const started = /^\d{4}-\d{2}-\d{2}T/.test(_startedRaw) ? _startedRaw : ''
     execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000, maxBuffer: 262_144 }, (gitErr, gitOut) => {
-      const commits = gitErr ? [] : (gitOut ?? '').trim().split('\n').filter(Boolean)
+      const _azCommits = []
+      if (!gitErr) { for (const c of (gitOut ?? '').trim().split('\n')) { if (c) _azCommits.push(c) } }
       const cat = {}
-      for (const c of commits) {
+      for (const c of _azCommits) {
         const m = c.match(/ (feat|fix|test|refactor|chore|security|sec|perf|docs|style|i18n)[:(]/)
         const k = m ? m[1] : 'other'
         cat[k] = (cat[k] ?? 0) + 1

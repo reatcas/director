@@ -277,7 +277,7 @@ function updateMonitorStatus() {
     finished:     { icon: '✓', label: 'INTERPRETATION FINISHED', cls: 'finished' }
   }
 
-  const s = STATES[orchestraState] || STATES.idle
+  const s = STATES[orchestraState] ?? STATES.idle
   el.className = 'monitor-status ' + s.cls
 
   let iconHTML
@@ -1393,7 +1393,7 @@ function addActionEntry(type, label, message) {
     'exit':    { icon: '■', color: '#4488ff', bg: 'rgba(68,136,255,0.04)' },
     'resume':  { icon: '↻', color: '#00ffee', bg: 'rgba(0,255,238,0.04)' },
   }
-  const a = ACTIONS[type] || ACTIONS.started
+  const a = ACTIONS[type] ?? ACTIONS.started
   const time = timeStamp()
   rawLogBuffer.push(`[${time}] [${label}] ${message}`)
 

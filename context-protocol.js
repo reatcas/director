@@ -66,9 +66,8 @@ class ContextProtocol {
   _estimateTokens(text) {
     if (!text) return 0
     let tokens = 0
-    const words = text.split(/\s+/).filter(Boolean)
-
-    for (const word of words) {
+    for (const word of text.split(/\s+/)) {
+      if (!word) continue
       if (word.length <= 2) {
         tokens += 1
       } else if (/^[a-zA-Z]+$/.test(word)) {
