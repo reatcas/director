@@ -1259,7 +1259,7 @@ ipcMain.handle('orchestra:tail', (_e, dir, lines) => {
     const s = buf.toString('utf8')
     const nl = s.indexOf('\n')
     const trimmed = stat.size > readSize && nl >= 0 ? s.slice(nl + 1) : s
-    return trimmed.split('\n').map(l => l.length > 4096 ? l.slice(0, 4096) : l).slice(-_tailLines).join('\n')
+    const _rawLines = trimmed.split('\n'); const _cappedLines = []; for (const l of _rawLines) _cappedLines.push(l.length > 4096 ? l.slice(0, 4096) : l); return _cappedLines.slice(-_tailLines).join('\n')
   } catch { return '' }
 })
 

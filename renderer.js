@@ -959,10 +959,10 @@ let mixerGraphInited = false
 
 function activateMixerStand(category) {
   // Clear previous
-  document.querySelectorAll('#mixerStrips .strip-h.stand-active').forEach(el => {
+  for (const el of document.querySelectorAll('#mixerStrips .strip-h.stand-active')) {
     el.classList.remove('stand-active')
-    el.querySelectorAll('.stand-spark').forEach(s => s.remove())
-  })
+    for (const s of el.querySelectorAll('.stand-spark')) s.remove()
+  }
   if (standSparkInterval) { clearInterval(standSparkInterval); standSparkInterval = null }
   activeStand = null
   if (window.mixerGraph) window.mixerGraph.activate(category || null)
@@ -1119,9 +1119,9 @@ if ($('#saveMixer')) $('#saveMixer').onclick = async () => {
   if (!name) name = `Mix ${new Date().toLocaleDateString('en-US')} ${new Date().toLocaleTimeString('en-US', { hour12: false })}`
 
   const focus = {}
-  document.querySelectorAll('#mixerStrips input[type="range"]').forEach(i => {
+  for (const i of document.querySelectorAll('#mixerStrips input[type="range"]')) {
     focus[i.dataset.k] = +i.value
-  })
+  }
 
   if (Object.keys(focus).length === 0) {
     showToast('No stands loaded')

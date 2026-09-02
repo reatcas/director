@@ -93,7 +93,9 @@ contextBridge.exposeInMainWorld('director', {
     if (typeof t !== 'string' || t.length > 64) return Promise.resolve(false)
     if (!new Set(['play','fine','kill','commit','exit','usage_limit','directive','auto_resume','error','note','cycle_close','feature']).has(t)) return Promise.resolve(false)
     if (typeof l !== 'string' || l.length > 128 || l.trim().length === 0) return Promise.resolve(false)
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(l)) return Promise.resolve(false)
     if (typeof m !== 'string' || m.length > 1024) return Promise.resolve(false)
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(m)) return Promise.resolve(false)
     return ipcRenderer.invoke('lifecycle:add', p, t, l, m)
   },
   // Telemetry / Metrics
