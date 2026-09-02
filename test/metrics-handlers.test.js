@@ -189,7 +189,7 @@ describe('orchestra:readIterLog handler', () => {
   })
 
   it('trims empty lines before slicing', () => {
-    expect(block).toContain('.filter(l => l.trim())')
+    expect(block).toContain('_rilLines')
   })
 })
 

@@ -892,7 +892,8 @@ ipcMain.handle('repertoire:remove', (_e, dir) => {
   if (typeof dir !== 'string' || dir.length === 0) return false
   let _rrProjects = []
   try { if (fs.statSync(store()).size <= 512_000) _rrProjects = readJSON(store(), []) } catch {}
-  const _rrSer = JSON.stringify(_rrProjects.filter(p => p.path !== dir))
+  const _rrRemaining = []; for (const p of _rrProjects) { if (p.path !== dir) _rrRemaining.push(p) }
+  const _rrSer = JSON.stringify(_rrRemaining)
   if (_rrSer.length <= 512_000) writeJSON(store(), JSON.parse(_rrSer))
   invalidateProjectsCache()
   stopTailing(dir)
@@ -1187,7 +1188,8 @@ ipcMain.handle('orchestra:clearLog', (_e, dir) => {
   // Prune analysis-*.txt files: keep only the 5 most recent
   try {
     const claudeDir = path.join(dir, '.claude')
-    const files = fs.readdirSync(claudeDir).filter(f => f.startsWith('analysis-') && f.endsWith('.txt'))
+    const _caFiles = []; for (const f of fs.readdirSync(claudeDir)) { if (f.startsWith('analysis-') && f.endsWith('.txt')) _caFiles.push(f) }
+    const files = _caFiles
     if (files.length > 5) {
       files.sort()
       for (const f of files.slice(0, files.length - 5)) { try { fs.unlinkSync(path.join(claudeDir, f)) } catch {} }
@@ -1510,8 +1512,8 @@ ipcMain.handle('orchestra:readIterLog', (_e, dir, logPath) => {
     if (stat.size > 1_048_576) return ''
     const content = fs.readFileSync(fullPath, 'utf8').trim()
     if (!content) return ''
-    const lines = content.split('\n').filter(l => l.trim())
-    return lines.slice(-8).join('\n')
+    const _rilLines = []; for (const l of content.split('\n')) { const _rilStripped = l.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); if (_rilStripped.trim()) _rilLines.push(_rilStripped) }
+    return _rilLines.slice(-8).join('\n')
   } catch {
     return ''
   }
@@ -1599,7 +1601,7 @@ ipcMain.handle('orchestra:analyze', (_e, dir) => {
   if (_anHit && Date.now() - _anHit.ts < _ANALYZE_TTL) return Promise.resolve(_anHit.result)
   return new Promise(resolve => {
     const read = f => { try { const p = path.join(dir, f); if (fs.statSync(p).size > 1_048_576) return ''; return fs.readFileSync(p, 'utf8') } catch { return '' } }
-    const _startedRaw = read('.claude/RUN_STARTED').trim().slice(0, 64)
+    const _startedRaw = read('.claude/RUN_STARTED').trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 64)
     const started = /^\d{4}-\d{2}-\d{2}T/.test(_startedRaw) ? _startedRaw : ''
     execFile('git', ['-C', dir, 'log', '--oneline', '--since', started || '30 days ago'], { timeout: 8000, maxBuffer: 262_144 }, (gitErr, gitOut) => {
       const commits = gitErr ? [] : (gitOut ?? '').trim().split('\n').filter(Boolean)

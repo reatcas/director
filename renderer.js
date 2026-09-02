@@ -1907,16 +1907,10 @@ async function fetchIterSummary(logPath) {
     const content = await window.director.readIterLog(current, logPath)
     if (!content || !content.trim()) return
 
-    const lines = content.trim().split('\n').filter(l => l.trim())
-
-    // Filter out usage limit lines and warnings
-    const meaningful = lines.filter(l => {
-      const lo = l.toLowerCase()
-      return !lo.includes("you're out of") && !lo.includes('out of extra usage')
-        && !(lo.includes('resets') && (lo.includes('am') || lo.includes('pm')))
-        && !lo.includes('usage limit')
-        && !lo.startsWith('warning:')
-    })
+    const _rlLines = []; for (const l of content.trim().split('\n')) { if (l.trim()) _rlLines.push(l) }
+    const _rlMeaningful = []; for (const l of _rlLines) { const lo = l.toLowerCase(); if (!lo.includes("you're out of") && !lo.includes('out of extra usage') && !(lo.includes('resets') && (lo.includes('am') || lo.includes('pm'))) && !lo.includes('usage limit') && !lo.startsWith('warning:')) _rlMeaningful.push(l) }
+    const lines = _rlLines
+    const meaningful = _rlMeaningful
 
     if (meaningful.length === 0) return
 
