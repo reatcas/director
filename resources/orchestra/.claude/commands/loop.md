@@ -10,6 +10,11 @@ Follow CLAUDE.md. Mission: INCREMENTAL PROGRESS.
 
 ## BOOT
 1. Emit `▸ [boot] sesión iniciada`. Read workspace files (orchestra.json, PLAN.md, DECISIONS.md, PENDING.md, ROADMAP.md, PRODUCT_DIRECTIVE.md, BLUEPRINT.md, A11Y_TREE.md, DB_SCHEMA.md, CYCLE_LEARNINGS.md).
+1b. **PLAN MODE CHECK** (before PRODUCT GATE):
+    - Scan `.claude/plan-specs/F-*.md` for files NOT containing `STATUS: complete`.
+    - Active spec found → `▸ [boot] EXECUTOR MODE — plan-mode F-XX (N/M tasks done)` → execute next uncommitted DAG task → commit `task(F-XX): [TASK N] — title` (mark ✓ in spec IN SAME COMMIT) → repeat until all tasks done.
+    - ROADMAP has `[plan-mode]` item with no spec file → `▸ [boot] PLANNER MODE — F-XX` → read `.claude/skills/plan-mode/plan-spec.md` → investigate → write spec → commit → EXIT.
+    - No plan-mode items pending → continue to PRODUCT GATE.
 2. **PRODUCT GATE**: Count unchecked ROADMAP features (all priorities). >0→`▸ [boot] PRODUCT MODE — N pendientes`.
    **TEST GATE**: Run verification gate. Fails→`▸ [boot] TESTS RED` — fix first.
 3. Plan from MIXER BUDGET. Exhausted→`backlog-generator`.

@@ -46,6 +46,7 @@ CATEGORY_BAN_STREAK=0
 LAST_CATEGORY=""
 PREV_CATEGORY=""
 ITER=0
+CYCLE_COUNTER_FILE=".claude/CYCLE_COUNTER"
 while :; do
 
   MODEL=$(json_val model sonnet)
@@ -79,6 +80,19 @@ while :; do
       ACTIVE_MODEL="$MODEL_COMPLEX"
       ROLE="architect"
       stamp "MODEL-ROUTE: architect review (iter $ITER, every $ARCHITECT_INTERVAL) → $ACTIVE_MODEL"
+    # Plan-mode executor: active spec exists and not complete
+    elif ls .claude/plan-specs/F-*.md >/dev/null 2>&1 && \
+         ! grep -ql 'STATUS: complete' .claude/plan-specs/F-*.md 2>/dev/null; then
+      ACTIVE_MODEL="$MODEL_COMPLEX"
+      ROLE="plan-executor"
+      PLAN_SPEC=$(ls .claude/plan-specs/F-*.md 2>/dev/null | head -1)
+      stamp "MODEL-ROUTE: plan-executor (spec=$(basename "$PLAN_SPEC" 2>/dev/null)) → $ACTIVE_MODEL"
+    # Plan-mode planner: [plan-mode] item in ROADMAP but no spec written yet
+    elif [ -f ROADMAP.md ] && grep -q '\[plan-mode\]' ROADMAP.md 2>/dev/null && \
+         ! ls .claude/plan-specs/F-*.md >/dev/null 2>&1; then
+      ACTIVE_MODEL="$MODEL_COMPLEX"
+      ROLE="planner"
+      stamp "MODEL-ROUTE: planner (no spec yet) → $ACTIVE_MODEL"
     # Deep-work items pending
     elif [ -f ROADMAP.md ] && grep -q '\[deep-work\]' ROADMAP.md 2>/dev/null; then
       ACTIVE_MODEL="$MODEL_COMPLEX"
@@ -98,12 +112,25 @@ while :; do
       esac
     fi
   else
-    # Legacy routing: only switch for deep-work
+    # Legacy routing: plan-mode takes priority, then deep-work
     if [ -f ROADMAP.md ]; then
-      DEEP_WORK_PENDING=$(grep -c '\[deep-work\]' ROADMAP.md 2>/dev/null || echo 0)
-      if [ "$DEEP_WORK_PENDING" -gt 0 ] && [ "$MODEL_COMPLEX" != "$MODEL" ]; then
+      if ls .claude/plan-specs/F-*.md >/dev/null 2>&1 && \
+         ! grep -ql 'STATUS: complete' .claude/plan-specs/F-*.md 2>/dev/null; then
         ACTIVE_MODEL="$MODEL_COMPLEX"
-        stamp "MODEL-ROUTE: deep-work pending → $ACTIVE_MODEL"
+        ROLE="plan-executor"
+        PLAN_SPEC=$(ls .claude/plan-specs/F-*.md 2>/dev/null | head -1)
+        stamp "MODEL-ROUTE: plan-executor (spec=$(basename "$PLAN_SPEC" 2>/dev/null)) → $ACTIVE_MODEL"
+      elif grep -q '\[plan-mode\]' ROADMAP.md 2>/dev/null && \
+           ! ls .claude/plan-specs/F-*.md >/dev/null 2>&1; then
+        ACTIVE_MODEL="$MODEL_COMPLEX"
+        ROLE="planner"
+        stamp "MODEL-ROUTE: planner (no spec yet) → $ACTIVE_MODEL"
+      else
+        DEEP_WORK_PENDING=$(grep -c '\[deep-work\]' ROADMAP.md 2>/dev/null || echo 0)
+        if [ "$DEEP_WORK_PENDING" -gt 0 ] && [ "$MODEL_COMPLEX" != "$MODEL" ]; then
+          ACTIVE_MODEL="$MODEL_COMPLEX"
+          stamp "MODEL-ROUTE: deep-work pending → $ACTIVE_MODEL"
+        fi
       fi
     fi
   fi
@@ -115,6 +142,14 @@ while :; do
 CRITICAL INSTRUCTION: CAVEMAN MODE IS ENABLED.
 Always use zero prose in responses. No pleasantries. No yapping. Save tokens.
 You MUST also use MCP codebase memory to save tokens."
+  fi
+
+  # ── Global cycle counter injection ─────────────────────────────────────
+  if [ -f "$CYCLE_COUNTER_FILE" ]; then
+    GLOBAL_CYCLE=$(cat "$CYCLE_COUNTER_FILE" 2>/dev/null | tr -d '[:space:]' | grep -E '^[0-9]+$' || echo "unknown")
+    PROMPT_CONTENT="$PROMPT_CONTENT
+
+HARNESS: Global cycle counter = ${GLOBAL_CYCLE}. Use this as your authoritative cycle number in PLAN.md and compliance lines. Do NOT use session-local iteration numbers."
   fi
 
   # ── Architect role injection ────────────────────────────────────────────
@@ -140,6 +175,40 @@ Tasks:
 
 Do NOT write application code. Only update state files (PLAN.md, DECISIONS.md, PENDING.md).
 Keep your output under 300 tokens. Be precise."
+  fi
+
+  # ── Planner role injection ────────────────────────────────────────────────
+  if [ "$ROLE" = "planner" ]; then
+    PLAN_ITEM=$(grep -m1 '\[plan-mode\]' ROADMAP.md 2>/dev/null | grep -v '^\- \[x\]' | grep -oE 'F-[A-Z0-9-]+' | head -1 || echo "F-XX")
+    PROMPT_CONTENT="$PROMPT_CONTENT
+
+## PLAN MODE — PLANNER
+ROADMAP item to plan: ${PLAN_ITEM}
+Read skill: .claude/skills/plan-mode/plan-spec.md
+Write spec to: .claude/plan-specs/${PLAN_ITEM}.md
+Commit as: plan(${PLAN_ITEM}): write spec — [one-line summary]
+Then EXIT. Do NOT write application code. Next session will execute."
+  fi
+
+  # ── Plan-executor role injection ──────────────────────────────────────────
+  if [ "$ROLE" = "plan-executor" ]; then
+    PLAN_SPEC=$(ls .claude/plan-specs/F-*.md 2>/dev/null | head -1)
+    PLAN_SPEC_CONTENT=""
+    if [ -n "$PLAN_SPEC" ] && [ -f "$PLAN_SPEC" ]; then
+      PLAN_SPEC_CONTENT=$(head -200 "$PLAN_SPEC" 2>/dev/null)
+    fi
+    PROMPT_CONTENT="$PROMPT_CONTENT
+
+## PLAN MODE — EXECUTOR
+Active plan spec: $PLAN_SPEC
+MODULE BAN is SUSPENDED for plan-mode execution (Rule 46).
+Execute tasks in DAG order. Check git log for already-committed tasks.
+Commit each task: task(F-XX): [TASK N] — title
+Mark each ✓ in spec file IN THE SAME COMMIT as the task code (not standalone).
+All tasks done → update STATUS: complete → commit: plan(F-XX): mark complete → update ROADMAP.md.
+
+--- PLAN SPEC CONTENT ---
+$PLAN_SPEC_CONTENT"
   fi
 
   # ── Agent-specific anti-hallucination augmentation ──────────────────────
@@ -348,6 +417,18 @@ for raw in sys.stdin:
     fi
   fi
 
+  # ── Cycle counter persistence (cross-session monotonic) ────────────────
+  if [ "$START_COMMIT" != "$END_COMMIT" ] && [ "$END_COMMIT" != "none" ]; then
+    _CC=0
+    if [ -f "$CYCLE_COUNTER_FILE" ]; then
+      _CC=$(cat "$CYCLE_COUNTER_FILE" 2>/dev/null | tr -d '[:space:]' | grep -E '^[0-9]+$' || echo 0)
+      _CC=${_CC:-0}
+    fi
+    _CC_NEW=$((_CC + 1))
+    printf '%s\n' "$_CC_NEW" > "${CYCLE_COUNTER_FILE}.tmp" && mv "${CYCLE_COUNTER_FILE}.tmp" "$CYCLE_COUNTER_FILE"
+    stamp "CYCLE-COUNTER: global cycle $_CC_NEW (session iter $ITER)"
+  fi
+
   # ── Post-iteration self-audit (lightweight, no AI call) ────────────────
   if [ "$START_COMMIT" != "$END_COMMIT" ] && [ "$END_COMMIT" != "none" ]; then
     REAL_COMMITS=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null | wc -l | tr -d ' ')
@@ -399,6 +480,21 @@ for raw in sys.stdin:
     if [ "${TOP_COUNT:-0}" -gt 5 ]; then
       stamp "ANTI-SLOP: module $TOP_NAME hit $TOP_COUNT times in this iteration — concentration violation"
       echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) MODULE_CONCENTRATION=$TOP_NAME×$TOP_COUNT agent=$AI_AGENT" >> .claude/CYCLE_LEARNINGS.md
+    fi
+    # ── Anti-standalone-state-commit (Rule 41) ───────────────────────────
+    STANDALONE_STATE=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null \
+      | grep -ciE '^[a-f0-9]+ chore.*(PLAN\.md|plan-archive|cycles|state update|cycle review|update.*state|CYCLE_LEARNINGS)' || echo 0)
+    if [ "$STANDALONE_STATE" -gt 0 ]; then
+      stamp "ANTI-SLOP: $STANDALONE_STATE standalone state commits — fold PLAN.md/state into product commits (Rule 41)"
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) STANDALONE_STATE_COMMITS=$STANDALONE_STATE agent=$AI_AGENT — standalone state commits without product work" >> .claude/CYCLE_LEARNINGS.md
+      printf '\n⚠️ HARNESS RULE 41 VIOLATION: %d standalone state commit(s) detected. PLAN.md/cycle updates must accompany product commits — never standalone chore.\n' "$STANDALONE_STATE" >> .claude/PRODUCT_DIRECTIVE.md
+    fi
+    # ── Chore budget cap (Rule 42) ────────────────────────────────────────
+    CHORE_COUNT=$(git log --oneline "$START_COMMIT".."$END_COMMIT" 2>/dev/null \
+      | grep -ciE '^[a-f0-9]+ chore[:(]' || echo 0)
+    if [ "$CHORE_COUNT" -gt 3 ]; then
+      stamp "ANTI-SLOP: MECHANICAL_CHORE_OVERLOAD — $CHORE_COUNT chore commits in one iteration (max 3, Rule 42)"
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) MECHANICAL_CHORE_OVERLOAD=$CHORE_COUNT agent=$AI_AGENT — exceeded chore budget of 3 per iteration" >> .claude/CYCLE_LEARNINGS.md
     fi
 
     # ── F-02: Category ban enforcement — 3 consecutive same-category cycles ──

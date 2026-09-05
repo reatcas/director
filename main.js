@@ -1733,7 +1733,7 @@ ipcMain.handle('lifecycle:list', (_e, dir, limit, typeFilter, before) => {
   return metricsSet(_lcKey, { events: _llEvents, total: events.length, unfilteredTotal: _llUnfilteredTotal })
 })
 
-const _LC_TYPES = new Set(['play', 'fine', 'kill', 'commit', 'exit', 'usage_limit', 'directive', 'auto_resume', 'error', 'note', 'cycle_close', 'feature'])
+const _LC_TYPES = new Set(['play', 'fine', 'kill', 'commit', 'exit', 'usage_limit', 'directive', 'auto_resume', 'error', 'note', 'cycle_close', 'feature', 'plan'])
 ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
   if (!isKnownProject(dir)) return false
   if (typeof type !== 'string' || typeof label !== 'string' || typeof message !== 'string') return false
@@ -1745,6 +1745,44 @@ ipcMain.handle('lifecycle:add', (_e, dir, type, label, message) => {
   for (const k of _metricsCache.keys()) { if (k.startsWith('lc:' + dir + ':')) _metricsCache.delete(k) }
   _metricsCache.delete('session-summary')
   return true
+})
+
+ipcMain.handle('plan:list', (_e, dir) => {
+  if (!isKnownProject(dir)) return []
+  const specsDir = path.join(dir, '.claude', 'plan-specs')
+  let _st = false; try { fs.statSync(specsDir); _st = true } catch {}
+  if (!_st) return []
+  const result = []
+  try {
+    for (const e of fs.readdirSync(specsDir, { withFileTypes: true })) {
+      if (!e.isFile() || !/^F-[A-Z0-9-]+\.md$/.test(e.name)) continue
+      const fp = path.join(specsDir, e.name)
+      let content = ''
+      try { if (fs.statSync(fp).size <= 131_072) content = fs.readFileSync(fp, 'utf8').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') } catch {}
+      result.push({
+        file: e.name,
+        status: content.includes('STATUS: complete') ? 'complete' : 'active',
+        taskTotal: (content.match(/^\[TASK \d+\]/gm) || []).length,
+        taskDone:  (content.match(/^✓ \[TASK \d+\]/gm) || []).length
+      })
+    }
+  } catch {}
+  return result.slice(0, 50)
+})
+
+ipcMain.handle('plan:read', (_e, dir, specFile) => {
+  if (!isKnownProject(dir)) return null
+  if (typeof specFile !== 'string' || specFile.length === 0 || specFile.length > 256) return null
+  if (!/^F-[A-Z0-9-]+\.md$/.test(specFile) || specFile.includes('..') || specFile.includes('/') || specFile.includes(path.sep)) return null
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(specFile)) return null
+  const resolved = path.resolve(path.join(dir, '.claude', 'plan-specs', specFile))
+  const specsDir = path.resolve(path.join(dir, '.claude', 'plan-specs'))
+  if (!resolved.startsWith(specsDir + path.sep)) return null
+  try {
+    const st = fs.statSync(resolved)
+    if (!st.isFile() || st.size > 131_072) return null
+    return fs.readFileSync(resolved, 'utf8').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+  } catch { return null }
 })
 
 // ─── Telemetry / Metrics IPC ──────────────────────────────────────────────────
@@ -1945,6 +1983,7 @@ const UPGRADE_FILES = [
   '.claude/skills/db-vision/SKILL.md',
   '.claude/skills/db-vision/db-extract.sh',
   '.claude/skills/cycle-audit/SKILL.md',
+  '.claude/skills/plan-mode/plan-spec.md',
   '.claude/default-mixes.json',
   '.claude/ORCHESTRA_VERSION',
 ]

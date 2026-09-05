@@ -91,7 +91,7 @@ contextBridge.exposeInMainWorld('director', {
   lifecycleAdd:        (p, t, l, m) => {
     if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false)
     if (typeof t !== 'string' || t.length > 64) return Promise.resolve(false)
-    if (!new Set(['play','fine','kill','commit','exit','usage_limit','directive','auto_resume','error','note','cycle_close','feature']).has(t)) return Promise.resolve(false)
+    if (!new Set(['play','fine','kill','commit','exit','usage_limit','directive','auto_resume','error','note','cycle_close','feature','plan']).has(t)) return Promise.resolve(false)
     if (typeof l !== 'string' || l.length > 128 || l.trim().length === 0) return Promise.resolve(false)
     if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(l)) return Promise.resolve(false)
     if (typeof m !== 'string' || m.length > 1024) return Promise.resolve(false)
@@ -163,6 +163,20 @@ contextBridge.exposeInMainWorld('director', {
     if (typeof c !== 'string' || c.length > 50000) return Promise.resolve(false)
     if (/\x00/.test(c)) return Promise.resolve(false)
     return ipcRenderer.invoke('notes:write', dir, c)
+  },
+  // Plan-mode specs
+  planList: dir => {
+    if (typeof dir !== 'string' || !dir || dir.length > 4096) return Promise.resolve([])
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(dir)) return Promise.resolve([])
+    return ipcRenderer.invoke('plan:list', dir)
+  },
+  planRead: (dir, specFile) => {
+    if (typeof dir !== 'string' || !dir || dir.length > 4096) return Promise.resolve(null)
+    if (typeof specFile !== 'string' || specFile.length === 0 || specFile.length > 256) return Promise.resolve(null)
+    if (!/^F-[A-Z0-9-]+\.md$/.test(specFile)) return Promise.resolve(null)
+    if (specFile.includes('..') || specFile.includes('/') || specFile.includes('\\')) return Promise.resolve(null)
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(specFile)) return Promise.resolve(null)
+    return ipcRenderer.invoke('plan:read', dir, specFile)
   },
   // Events
   onLine:        cb => ipcRenderer.on('orchestra:line',        (_e, d) => cb(d)),

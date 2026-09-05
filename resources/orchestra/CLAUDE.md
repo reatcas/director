@@ -51,6 +51,14 @@ Missing→Phase 0 `team-orchestra`.
 27. **TEST GATE.** Tests failing→fix ALL before any other work. Non-negotiable.
 28. **MIN COMPLEXITY.** Find-and-replace cycles=wasted. Batch mechanical, spend rest on substantive work.
 29. **COMPLIANCE.** Cycle close: `▸ ◼ Cycle N cerrado — COMPLIANCE product:A/P cat:A/P DRIFT:none|cat+N TESTS:green|red`
+41. **STANDALONE STATE BAN.** Never commit PLAN.md, CYCLE_LEARNINGS.md, or any state file as a standalone `chore:` commit. State updates MUST accompany real product/fix commits in the same batch, or use the architect format `chore(architect): cycle review — [summary]`. Standalone state commits = VIOLATION flagged by harness.
+42. **CHORE BUDGET.** Max 3 `chore()` commits per iteration. Exceeding triggers MECHANICAL_CHORE_OVERLOAD. Batch all chore work into ≤3 commits.
+
+## PLAN MODE
+43. **`[plan-mode]` ROADMAP items → write plan spec first.** When a ROADMAP item has `[plan-mode]` AND no `.claude/plan-specs/F-XX.md` exists: read plan-mode skill, investigate codebase, write spec, commit `plan(F-XX): write spec`, then EXIT. Do NOT code.
+44. **Executor mode.** If `.claude/plan-specs/F-XX.md` exists with `STATUS: active`: read it, execute tasks in DAG order, commit each as `task(F-XX): [TASK N] — title`. Mark ✓ in spec IN SAME COMMIT as code.
+45. **No infinite plan loops.** Once a plan spec is committed, ALWAYS executor — never re-plan same feature. `STATUS: complete` in spec disables both planner and executor.
+46. **MODULE BAN suspended** during plan-mode execution (same as deep-work Rule 32). Multiple commits to same files expected when building a feature end-to-end.
 
 ## TOKENS
 Compact@`compactAt`%. Quiet flags(`-q --reporter=dot --quiet --oneline`). Batch parallel calls. `tail -5`>dump. Memory-first. `▸` lines+code only. Caveman(`"caveman":true`): 200-token cap, skip reviewer<30 lines.

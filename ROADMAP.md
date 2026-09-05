@@ -208,6 +208,11 @@
 - [x] **I-173** Security tests for atriles:save entry validation (13 tests in atriles-security.test.js).
 - [x] **I-174** Cache aiState() reads — 5s TTL, invalidated on every write to ai-credits.json.
 - [x] **I-175** Clear _lifecycleDirReady on repertoire:remove — prevents stale mkdirSync skip.
+- [x] **I-176** Anti-drift: standalone PLAN.md commit detection (Rule 41), chore budget cap (Rule 42), persistent cross-session cycle counter in run.sh.
+- [x] **I-177** Plan-mode protocol: [plan-mode] tag routing (planner/executor), plan-spec.md skill, loop.md boot step 1b, CLAUDE.md rules 43-46.
+- [x] **I-178** Default mixes: Deep Ship + Architect presets added to source file (8 total, all sum to 100).
+- [x] **I-179** Director UI: plan:list/plan:read IPC handlers, planList/planRead preload bridges, plan lifecycle type, renderer plan-mode badge, LC_ICONS + HISTORY_STYLES entries.
+- [x] **I-180** Tests: cycle-counter, anti-chore, plan-mode, default-mixes test suites.
 
 ## P3 — Product Wave (2026-09-02)
 

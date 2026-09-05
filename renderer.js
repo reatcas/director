@@ -413,6 +413,24 @@ function updateTransportButtons() {
 
 // ─── Stall Anomaly Detection (F-20) ──────────────────────────────────────────
 const _stallTracker = new Map()
+
+// ─── Plan-Mode Badge ──────────────────────────────────────────────────────────
+const _planBadgeCache = new Map()
+
+async function loadPlanModeStatus(dir) {
+  if (!dir) return
+  try {
+    const specs = await window.director.planList(dir)
+    if (!Array.isArray(specs) || !specs.length) { _planBadgeCache.delete(dir); return }
+    const active = specs.find(s => s.status === 'active')
+    if (!active) { _planBadgeCache.delete(dir); return }
+    const fid = active.file.replace('.md', '')
+    const progress = active.taskTotal > 0 ? ` (${active.taskDone}/${active.taskTotal})` : ''
+    const label = active.taskDone === 0 && active.taskTotal === 0
+      ? `PLANNING ${fid}` : `EXECUTING ${fid}${progress}`
+    _planBadgeCache.set(dir, `<span class="plan-badge" title="Plan mode ${label}">${esc(label)}</span>`)
+  } catch {}
+}
 const STALL_THRESHOLD_MS = 20 * 60 * 1000
 
 function trackCommit(dir) {
@@ -445,10 +463,11 @@ async function refresh() {
     li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(p.path) } }
     const stallMin = p.running ? getStallMinutes(p.path) : 0
     const stallBadge = stallMin >= 20 ? `<span class="stall-badge" title="${esc(String(stallMin))}min sin commits" aria-label="${esc(String(stallMin))} minutos sin commits">${esc(String(stallMin))}m</span>` : ''
+    const planBadge = _planBadgeCache.get(p.path) ?? ''
     li.innerHTML = `<span class="led"></span>
       ${logoHTML(p, true)}
       <span class="pn">${esc(p.name)}</span>
-      <span class="pv">${p.running ? 'LIVE' : p.installed ? 'v' + esc(String(p.version)) : '—'}${stallBadge}</span>`
+      <span class="pv">${p.running ? 'LIVE' : p.installed ? 'v' + esc(String(p.version)) : '—'}${stallBadge}${planBadge}</span>`
     li.onclick = () => open(p.path)
     ul.appendChild(li)
   }
@@ -580,6 +599,7 @@ async function open(dir) {
   await loadCompliance()
   loadRoadmapFreshness()
   loadLifecycleTimeline()
+  loadPlanModeStatus(current)
   checkVersionUpgrade()
 
   const out = $('#analysisOut')
@@ -2150,6 +2170,7 @@ async function loadLifecycleHistory() {
       'hot_reload':  { icon: '↻', color: '#00ffee' },
       'auto_resume': { icon: '⟳', color: '#00aaff' },
       'directive':   { icon: '→', color: '#ddba00' },
+      'plan':        { icon: '📋', color: '#9055ee' },
     }
     const s = HISTORY_STYLES[ev.type] ?? { icon: '·', color: '#666' }
 
@@ -2987,7 +3008,7 @@ const LC_ICONS = {
   play: '▶', started: '⚡', fine: '◼', kill: '✕', exit: '■',
   usage_limit: '⏸', resume: '↻', commit: '✔', feature: '▶',
   cycle_close: '◼', hot_reload: '↻', auto_resume: '⟳',
-  directive: '→', error: '⚠'
+  directive: '→', error: '⚠', plan: '📋'
 }
 
 async function loadLifecycleTimeline() {
