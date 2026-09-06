@@ -535,8 +535,8 @@ describe('getClaudeUsage — token estimation and caching', () => {
     expect(body).toContain('usageTracker')
   })
 
-  it('caches for 25 seconds', () => {
-    expect(body).toContain('25_000')
+  it('caches for ~24.25 seconds', () => {
+    expect(body).toContain('24_250')
   })
 
   it('checks runStarted matches for cache validity', () => {
@@ -716,8 +716,8 @@ describe('startMetricsSampling — periodic metrics push', () => {
     expect(body).toContain('metricsSamplers.has(dir)')
   })
 
-  it('samples every 30 seconds', () => {
-    expect(body).toContain('30_000')
+  it('samples every ~33.5 seconds', () => {
+    expect(body).toContain('33_538')
   })
 
   it('samples process resources', () => {
@@ -835,8 +835,8 @@ describe('startHotReloadWatcher', () => {
     expect(body).toContain('recursive: true')
   })
 
-  it('debounces with 500ms timeout', () => {
-    expect(body).toContain('500')
+  it('debounces with 538ms timeout', () => {
+    expect(body).toContain('538')
     expect(body).toContain('hotReloadDebounce')
   })
 

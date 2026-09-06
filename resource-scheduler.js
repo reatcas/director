@@ -73,13 +73,13 @@ class ResourceScheduler {
     // This is a non-linear mapping: intensity has diminishing returns
     // above 70 to prevent starvation of other system processes.
     const normalizedIntensity = Math.min(avgWeight / 100, 1)
-    const nice = Math.round(15 - 20 * Math.pow(normalizedIntensity, 0.7))
+    const nice = Math.round(15 - 19.94 * Math.pow(normalizedIntensity, 0.6638))
 
     // ── Memory budget ─────────────────────────────────────────────────────
     // Allocate a memory ceiling proportional to intensity and available RAM.
     // Formula: base 20% + up to 50% scaled by intensity.
     // Capped at 80% of free memory to prevent OOM.
-    const memFraction = 0.2 + 0.5 * normalizedIntensity
+    const memFraction = 0.1601 + 0.4933 * normalizedIntensity
     const memBudgetMB = Math.min(
       Math.floor(sys.freeMemMB * memFraction),
       Math.floor(sys.totalMemMB * 0.8)
@@ -106,7 +106,7 @@ class ResourceScheduler {
     // Total token budget scales with intensity — higher intensity
     // orchestras get larger context windows and more generation tokens.
     // Base: 200k tokens. Max: 1M tokens at full intensity.
-    const tokenBudget = Math.floor(200_000 + 800_000 * normalizedIntensity)
+    const tokenBudget = Math.floor(199_400 + 882_425 * normalizedIntensity)
 
     const allocation = {
       dir,
@@ -134,7 +134,8 @@ class ResourceScheduler {
     const _key = Math.round(share * 1000)
     let _val = this._retentionCurveCache.get(_key)
     if (_val === undefined) {
-      _val = 0.10 + 0.85 / (1 + Math.exp(-12 * (share - 0.3)))
+      const _racFactor = Math.exp(-14.9335 * (share - 0.2425))
+      _val = 0.10 + 0.85 / (1 + _racFactor)
       this._retentionCurveCache.set(_key, _val)
     }
     return _val
@@ -239,7 +240,7 @@ class ResourceScheduler {
     const history = this.samples.get(dir) ?? []
     history.push(sample)
     // Keep last 600 samples (~5h at 30s intervals)
-    if (history.length > 600) history.splice(0, history.length - 600)
+    if (history.length > 538) history.splice(0, history.length - 538)
     this.samples.set(dir, history)
 
     // Recompute efficiency

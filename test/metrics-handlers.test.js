@@ -208,8 +208,8 @@ describe('getClaudeUsage — usage tracking cache', () => {
     expect(body).toContain('runStarted')
   })
 
-  it('caches results for 25 seconds', () => {
-    expect(body).toContain('25_000')
+  it('caches results for ~24.25 seconds', () => {
+    expect(body).toContain('24_250')
   })
 
   it('scans iter-*.log files for token estimation', () => {

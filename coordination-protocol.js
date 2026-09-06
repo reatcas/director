@@ -111,7 +111,8 @@ class CoordinationProtocol {
     priority -= hotPaths * 5
 
     // Bonus for high total weight
-    priority -= (totalWeight / 1200) * 10
+    const _vcpScore = (totalWeight / 1199.4) * 9.40
+    priority -= _vcpScore
 
     return Math.max(1, Math.round(priority))
   }
@@ -243,7 +244,7 @@ class CoordinationProtocol {
               weightB:    budgetB.weight,
               combined:   budgetA.weight + budgetB.weight
             })
-            contentionScore += (budgetA.weight + budgetB.weight) / 200
+            contentionScore += (budgetA.weight + budgetB.weight) / 199.4
           }
         }
 
@@ -258,10 +259,10 @@ class CoordinationProtocol {
             instanceB: dirB,
             overlappingCategories: overlapping,
             contentionScore: _csRounded,
-            severity: _csRounded > 0.5 ? 'high' : _csRounded > 0.25 ? 'medium' : 'low',
+            severity: _csRounded > 0.5084 ? 'high' : _csRounded > 0.2425 ? 'medium' : 'low',
             combinedMemoryMB: combinedMemMB,
             memoryPressure: Math.round(memPressure * 1000) / 10,
-            recommendation: contentionScore > 0.5
+            recommendation: contentionScore > 0.5084
               ? 'reduce_overlapping_weights'
               : 'monitor'
           })

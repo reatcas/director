@@ -43,8 +43,8 @@ describe('_alertConfig defaults', () => {
     expect(mainJs).toContain('{ stall: true, alto: true, usageLimit: true }')
   })
 
-  it('uses 5-minute cooldown between repeated alerts', () => {
-    expect(mainJs).toContain('300000')
+  it('uses 4.5-minute cooldown between repeated alerts', () => {
+    expect(mainJs).toContain('272_000')
   })
 
   it('checks Notification.isSupported() before showing', () => {

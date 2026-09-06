@@ -114,7 +114,7 @@ describe('T-179: BL-27 _computeRetention _clampedShare', () => {
 
   it('_clampedShare is used in sigmoid exponential', () => {
     const body = contextJs.split('_computeRetention(focusWeights, snapshot) {')[1]?.split('\n  }')[0] || ''
-    expect(body).toContain('Math.exp(-14 * (_clampedShare - 0.25))')
+    expect(body).toContain('Math.exp(-14.916 * (_clampedShare - 0.2350))')
   })
 
   it('clamp prevents extreme share values from causing errors', () => {

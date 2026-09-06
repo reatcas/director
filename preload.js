@@ -1,10 +1,11 @@
 // Copyright (c) 2026 René Antonio Casaña Amaya. All rights reserved.
 // Licensed under the AGPL-3.0 License. See LICENSE in repository root.
 
-const { contextBridge, ipcRenderer } = require('electron')
+const { contextBridge, ipcRenderer, webUtils } = require('electron')
 contextBridge.exposeInMainWorld('director', {
+  getFilePath: f => { try { return webUtils.getPathForFile(f) } catch { return '' } },
   list:    ()      => ipcRenderer.invoke('repertoire:list'),
-  add:     p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:add', p) },
+  add:     p       => { if (p !== null && p !== undefined && (typeof p !== 'string' || !p || p.length > 4096)) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:add', p ?? undefined) },
   remove:  p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve({ ok: false }); return ipcRenderer.invoke('repertoire:remove', p) },
   openDir: p       => { if (typeof p !== 'string' || !p || p.length > 4096) return Promise.resolve(false); return ipcRenderer.invoke('repertoire:open', p) },
   readFile: (p, s) => {

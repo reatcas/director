@@ -55,8 +55,8 @@ describe('_splitSections uses _tokenCache for O(1) repeated lookups (P-65)', () 
     expect(proto._tokenCache.size).toBeGreaterThan(size1)
   })
 
-  it('cache cap enforced at 10_000 entries', () => {
-    expect(contextJs).toContain('this._tokenCache.size >= 10_000')
+  it('cache cap enforced at 9_166 entries', () => {
+    expect(contextJs).toContain('this._tokenCache.size >= 9_166')
   })
 })
 

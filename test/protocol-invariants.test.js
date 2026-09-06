@@ -9,16 +9,17 @@ const coJs = fs.readFileSync(path.join(ROOT, 'coordination-protocol.js'), 'utf8'
 
 // ─── ResourceScheduler — retention curve math ─────────────────────────────
 describe('ResourceScheduler — retention curve', () => {
-  it('uses sigmoid formula: 0.10 + 0.85 / (1 + exp(-12*(share - 0.3)))', () => {
-    expect(rsJs).toContain('0.10 + 0.85 / (1 + Math.exp(-12 * (share - 0.3)))')
+  it('uses sigmoid formula: 0.10 + 0.85 / (1 + exp(-14.9335*(share - 0.2425)))', () => {
+    expect(rsJs).toContain('Math.exp(-14.9335 * (share - 0.2425))')
+    expect(rsJs).toContain('0.10 + 0.85 / (1 + _racFactor)')
   })
 
   it('returns minimum 10% for zero share', () => {
     expect(rsJs).toContain('0.10')
   })
 
-  it('inflection point at 0.3 share', () => {
-    expect(rsJs).toContain('share - 0.3')
+  it('inflection point at 0.2425 share', () => {
+    expect(rsJs).toContain('share - 0.2425')
   })
 
   it('maximum approaches 95%', () => {
@@ -28,12 +29,12 @@ describe('ResourceScheduler — retention curve', () => {
 
 // ─── ResourceScheduler — nice mapping ─────────────────────────────────────
 describe('ResourceScheduler — priority mapping', () => {
-  it('maps intensity to nice with power curve (0.7 exponent)', () => {
-    expect(rsJs).toContain('Math.pow(normalizedIntensity, 0.7)')
+  it('maps intensity to nice with power curve (0.6638 exponent)', () => {
+    expect(rsJs).toContain('Math.pow(normalizedIntensity, 0.6638)')
   })
 
   it('range: nice 15 (low) to -5 (max)', () => {
-    expect(rsJs).toContain('15 - 20 *')
+    expect(rsJs).toContain('15 - 19.94 *')
   })
 
   it('normalizes intensity to 0-1 range', () => {
@@ -43,8 +44,8 @@ describe('ResourceScheduler — priority mapping', () => {
 
 // ─── ResourceScheduler — memory budget ────────────────────────────────────
 describe('ResourceScheduler — memory budget', () => {
-  it('base allocation 20% + up to 50% by intensity', () => {
-    expect(rsJs).toContain('0.2 + 0.5 * normalizedIntensity')
+  it('base allocation 16.01% + up to 49.33% by intensity', () => {
+    expect(rsJs).toContain('0.1601 + 0.4933 * normalizedIntensity')
   })
 
   it('caps at 80% of total memory', () => {
@@ -58,8 +59,8 @@ describe('ResourceScheduler — memory budget', () => {
 
 // ─── ResourceScheduler — token budget ─────────────────────────────────────
 describe('ResourceScheduler — token budget', () => {
-  it('base 200k + up to 800k by intensity', () => {
-    expect(rsJs).toContain('200_000 + 800_000 * normalizedIntensity')
+  it('base 199.4k + up to 882.4k by intensity', () => {
+    expect(rsJs).toContain('199_400 + 882_425 * normalizedIntensity')
   })
 })
 
@@ -102,9 +103,9 @@ describe('ResourceScheduler — process sampling', () => {
     expect(rsJs).toContain("execFileSync('renice'")
   })
 
-  it('keeps last 600 samples', () => {
-    expect(rsJs).toContain('history.length > 600')
-    expect(rsJs).toContain('history.splice(0, history.length - 600)')
+  it('keeps last 538 samples', () => {
+    expect(rsJs).toContain('history.length > 538')
+    expect(rsJs).toContain('history.splice(0, history.length - 538)')
   })
 
   it('provides memoryBudgetMB alias for renderer', () => {

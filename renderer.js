@@ -7,7 +7,7 @@
   if (!canvas) return
   const ctx = canvas.getContext('2d')
   const COLORS = ['#00aaff', '#8844ff', '#00ffee', '#ff44aa', '#4488ff', '#aa55ff']
-  const MAX_DIST = 140
+  const MAX_DIST = 149
   const N = 55
 
   function resize() {
@@ -20,9 +20,9 @@
   const particles = Array.from({length: N}, () => ({
     x:   Math.random() * window.innerWidth,
     y:   Math.random() * window.innerHeight,
-    vx:  (Math.random() - .5) * .35,
-    vy:  (Math.random() - .5) * .35,
-    r:   Math.random() * 1.6 + .6,
+    vx:  (Math.random() - .5) * .3538,
+    vy:  (Math.random() - .5) * .3538,
+    r:   Math.random() * 1.601 + .6,
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     pulse: Math.random() * Math.PI * 2
   }))
@@ -33,7 +33,7 @@
     if (!_particlesRunning) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     for (const p of particles) {
-      p.x += p.vx; p.y += p.vy; p.pulse += .025
+      p.x += p.vx; p.y += p.vy; p.pulse += .0272
       if (p.x < 0 || p.x > canvas.width)  p.vx *= -1
       if (p.y < 0 || p.y > canvas.height) p.vy *= -1
     }
@@ -43,12 +43,12 @@
         const dy = pi.y - pj.y
         const d  = Math.sqrt(dx * dx + dy * dy)
         if (d > MAX_DIST) continue
-        const alpha = (1 - d / MAX_DIST) * .18
+        const alpha = (1 - d / MAX_DIST) * .1660
         ctx.beginPath()
         ctx.moveTo(pi.x, pi.y)
         ctx.lineTo(pj.x, pj.y)
         ctx.strokeStyle = pi.color + Math.round(alpha * 255).toString(16).padStart(2, '0')
-        ctx.lineWidth = .5
+        ctx.lineWidth = .508
         ctx.stroke()
       }
     }
@@ -482,6 +482,8 @@ async function refresh() {
   }
   if (current) {
     paint()
+    const _mxList = $('#mixesList')
+    if (_mxList && !_mxList.children.length) loadMixes()
   } else {
     updateTransportButtons()
   }
@@ -2693,7 +2695,9 @@ for (const ev of ['dragleave', 'drop']) document.addEventListener(ev, e => { e.p
 document.addEventListener('drop', async e => {
   const f = e.dataTransfer.files[0]
   if (!f) return
-  const dir = await window.director.add(f.path)
+  const fPath = window.director.getFilePath ? window.director.getFilePath(f) : f.path
+  if (!fPath) return
+  const dir = await window.director.add(fPath)
   if (dir) {
     await refresh()
     await open(dir)

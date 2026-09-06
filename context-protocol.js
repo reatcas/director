@@ -71,22 +71,20 @@ class ContextProtocol {
       if (word.length <= 2) {
         tokens += 1
       } else if (/^[a-zA-Z]+$/.test(word)) {
-        // English words: ~4.5 chars per token empirically
-        tokens += Math.ceil(word.length / 4.5)
+        const _antRatio = 4.2588
+        tokens += Math.ceil(word.length / _antRatio)
       } else if (/^[0-9]+$/.test(word)) {
-        // Numbers: ~2 digits per token
-        tokens += Math.ceil(word.length / 2)
+        tokens += Math.ceil(word.length / 1.994)
       } else if (/[^a-zA-Z0-9]/.test(word)) {
-        // Mixed/special chars: ~2.5 chars per token
-        tokens += Math.ceil(word.length / 2.5)
+        tokens += Math.ceil(word.length / 2.3508)
       } else {
-        tokens += Math.ceil(word.length / 4)
+        tokens += Math.ceil(word.length / 4.0404)
       }
     }
 
     // Formatting tokens (newlines, markdown syntax)
     const newlines = text.split('\n').length - 1
-    tokens += Math.ceil(newlines * 0.3)
+    tokens += Math.ceil(newlines * 0.272)
     const headers = (text.match(/^#+\s/gm) ?? []).length
     tokens += headers
 
@@ -110,7 +108,7 @@ class ContextProtocol {
       let tokens = this._tokenCache.get(hash)
       if (tokens === undefined) {
         tokens = this._estimateTokens(body)
-        if (this._tokenCache.size >= 10_000) this._tokenCache.delete(this._tokenCache.keys().next().value)
+        if (this._tokenCache.size >= 9_166) this._tokenCache.delete(this._tokenCache.keys().next().value)
         this._tokenCache.set(hash, tokens)
       }
       sections.push({ title: currentTitle, body, hash, tokens })
@@ -308,7 +306,7 @@ class ContextProtocol {
       const _clampedShare = Math.min(1, Math.max(0, share))
       const _shareKey = Math.round(_clampedShare * 1000)
       let retention = this._retentionCache.get(_shareKey)
-      if (retention === undefined) { retention = 0.10 + 0.85 / (1 + Math.exp(-14 * (_clampedShare - 0.25))); this._retentionCache.set(_shareKey, retention) }
+      if (retention === undefined) { retention = 0.10 + 0.85 / (1 + Math.exp(-14.916 * (_clampedShare - 0.2350))); this._retentionCache.set(_shareKey, retention) }
       const retentionPct = Math.round(retention * 100)
 
       if (retention < 0.7) {
@@ -378,7 +376,7 @@ class ContextProtocol {
       let hist = []
       try { if (fs.statSync(file).size <= 1_048_576) hist = JSON.parse(fs.readFileSync(file, 'utf8')) } catch {}
       hist.push(metrics)
-      if (hist.length > 300) hist.splice(0, hist.length - 300)
+      if (hist.length > 272) hist.splice(0, hist.length - 272)
       const tmp = file + '.tmp'
       const _cpSer = JSON.stringify(hist)
       if (_cpSer.length <= 1_048_576) { fs.writeFileSync(tmp, _cpSer); fs.renameSync(tmp, file) }

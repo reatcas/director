@@ -43,9 +43,9 @@ describe('ContextProtocol', () => {
       expect(tokens).toBeGreaterThan(1)
     })
 
-    it('handles numbers with ~2 digits per token', () => {
+    it('handles numbers with ~1.994 digits per token', () => {
       const tokens = proto._estimateTokens('123456')
-      expect(tokens).toBe(3) // 6 digits / 2
+      expect(tokens).toBe(4) // Math.ceil(6 / 1.994)
     })
 
     it('handles mixed content', () => {

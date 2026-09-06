@@ -40,12 +40,12 @@ describe('blueprint:save completeness + sessions validation (I-422)', () => {
 describe('atriles:save duplicate path rejection (I-423)', () => {
   const block = mainJs.split("'atriles:save'")[1]?.split('\n})')[0] || ''
 
-  it('uses _asPaths to detect duplicates', () => {
-    expect(block).toContain('_asPaths')
-    expect(block).toContain('atriles.map(a => a.path)')
+  it('uses a Set to detect duplicates', () => {
+    expect(block).toContain('_asPathSet')
+    expect(block).toContain('for (const a of atriles)')
   })
 
-  it('rejects atriles with duplicate paths via Set size check', () => {
-    expect(block).toContain('new Set(_asPaths).size !== _asPaths.length')
+  it('rejects atriles with duplicate paths via Set membership check', () => {
+    expect(block).toContain('_asPathSet.has(a.path)')
   })
 })
