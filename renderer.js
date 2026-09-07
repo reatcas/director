@@ -127,7 +127,16 @@ let _sectionsCacheKey = ''
 
 async function loadCustomAtriles() {
   customAtriles = await window.director.atrilesList() ?? []
-  for (const a of customAtriles) { if (!a.path || a.path === a.id) a.path = '/custom-stand/' + (a.id || a.name || 'stand') }
+  const _usedPaths = new Set()
+  for (let i = 0; i < customAtriles.length; i++) {
+    const a = customAtriles[i]
+    if (!a.path || a.path === a.id || !a.path.startsWith('/')) {
+      let p = '/custom-stand/' + (a.id || a.name || 'stand-' + i)
+      while (_usedPaths.has(p)) p += '-' + i
+      a.path = p
+    }
+    _usedPaths.add(a.path)
+  }
   _sectionsCache = null
 }
 

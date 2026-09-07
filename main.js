@@ -1357,7 +1357,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (cfg.compactAt !== undefined && (typeof cfg.compactAt !== 'number' || !Number.isFinite(cfg.compactAt) || cfg.compactAt < 0 || cfg.compactAt > 100)) return false
   if (cfg.quietFlags !== undefined && (typeof cfg.quietFlags !== 'string' || cfg.quietFlags.length > 256 || /[^-a-zA-Z0-9 =./]/.test(cfg.quietFlags))) return false
   if (cfg.smartMix !== undefined && typeof cfg.smartMix !== 'boolean') return false
-  if (cfg.smartModel !== undefined && (typeof cfg.smartModel !== 'string' || cfg.smartModel.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.smartModel))) return false
+  if (cfg.smartModel !== undefined && typeof cfg.smartModel !== 'boolean' && (typeof cfg.smartModel !== 'string' || cfg.smartModel.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.smartModel))) return false
   if (cfg.modelFast !== undefined && (typeof cfg.modelFast !== 'string' || cfg.modelFast.length > 256 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.modelFast))) return false
   if (cfg.architectInterval !== undefined && (!Number.isInteger(cfg.architectInterval) || cfg.architectInterval < 1 || cfg.architectInterval > 1000)) return false
   if (cfg.autoSwitch !== undefined && typeof cfg.autoSwitch !== 'boolean') return false
