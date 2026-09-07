@@ -1356,12 +1356,15 @@ async function loadMixes() {
   const currentFocus = cfg?.focus ?? {}
   const normalizedCurrent = normalizeMixerValues(currentFocus, getAllSections())
 
-  activeMixId = null
-  for (const m of mixes) {
-    const normalizedMix = normalizeMixerValues(m.focus, getAllSections())
-    if (_isMixActive(normalizedMix, normalizedCurrent)) {
-      activeMixId = m.id
-      break
+  activeMixId = cfg?.activeMix ?? null
+  if (!activeMixId || !mixes.find(m => m.id === activeMixId)) {
+    activeMixId = null
+    for (const m of mixes) {
+      const normalizedMix = normalizeMixerValues(m.focus, getAllSections())
+      if (_isMixActive(normalizedMix, normalizedCurrent)) {
+        activeMixId = m.id
+        break
+      }
     }
   }
 
@@ -1436,8 +1439,10 @@ async function _loadMix(m) {
   if (current) {
     const cfg = await window.director.mixerRead(current) ?? {}
     cfg.smartMix = !!m.smart
+    cfg.activeMix = m.id
     await window.director.configWrite(current, cfg)
   }
+  activeMixId = m.id
   loadMixer()
   loadMixes()
   showToast(m.smart ? 'Smart Mix activated — self-regulating' : 'Mix "' + m.name + '" loaded')
