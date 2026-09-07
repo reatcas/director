@@ -3048,6 +3048,54 @@ html.light .mix-brain-active { color: var(--ai-cyan); filter: drop-shadow(0 0 4p
 html.light .mix-menu-btn { color: var(--dim); }
 html.light .mix-menu-btn:hover { background: rgba(0,0,0,0.06); color: var(--txt); }
 
+/* ── Integrations panel ────────────────────────────────── */
+.bp-integrations { padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.bp-int-header { margin-bottom: 6px; }
+.bp-int-cards { display: flex; gap: 6px; flex-wrap: wrap; }
+.bp-int-card {
+  flex: 1; min-width: 90px; max-width: 140px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: border-color .15s, background .15s;
+}
+.bp-int-card:hover { border-color: var(--ai-cyan); background: rgba(0,255,238,0.03); }
+.bp-int-card.connected { border-color: rgba(40,168,40,0.4); }
+.bp-int-icon { font-size: 18px; line-height: 1; }
+.bp-int-name { font: 600 9px var(--sans); color: var(--txt); text-transform: uppercase; letter-spacing: 0.5px; }
+.bp-int-status { font: 400 8px var(--mono); color: var(--dim2); }
+.bp-int-status.on { color: #28a828; }
+.bp-sync-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 6px; padding: 6px;
+  background: rgba(0,255,238,0.08); border: 1px solid rgba(0,255,238,0.2);
+  border-radius: 6px; color: var(--ai-cyan);
+  font: 600 10px var(--sans); letter-spacing: 1px;
+  cursor: pointer; transition: background .15s;
+}
+.bp-sync-btn:hover { background: rgba(0,255,238,0.15); }
+.bp-sync-btn:disabled { opacity: 0.4; cursor: default; }
+.bp-feedback { padding: 8px 12px; background: rgba(221,186,0,0.06); border: 1px solid rgba(221,186,0,0.2); border-radius: 6px; margin: 6px 12px; font: 400 10px var(--sans); color: var(--txt); }
+.bp-feedback-title { font-weight: 700; margin-bottom: 4px; }
+.bp-feedback-item { color: var(--dim); padding: 2px 0; }
+.bp-feedback-item::before { content: '\2022 '; color: var(--fl-yellow); }
+.bp-int-modal-field {
+  width: 100%; padding: 7px 10px; margin: 4px 0 8px;
+  background: var(--bg); border: 1px solid var(--line2); border-radius: var(--radius-sm);
+  color: var(--txt); font: 11px var(--mono); outline: none;
+  transition: border-color .2s;
+}
+.bp-int-modal-field:focus { border-color: var(--ai-cyan); }
+.bp-int-modal-label { font: 700 8px var(--sans); color: var(--dim); letter-spacing: 1px; display: block; margin-top: 8px; }
+.bp-int-modal-row { display: flex; gap: 6px; align-items: center; }
+.bp-int-modal-row .bp-int-modal-field { flex: 1; }
+
+html.light .bp-int-card { background: rgba(0,0,0,0.02); }
+html.light .bp-int-card:hover { background: rgba(0,122,110,0.04); border-color: var(--ai-cyan); }
+html.light .bp-int-card.connected { border-color: rgba(26,154,58,0.4); }
+html.light .bp-sync-btn { background: rgba(0,122,110,0.06); border-color: rgba(0,122,110,0.2); color: var(--ai-cyan); }
+html.light .bp-feedback { background: rgba(154,128,0,0.06); border-color: rgba(154,128,0,0.2); }
+
 /* ── Reduced motion ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

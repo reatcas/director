@@ -85,7 +85,8 @@ describe('ARIA labels on interactive elements', () => {
       l.includes('Análisis') || l.includes('Distribución') || l.includes('Fases') ||
       l.includes('Proyecto') || l.includes('Ruta') ||
       l.includes('Número') || l.includes('procesos') || l.includes('activos') ||
-      l.includes('eventos') || l.includes('ciclo') || l.includes('pesos')
+      l.includes('eventos') || l.includes('ciclo') || l.includes('pesos') ||
+      l.includes('Sincronizar') || l.includes('fuentes') || l.includes('Configurar') || l.includes('integración')
     )
     expect(spanishLabels.length).toBeGreaterThanOrEqual(ariaLabels.length - 3)
   })

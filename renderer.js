@@ -3382,7 +3382,281 @@ if ($('#bpInput')) $('#bpInput').addEventListener('keydown', e => {
   }
 })
 
-// Blueprint loads via mixer tab click handler
+// ─── Integrations ────────────────────────────────────────────────────────────
+const INT_DEFS = [
+  { key: 'notion',   icon: 'N', name: 'Notion',   statusOn: 'conectado', statusOff: 'sin API key' },
+  { key: 'obsidian', icon: '◆', name: 'Obsidian', statusOn: 'vault listo', statusOff: 'sin vault' },
+  { key: 'markdown', icon: '▤', name: 'Markdown', statusOn: 'carpeta lista', statusOff: 'sin carpeta' }
+]
+
+let _intConfig = {}
+let _intPrevFocus = null
+
+async function loadIntegrationConfig() {
+  _intConfig = await window.director.integrationConfigRead() ?? {}
+}
+
+function intIsConfigured(key) {
+  if (key === 'notion') return !!(_intConfig.notion && _intConfig.notion.apiKey && _intConfig.notion.apiKey !== '****')
+  if (key === 'obsidian') return !!(_intConfig.obsidian && _intConfig.obsidian.vaultPath)
+  if (key === 'markdown') return !!(_intConfig.markdown && _intConfig.markdown.folderPath)
+  return false
+}
+
+function renderIntCards() {
+  const container = document.getElementById('bpIntCards')
+  if (!container) return
+  container.innerHTML = ''
+  let anyConfigured = false
+  for (const def of INT_DEFS) {
+    const configured = intIsConfigured(def.key)
+    if (configured) anyConfigured = true
+    const card = document.createElement('div')
+    card.className = 'bp-int-card' + (configured ? ' connected' : '')
+    card.setAttribute('role', 'button')
+    card.setAttribute('tabindex', '0')
+    card.setAttribute('aria-label', `Configurar ${def.name}`)
+    card.innerHTML = `<span class="bp-int-icon">${def.icon}</span><span class="bp-int-name">${def.name}</span><span class="bp-int-status${configured ? ' on' : ''}">${configured ? def.statusOn : def.statusOff}</span>`
+    card.onclick = () => openIntModal(def.key)
+    card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openIntModal(def.key) } }
+    container.appendChild(card)
+  }
+  const syncBtn = document.getElementById('bpSyncBtn')
+  if (syncBtn) syncBtn.disabled = !anyConfigured
+}
+
+function openIntModal(key) {
+  const modal = document.getElementById('integrationModal')
+  if (!modal) return
+  _intPrevFocus = document.activeElement
+  const title = document.getElementById('intModalTitle')
+  const body = document.getElementById('intModalBody')
+  if (!title || !body) return
+
+  if (key === 'notion') {
+    title.textContent = 'NOTION'
+    const hasKey = !!(_intConfig.notion && _intConfig.notion.apiKey)
+    const dbId = _intConfig.notion?.databaseId ?? ''
+    body.innerHTML = `
+      <label class="bp-int-modal-label">API KEY</label>
+      <input id="intNotionKey" type="password" class="bp-int-modal-field" placeholder="secret_..." value="${hasKey ? _intConfig.notion.apiKey : ''}" autocomplete="off" aria-label="Notion API Key">
+      <button id="intNotionTest" class="tp-action" style="width:100%;padding:6px;margin-bottom:8px" aria-label="Probar conexión con Notion">TEST CONNECTION</button>
+      <label class="bp-int-modal-label">DATABASE</label>
+      <select id="intNotionDb" class="bp-int-modal-field" style="font-size:11px" aria-label="Base de datos de Notion">
+        ${dbId ? `<option value="${esc(dbId)}" selected>${esc(dbId)}</option>` : '<option value="">-- seleccionar --</option>'}
+      </select>
+      <div id="intNotionStatus" style="font:9px var(--mono);color:var(--dim2);padding:4px 0"></div>
+      <button id="intNotionSave" class="tp-action upgrade" style="width:100%;padding:7px;margin-top:8px" aria-label="Guardar configuración de Notion">GUARDAR</button>
+    `
+    const testBtn = document.getElementById('intNotionTest')
+    if (testBtn) testBtn.onclick = async () => {
+      const keyInput = document.getElementById('intNotionKey')
+      const status = document.getElementById('intNotionStatus')
+      if (!keyInput || !keyInput.value.trim()) { if (status) status.textContent = 'Ingresa una API key'; return }
+      if (status) status.textContent = 'Conectando...'
+      await window.director.integrationConfigWrite({ notion: { apiKey: keyInput.value.trim() } })
+      await loadIntegrationConfig()
+      const res = await window.director.integrationNotionDatabases()
+      if (res && res.ok) {
+        const sel = document.getElementById('intNotionDb')
+        if (sel) {
+          sel.innerHTML = '<option value="">-- seleccionar --</option>'
+          for (const db of res.databases) { const opt = document.createElement('option'); opt.value = db.id; opt.textContent = db.title || db.id; sel.appendChild(opt) }
+          if (_intConfig.notion?.databaseId) sel.value = _intConfig.notion.databaseId
+        }
+        if (status) status.textContent = `${res.databases.length} bases de datos encontradas`
+      } else {
+        if (status) status.textContent = `Error: ${res?.error ?? 'conexion fallida'}`
+      }
+    }
+    const saveBtn = document.getElementById('intNotionSave')
+    if (saveBtn) saveBtn.onclick = async () => {
+      const keyInput = document.getElementById('intNotionKey')
+      const dbSel = document.getElementById('intNotionDb')
+      const cfg = {}
+      if (keyInput && keyInput.value.trim()) cfg.apiKey = keyInput.value.trim()
+      if (dbSel && dbSel.value) cfg.databaseId = dbSel.value
+      await window.director.integrationConfigWrite({ notion: cfg })
+      await loadIntegrationConfig()
+      renderIntCards()
+      closeIntModal()
+      showToast('Notion configurado')
+    }
+  }
+
+  if (key === 'obsidian') {
+    title.textContent = 'OBSIDIAN'
+    const vp = _intConfig.obsidian?.vaultPath ?? ''
+    const tags = (_intConfig.obsidian?.tags ?? []).join(', ')
+    body.innerHTML = `
+      <label class="bp-int-modal-label">VAULT PATH</label>
+      <div class="bp-int-modal-row">
+        <input id="intObsVault" type="text" class="bp-int-modal-field" value="${esc(vp)}" placeholder="/Users/.../vault" aria-label="Ruta del vault de Obsidian">
+        <button id="intObsBrowse" class="tp-action" style="padding:6px 10px;white-space:nowrap" aria-label="Seleccionar carpeta del vault">...</button>
+      </div>
+      <label class="bp-int-modal-label">FILTRAR POR TAGS (separados por coma)</label>
+      <input id="intObsTags" type="text" class="bp-int-modal-field" value="${esc(tags)}" placeholder="feature, bug, spec" aria-label="Tags para filtrar notas de Obsidian">
+      <button id="intObsSave" class="tp-action upgrade" style="width:100%;padding:7px;margin-top:8px" aria-label="Guardar configuración de Obsidian">GUARDAR</button>
+    `
+    const browseBtn = document.getElementById('intObsBrowse')
+    if (browseBtn) browseBtn.onclick = async () => {
+      const picked = await window.director.integrationPickFolder()
+      if (picked) { const inp = document.getElementById('intObsVault'); if (inp) inp.value = picked }
+    }
+    const saveBtn = document.getElementById('intObsSave')
+    if (saveBtn) saveBtn.onclick = async () => {
+      const vaultInput = document.getElementById('intObsVault')
+      const tagsInput = document.getElementById('intObsTags')
+      const cfg = {}
+      if (vaultInput && vaultInput.value.trim()) cfg.vaultPath = vaultInput.value.trim()
+      if (tagsInput) {
+        const parts = tagsInput.value.split(',').map(s => s.trim()).filter(Boolean)
+        cfg.tags = parts
+      }
+      await window.director.integrationConfigWrite({ obsidian: cfg })
+      await loadIntegrationConfig()
+      renderIntCards()
+      closeIntModal()
+      showToast('Obsidian configurado')
+    }
+  }
+
+  if (key === 'markdown') {
+    title.textContent = 'MARKDOWN'
+    const fp = _intConfig.markdown?.folderPath ?? ''
+    body.innerHTML = `
+      <label class="bp-int-modal-label">CARPETA</label>
+      <div class="bp-int-modal-row">
+        <input id="intMdFolder" type="text" class="bp-int-modal-field" value="${esc(fp)}" placeholder="/Users/.../notes" aria-label="Ruta de la carpeta de notas markdown">
+        <button id="intMdBrowse" class="tp-action" style="padding:6px 10px;white-space:nowrap" aria-label="Seleccionar carpeta de notas">...</button>
+      </div>
+      <button id="intMdSave" class="tp-action upgrade" style="width:100%;padding:7px;margin-top:8px" aria-label="Guardar configuración de Markdown">GUARDAR</button>
+    `
+    const browseBtn = document.getElementById('intMdBrowse')
+    if (browseBtn) browseBtn.onclick = async () => {
+      const picked = await window.director.integrationPickFolder()
+      if (picked) { const inp = document.getElementById('intMdFolder'); if (inp) inp.value = picked }
+    }
+    const saveBtn = document.getElementById('intMdSave')
+    if (saveBtn) saveBtn.onclick = async () => {
+      const folderInput = document.getElementById('intMdFolder')
+      const cfg = {}
+      if (folderInput && folderInput.value.trim()) cfg.folderPath = folderInput.value.trim()
+      cfg.extensions = ['.md', '.txt']
+      await window.director.integrationConfigWrite({ markdown: cfg })
+      await loadIntegrationConfig()
+      renderIntCards()
+      closeIntModal()
+      showToast('Markdown configurado')
+    }
+  }
+
+  modal.hidden = false
+  requestAnimationFrame(() => {
+    const first = modal.querySelector('input, button, select, textarea, [tabindex]:not([tabindex="-1"])')
+    if (first) first.focus()
+  })
+}
+
+function closeIntModal() {
+  const modal = document.getElementById('integrationModal')
+  if (modal) modal.hidden = true
+  if (_intPrevFocus) { _intPrevFocus.focus(); _intPrevFocus = null }
+}
+
+if (document.getElementById('closeIntModal')) document.getElementById('closeIntModal').onclick = closeIntModal
+
+async function runIntSync() {
+  if (!current) return
+  const syncBtn = document.getElementById('bpSyncBtn')
+  const statusEl = document.getElementById('bpSyncStatus')
+  if (syncBtn) syncBtn.disabled = true
+  if (statusEl) { statusEl.style.display = ''; statusEl.textContent = 'Preparando...' }
+
+  const allItems = []
+  const types = ['notion', 'obsidian', 'markdown']
+  for (const type of types) {
+    if (!intIsConfigured(type)) continue
+    if (statusEl) statusEl.textContent = `Sincronizando ${type}...`
+    try {
+      const res = await window.director.integrationSync(type, current)
+      if (res && res.ok && Array.isArray(res.items)) {
+        for (const item of res.items) allItems.push(item)
+      } else if (res && !res.ok) {
+        showToast(`Error ${type}: ${res.error ?? 'desconocido'}`)
+      }
+    } catch (err) {
+      showToast(`Error ${type}: ${err.message ?? 'desconocido'}`)
+    }
+  }
+
+  if (allItems.length === 0) {
+    if (statusEl) statusEl.textContent = 'Sin elementos para sincronizar'
+    if (syncBtn) syncBtn.disabled = false
+    setTimeout(() => { if (statusEl) statusEl.style.display = 'none' }, 3000)
+    return
+  }
+
+  if (statusEl) statusEl.textContent = `Actualizando blueprint con ${allItems.length} elementos...`
+  const result = await window.director.integrationSyncToBlueprint(allItems, current)
+  if (result && result.ok) {
+    if (statusEl) statusEl.textContent = `${allItems.length} elementos sincronizados \u2192 ${result.added} nuevos modulos`
+    showToast(`${result.added} modulos sincronizados`)
+    bpLoad()
+  } else {
+    if (statusEl) statusEl.textContent = `Error: ${result?.error ?? 'desconocido'}`
+  }
+
+  if (syncBtn) syncBtn.disabled = false
+  setTimeout(() => { if (statusEl) statusEl.style.display = 'none' }, 5000)
+
+  await checkBpFeedback()
+}
+
+async function checkBpFeedback() {
+  if (!current) return
+  const feedbackEl = document.getElementById('bpFeedback')
+  const itemsEl = document.getElementById('bpFeedbackItems')
+  if (!feedbackEl || !itemsEl) return
+
+  const r = await window.director.blueprintReadiness(current)
+  if (!r || r.ready || !r.missing || r.missing.length === 0) {
+    feedbackEl.style.display = 'none'
+    return
+  }
+
+  itemsEl.innerHTML = ''
+  for (const m of r.missing) {
+    const div = document.createElement('div')
+    div.className = 'bp-feedback-item'
+    div.textContent = m
+    itemsEl.appendChild(div)
+  }
+  feedbackEl.style.display = ''
+}
+
+if (document.getElementById('bpSyncBtn')) document.getElementById('bpSyncBtn').onclick = runIntSync
+
+async function initIntegrations() {
+  await loadIntegrationConfig()
+  renderIntCards()
+}
+initIntegrations()
+
+if (document.getElementById('integrationModal')) document.getElementById('integrationModal').onclick = (e) => { if (e.target === document.getElementById('integrationModal')) closeIntModal() }
+if (document.getElementById('integrationModal')) document.getElementById('integrationModal').addEventListener('keydown', e => {
+  const modal = document.getElementById('integrationModal')
+  if (!modal || modal.hidden) return
+  if (e.key === 'Escape') { closeIntModal(); return }
+  if (e.key === 'Tab') {
+    const focusable = [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+    if (!focusable.length) return
+    e.preventDefault()
+    const idx = focusable.indexOf(document.activeElement)
+    const next = e.shiftKey ? (idx - 1 + focusable.length) % focusable.length : (idx + 1) % focusable.length
+    focusable[next].focus()
+  }
+})
 
 // ─── Atril Modal ─────────────────────────────────────────────────────────────
 let selectedAtrilColor = COLOR_PALETTE[0]
@@ -3827,7 +4101,7 @@ function switchTab(tabId) {
   const pane = document.getElementById(tabId)
   if (tab) { tab.classList.add('on'); tab.setAttribute('aria-selected', 'true') }
   if (pane) { pane.classList.add('on'); pane.setAttribute('aria-hidden', 'false') }
-  if (tabId === 'bpTab') bpLoad()
+  if (tabId === 'bpTab') { bpLoad(); initIntegrations(); checkBpFeedback() }
   if (tabId === 'knowledgeTab') loadKnowledge('ROADMAP.md', 'knBtnRoadmap')
   if (tabId === 'notesTab') loadNotes()
 }
@@ -3838,6 +4112,7 @@ document.addEventListener('keydown', (e) => {
     if ($('#shortcutsModal') && !$('#shortcutsModal').hidden) { $('#shortcutsModal').hidden = true; return }
     if ($('#settingsModal') && !$('#settingsModal').hidden) { $('#settingsModal').hidden = true; const _stBtn = $('#settingsBtn'); if (_stBtn) _stBtn.focus(); return }
     if ($('#aboutModal') && !$('#aboutModal').hidden) { $('#aboutModal').hidden = true; const _abBtn = $('#aboutBtn'); if (_abBtn) _abBtn.focus(); return }
+    if ($('#integrationModal') && !$('#integrationModal').hidden) { closeIntModal(); return }
     return
   }
   const tag = (e.target.tagName ?? '').toLowerCase()

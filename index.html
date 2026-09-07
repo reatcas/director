@@ -479,6 +479,18 @@
 
         <!-- BLUEPRINT tab content -->
         <div id="bpTab" class="mixer-tab-pane" role="tabpanel" aria-labelledby="tab-bpTab">
+          <div id="bpIntegrations" class="bp-integrations">
+            <div class="bp-int-header">
+              <span class="rack-title" style="color:var(--txt)">SOURCES</span>
+            </div>
+            <div class="bp-int-cards" id="bpIntCards"></div>
+            <button id="bpSyncBtn" class="bp-sync-btn" disabled aria-label="Sincronizar fuentes externas">⟳ SYNC</button>
+            <div id="bpSyncStatus" style="display:none;padding:4px 0;font:400 9px var(--mono);color:var(--dim2)"></div>
+          </div>
+          <div id="bpFeedback" class="bp-feedback" style="display:none">
+            <div class="bp-feedback-title">Requisitos pendientes</div>
+            <div id="bpFeedbackItems"></div>
+          </div>
           <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 0">
             <div id="bpPhases" class="bp-phases" role="list" aria-label="Fases del blueprint" style="flex:1"></div>
             <div id="bpReadiness" class="mono" aria-live="polite" style="display:none;font-size:9px;white-space:nowrap;padding:3px 8px;border-radius:3px;border:1px solid rgba(255,255,255,0.06)"></div>
@@ -552,6 +564,13 @@
 <script src="mixer-graph.js"></script>
 <script src="renderer.js"></script>
 <script src="mixer-chart.js"></script>
+<div id="integrationModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-label="Configurar integración">
+  <div class="modal-card" style="width:420px">
+    <button id="closeIntModal" class="modal-close" aria-label="Cerrar">✕</button>
+    <h2 id="intModalTitle" class="modal-title"></h2>
+    <div id="intModalBody"></div>
+  </div>
+</div>
 <div id="mixContextMenu" class="mix-context-menu" hidden></div>
 <div id="standContextMenu" class="stand-context-menu" hidden></div>
 <div id="a11y-live" aria-live="assertive" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"></div>

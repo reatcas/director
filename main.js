@@ -2372,6 +2372,269 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
   return val
 })
 
+// ─── Integrations (Notion / Obsidian / Markdown) ────────────────────────────
+const integrationsFile = () => path.join(app.getPath('userData'), 'integrations.json')
+
+function readIntegrations() {
+  const p = integrationsFile()
+  try { if (fs.statSync(p).size <= 512_000) return readJSON(p, {}) } catch {}
+  return {}
+}
+
+function writeIntegrations(cfg) {
+  writeJSON(integrationsFile(), cfg)
+}
+
+ipcMain.handle('integration:config:read', () => {
+  const cfg = readIntegrations()
+  const masked = JSON.parse(JSON.stringify(cfg))
+  if (masked.notion && typeof masked.notion.apiKey === 'string' && masked.notion.apiKey.length > 4) {
+    masked.notion.apiKey = '****' + masked.notion.apiKey.slice(-4)
+  }
+  return masked
+})
+
+ipcMain.handle('integration:config:write', (_e, cfg) => {
+  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
+  const allowed = new Set(['notion', 'obsidian', 'markdown'])
+  if (Object.keys(cfg).some(k => !allowed.has(k))) return false
+
+  if (cfg.notion) {
+    if (typeof cfg.notion !== 'object' || Array.isArray(cfg.notion)) return false
+    if (cfg.notion.apiKey !== undefined && (typeof cfg.notion.apiKey !== 'string' || cfg.notion.apiKey.length > 256)) return false
+    if (cfg.notion.databaseId !== undefined && (typeof cfg.notion.databaseId !== 'string' || cfg.notion.databaseId.length > 256)) return false
+  }
+  if (cfg.obsidian) {
+    if (typeof cfg.obsidian !== 'object' || Array.isArray(cfg.obsidian)) return false
+    if (cfg.obsidian.vaultPath !== undefined && (typeof cfg.obsidian.vaultPath !== 'string' || cfg.obsidian.vaultPath.length > 4096 || !path.isAbsolute(cfg.obsidian.vaultPath))) return false
+    if (cfg.obsidian.tags !== undefined && (!Array.isArray(cfg.obsidian.tags) || cfg.obsidian.tags.length > 50 || cfg.obsidian.tags.some(t => typeof t !== 'string' || t.length > 128))) return false
+  }
+  if (cfg.markdown) {
+    if (typeof cfg.markdown !== 'object' || Array.isArray(cfg.markdown)) return false
+    if (cfg.markdown.folderPath !== undefined && (typeof cfg.markdown.folderPath !== 'string' || cfg.markdown.folderPath.length > 4096 || !path.isAbsolute(cfg.markdown.folderPath))) return false
+    if (cfg.markdown.extensions !== undefined && (!Array.isArray(cfg.markdown.extensions) || cfg.markdown.extensions.length > 20 || cfg.markdown.extensions.some(e => typeof e !== 'string' || e.length > 16))) return false
+  }
+
+  const existing = readIntegrations()
+  const merged = { ...existing }
+  for (const key of Object.keys(cfg)) {
+    merged[key] = { ...(existing[key] ?? {}), ...cfg[key] }
+  }
+  writeIntegrations(merged)
+  return true
+})
+
+ipcMain.handle('integration:pick-folder', async () => {
+  if (!win) return null
+  const result = await dialog.showOpenDialog(win, { properties: ['openDirectory'] })
+  if (result.canceled || !result.filePaths.length) return null
+  return result.filePaths[0]
+})
+
+ipcMain.handle('integration:notion:databases', async () => {
+  const cfg = readIntegrations()
+  if (!cfg.notion || !cfg.notion.apiKey) return { ok: false, error: 'No API key configured' }
+  try {
+    const res = await fetch('https://api.notion.com/v1/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${cfg.notion.apiKey}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ filter: { value: 'database', property: 'object' }, page_size: 100 })
+    })
+    if (!res.ok) return { ok: false, error: `Notion API ${res.status}` }
+    const data = await res.json()
+    const databases = (data.results ?? []).map(db => ({
+      id: db.id,
+      title: (db.title ?? []).map(t => t.plain_text ?? '').join('')
+    }))
+    return { ok: true, databases }
+  } catch (err) {
+    return { ok: false, error: err.message ?? 'Network error' }
+  }
+})
+
+ipcMain.handle('integration:sync', async (_e, type, dir) => {
+  if (typeof type !== 'string' || !['notion', 'obsidian', 'markdown'].includes(type)) return { ok: false, error: 'Invalid type' }
+  if (dir && (typeof dir !== 'string' || dir.length > 4096)) return { ok: false, error: 'Invalid dir' }
+
+  const cfg = readIntegrations()
+
+  if (type === 'notion') {
+    if (!cfg.notion || !cfg.notion.apiKey || !cfg.notion.databaseId) return { ok: false, error: 'Notion not configured' }
+    try {
+      const pages = []
+      let cursor = undefined
+      for (let i = 0; i < 10; i++) {
+        const body = { page_size: 100 }
+        if (cursor) body.start_cursor = cursor
+        const res = await fetch(`https://api.notion.com/v1/databases/${cfg.notion.databaseId}/query`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${cfg.notion.apiKey}`,
+            'Notion-Version': '2022-06-28',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        })
+        if (!res.ok) return { ok: false, error: `Notion API ${res.status}` }
+        const data = await res.json()
+        for (const page of (data.results ?? [])) {
+          const titleProp = Object.values(page.properties ?? {}).find(p => p.type === 'title')
+          const title = titleProp ? (titleProp.title ?? []).map(t => t.plain_text ?? '').join('') : ''
+          const statusProp = Object.values(page.properties ?? {}).find(p => p.type === 'status' || p.type === 'select')
+          const status = statusProp ? (statusProp.status?.name ?? statusProp.select?.name ?? '') : ''
+          const tagsProp = Object.values(page.properties ?? {}).find(p => p.type === 'multi_select')
+          const tags = tagsProp ? (tagsProp.multi_select ?? []).map(t => t.name) : []
+          pages.push({ id: page.id, title, content: '', tags, status })
+        }
+        if (!data.has_more) break
+        cursor = data.next_cursor
+      }
+      return { ok: true, items: pages }
+    } catch (err) {
+      return { ok: false, error: err.message ?? 'Network error' }
+    }
+  }
+
+  if (type === 'obsidian') {
+    if (!cfg.obsidian || !cfg.obsidian.vaultPath) return { ok: false, error: 'Obsidian vault not configured' }
+    const vaultPath = cfg.obsidian.vaultPath
+    try { fs.statSync(vaultPath) } catch { return { ok: false, error: 'Vault path not found' } }
+    const filterTags = cfg.obsidian.tags ?? []
+    const items = []
+    const walk = (dirPath) => {
+      let entries
+      try { entries = fs.readdirSync(dirPath, { withFileTypes: true }) } catch { return }
+      for (const entry of entries) {
+        if (entry.name.startsWith('.')) continue
+        const full = path.join(dirPath, entry.name)
+        if (entry.isDirectory()) { walk(full); continue }
+        if (!entry.name.endsWith('.md')) continue
+        try {
+          const stat = fs.statSync(full)
+          if (stat.size > 1_048_576) continue
+          const raw = fs.readFileSync(full, 'utf8')
+          let frontmatter = {}
+          let body = raw
+          if (raw.startsWith('---')) {
+            const endIdx = raw.indexOf('---', 3)
+            if (endIdx > 3) {
+              const fmBlock = raw.slice(3, endIdx).trim()
+              body = raw.slice(endIdx + 3).trim()
+              for (const line of fmBlock.split('\n')) {
+                const colonIdx = line.indexOf(':')
+                if (colonIdx < 1) continue
+                const key = line.slice(0, colonIdx).trim()
+                let val = line.slice(colonIdx + 1).trim()
+                if (val.startsWith('[') && val.endsWith(']')) {
+                  val = val.slice(1, -1).split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+                }
+                frontmatter[key] = val
+              }
+            }
+          }
+          let tags = []
+          if (Array.isArray(frontmatter.tags)) tags = frontmatter.tags
+          else if (typeof frontmatter.tags === 'string') tags = [frontmatter.tags]
+          const inlineTags = body.match(/#[\w-]+/g) ?? []
+          for (const t of inlineTags) {
+            const clean = t.slice(1)
+            if (!tags.includes(clean)) tags.push(clean)
+          }
+          if (filterTags.length > 0 && !tags.some(t => filterTags.includes(t))) continue
+          const title = (typeof frontmatter.title === 'string' && frontmatter.title) ? frontmatter.title : entry.name.replace(/\.md$/, '')
+          const relPath = path.relative(vaultPath, full)
+          items.push({ id: relPath, title, content: body.slice(0, 5000), tags })
+        } catch { continue }
+      }
+    }
+    walk(vaultPath)
+    return { ok: true, items }
+  }
+
+  if (type === 'markdown') {
+    if (!cfg.markdown || !cfg.markdown.folderPath) return { ok: false, error: 'Markdown folder not configured' }
+    const folderPath = cfg.markdown.folderPath
+    try { fs.statSync(folderPath) } catch { return { ok: false, error: 'Folder path not found' } }
+    const extensions = cfg.markdown.extensions ?? ['.md']
+    const items = []
+    let entries
+    try { entries = fs.readdirSync(folderPath, { withFileTypes: true }) } catch { return { ok: false, error: 'Cannot read folder' } }
+    for (const entry of entries) {
+      if (!entry.isFile()) continue
+      const ext = path.extname(entry.name).toLowerCase()
+      if (!extensions.includes(ext)) continue
+      const full = path.join(folderPath, entry.name)
+      try {
+        const stat = fs.statSync(full)
+        if (stat.size > 1_048_576) continue
+        const raw = fs.readFileSync(full, 'utf8')
+        const headingMatch = raw.match(/^#\s+(.+)$/m)
+        const title = headingMatch ? headingMatch[1].trim() : entry.name.replace(/\.[^.]+$/, '')
+        items.push({ id: entry.name, title, content: raw.slice(0, 5000) })
+      } catch { continue }
+    }
+    return { ok: true, items }
+  }
+
+  return { ok: false, error: 'Unknown type' }
+})
+
+ipcMain.handle('integration:sync-to-blueprint', (_e, items, dir) => {
+  if (!Array.isArray(items) || items.length > 500) return { ok: false, error: 'Invalid items' }
+  if (typeof dir !== 'string' || !dir || dir.length > 4096) return { ok: false, error: 'Invalid dir' }
+  if (!isKnownProject(dir)) return { ok: false, error: 'Unknown project' }
+
+  items = items.filter(it => it && typeof it === 'object' && typeof it.title === 'string')
+  if (items.length === 0) return { ok: false, error: 'No valid items' }
+
+  const bpPath = blueprintFile(dir)
+  let bp = null
+  try { if (fs.statSync(bpPath).size <= 512_000) bp = readJSON(bpPath, null) } catch {}
+  if (!bp) bp = { answers: {}, modules: [], sessions: [], currentQuestion: 0, completeness: 0, sessionActive: false }
+  if (!bp.modules) bp.modules = []
+
+  const existingNames = new Set(bp.modules.map(m => (m.name ?? '').toLowerCase()))
+  let added = 0
+  for (const item of items) {
+    const name = (item.title ?? '').slice(0, 256).trim()
+    if (!name || existingNames.has(name.toLowerCase())) continue
+    bp.modules.push({
+      name,
+      description: (item.content ?? '').slice(0, 2000),
+      features: Array.isArray(item.tags) ? item.tags.slice(0, 50).map(t => String(t).slice(0, 128)) : [],
+      dependencies: [],
+      notes: ''
+    })
+    existingNames.add(name.toLowerCase())
+    added++
+  }
+
+  const serialized = JSON.stringify(bp)
+  if (serialized.length <= 512_000) {
+    writeJSON(bpPath, JSON.parse(serialized))
+    _blueprintCache.delete(dir)
+    _readinessCache.delete(dir)
+  }
+
+  const backlogPath = path.join(dir, '.claude', 'external-backlog.json')
+  const backlogData = items.map(it => ({
+    title: String(it.title ?? '').slice(0, 256),
+    content: String(it.content ?? '').slice(0, 5000),
+    tags: Array.isArray(it.tags) ? it.tags.slice(0, 50) : []
+  }))
+  const backlogSer = JSON.stringify(backlogData)
+  if (backlogSer.length <= 1_048_576) {
+    fs.mkdirSync(path.dirname(backlogPath), { recursive: true })
+    writeJSON(backlogPath, JSON.parse(backlogSer))
+  }
+
+  return { ok: true, added, total: bp.modules.length }
+})
+
 // ─── App lifecycle ────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
   if (process.platform === 'darwin' && app.dock) {

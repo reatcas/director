@@ -48,9 +48,9 @@ describe('T-244: P-103 modal focus traps use spread instead of Array.from', () =
     expect(rendererJs).toContain("[...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])')]")
   })
 
-  it('has 4 occurrences of spread focusable pattern (one per modal)', () => {
+  it('has 5 occurrences of spread focusable pattern (one per modal)', () => {
     const occurrences = rendererJs.split("[...modal.querySelectorAll('button,").length - 1
-    expect(occurrences).toBe(4)
+    expect(occurrences).toBe(5)
   })
 })
 

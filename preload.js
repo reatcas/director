@@ -179,6 +179,26 @@ contextBridge.exposeInMainWorld('director', {
     if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(specFile)) return Promise.resolve(null)
     return ipcRenderer.invoke('plan:read', dir, specFile)
   },
+  // Integrations
+  integrationConfigRead: () => ipcRenderer.invoke('integration:config:read'),
+  integrationConfigWrite: cfg => {
+    if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return Promise.resolve(false)
+    const allowed = new Set(['notion', 'obsidian', 'markdown'])
+    if (Object.keys(cfg).some(k => !allowed.has(k))) return Promise.resolve(false)
+    return ipcRenderer.invoke('integration:config:write', cfg)
+  },
+  integrationNotionDatabases: () => ipcRenderer.invoke('integration:notion:databases'),
+  integrationSync: (type, dir) => {
+    if (typeof type !== 'string' || !['notion', 'obsidian', 'markdown'].includes(type)) return Promise.resolve({ ok: false })
+    if (dir !== undefined && (typeof dir !== 'string' || dir.length > 4096)) return Promise.resolve({ ok: false })
+    return ipcRenderer.invoke('integration:sync', type, dir)
+  },
+  integrationSyncToBlueprint: (items, dir) => {
+    if (!Array.isArray(items) || items.length > 500) return Promise.resolve({ ok: false })
+    if (typeof dir !== 'string' || !dir || dir.length > 4096) return Promise.resolve({ ok: false })
+    return ipcRenderer.invoke('integration:sync-to-blueprint', items, dir)
+  },
+  integrationPickFolder: () => ipcRenderer.invoke('integration:pick-folder'),
   // Events
   onLine:        cb => ipcRenderer.on('orchestra:line',        (_e, d) => cb(d)),
   onExit:        cb => ipcRenderer.on('orchestra:exit',        (_e, d) => cb(d)),
