@@ -127,7 +127,7 @@ let _sectionsCacheKey = ''
 
 async function loadCustomAtriles() {
   customAtriles = await window.director.atrilesList() ?? []
-  for (const a of customAtriles) { if (!a.path) a.path = a.id || a.name || 'stand' }
+  for (const a of customAtriles) { if (!a.path || a.path === a.id) a.path = '/custom-stand/' + (a.id || a.name || 'stand') }
   _sectionsCache = null
 }
 
@@ -3470,7 +3470,7 @@ if ($('#atrilSaveBtn')) $('#atrilSaveBtn').onclick = async () => {
   const desc = $('#atrilDesc')?.value.trim() || ''
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
 
-  customAtriles.push({ id, name, path: id, color: selectedAtrilColor, icon: selectedAtrilIcon, description: desc })
+  customAtriles.push({ id, name, path: '/custom-stand/' + id, color: selectedAtrilColor, icon: selectedAtrilIcon, description: desc })
   await window.director.atrilesSave(customAtriles)
 
   $('#atrilModal').hidden = true

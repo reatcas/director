@@ -1343,7 +1343,7 @@ ipcMain.handle('mixer:write', (_e, dir, focus) => {
 ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (!isKnownProject(dir)) return false
   if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
-  const _allowedKeys = new Set(['version', 'focus', 'agent', 'model', 'claudeUsageBudget', 'nice', 'mode', 'maxIterations', 'caveman', 'modelComplex', 'compactAt', 'quietFlags', 'smartMix', 'smartModel', 'modelFast', 'architectInterval', 'autoSwitch', 'keepLogs', 'maxHallucinationStreak'])
+  const _allowedKeys = new Set(['version', 'focus', 'agent', 'model', 'claudeUsageBudget', 'nice', 'mode', 'maxIterations', 'caveman', 'modelComplex', 'compactAt', 'quietFlags', 'smartMix', 'smartModel', 'modelFast', 'architectInterval', 'autoSwitch', 'keepLogs', 'maxHallucinationStreak', 'activeMix'])
   if (!Object.keys(cfg).every(k => _allowedKeys.has(k))) return false
   if (cfg.version !== undefined && (typeof cfg.version !== 'string' || cfg.version.length > 64 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(cfg.version))) return false
   if (cfg.agent !== undefined && !Object.keys(AI_DEFAULTS).includes(cfg.agent)) return false
@@ -1363,6 +1363,7 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
   if (cfg.autoSwitch !== undefined && typeof cfg.autoSwitch !== 'boolean') return false
   if (cfg.keepLogs !== undefined && (!Number.isInteger(cfg.keepLogs) || cfg.keepLogs < 0 || cfg.keepLogs > 500)) return false
   if (cfg.maxHallucinationStreak !== undefined && (!Number.isInteger(cfg.maxHallucinationStreak) || cfg.maxHallucinationStreak < 1 || cfg.maxHallucinationStreak > 100)) return false
+  if (cfg.activeMix !== undefined && cfg.activeMix !== null && (typeof cfg.activeMix !== 'string' || cfg.activeMix.length > 64 || /[\x00-\x1F\x7F]/.test(cfg.activeMix))) return false
   const serialized = JSON.stringify(cfg)
   if (serialized.length > 65_536) return false
   if (cfg.focus && typeof cfg.focus === 'object') {
