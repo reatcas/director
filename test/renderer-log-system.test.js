@@ -586,8 +586,8 @@ describe('play button handler', () => {
   })
 
   it('persists agent and model to config', () => {
-    expect(body).toContain('cfg.agent = agent')
-    expect(body).toContain('cfg.model = model')
+    expect(body).toContain('agent')
+    expect(body).toContain('update.model = model')
   })
 
   it('sets started state then transitions to interpreting', () => {

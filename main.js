@@ -1372,7 +1372,11 @@ ipcMain.handle('orchestra:writeConfig', (_e, dir, cfg) => {
     if (!weights.every(w => typeof w === 'number' && w >= 0 && w <= 100)) return false
   }
   const p = path.join(dir, '.claude/orchestra.json')
-  writeJSON(p, JSON.parse(serialized))
+  let existing = {}
+  try { if (fs.statSync(p).size <= 512_000) existing = readJSON(p, {}) } catch {}
+  if (typeof existing !== 'object' || Array.isArray(existing)) existing = {}
+  const merged = { ...existing, ...JSON.parse(serialized) }
+  writeJSON(p, merged)
   _invalidateOrchJson(dir)
   if (cfg.focus) { _metricsCache.delete('allocation:' + dir); _metricsCache.delete('resource:' + dir); _metricsCache.delete('snapshot:' + dir); _metricsCache.delete('coordination') }
   return true

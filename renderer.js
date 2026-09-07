@@ -755,13 +755,13 @@ if ($('#playBtn')) $('#playBtn').onclick = async () => {
   if (!p || !p.installed || p.running || !agent) return
   
   if (current) {
-    const cfg = await window.director.mixerRead(current) ?? {}
-    cfg.agent = agent
+    const update = { agent }
     if (model) {
-      cfg.model = model
-      if (cfg.smartModel) cfg.modelComplex = model
+      update.model = model
+      const cfg = await window.director.mixerRead(current) ?? {}
+      if (cfg.smartModel) update.modelComplex = model
     }
-    await window.director.configWrite(current, cfg)
+    await window.director.configWrite(current, update)
   }
 
   addActionEntry('play', 'START', `${agent} starts the infinite development cycle — ${esc(p.name)}`)
@@ -1211,8 +1211,7 @@ if ($('#smartMixToggle')) {
     if (!current) return
     const cfg = await window.director.mixerRead(current) ?? {}
     const newState = !cfg.smartMix
-    cfg.smartMix = newState
-    await window.director.configWrite(current, cfg)
+    await window.director.configWrite(current, { smartMix: newState })
     updateSmartMixIndicator(newState)
     showToast(newState ? 'Smart Mix activated — stands will self-regulate' : 'Smart Mix disabled')
   }
@@ -1242,18 +1241,14 @@ if ($('#smartModelToggle')) $('#smartModelToggle').onclick = async () => {
   if (!current) return
   const cfg = await window.director.mixerRead(current) ?? {}
   const newState = !cfg.smartModel
-  cfg.smartModel = newState
+  const update = { smartModel: newState }
   if (newState) {
     const selModel = $('#modelSelect')?.value
-    cfg.modelComplex = selModel || cfg.model || 'claude-opus-4-6'
+    update.modelComplex = selModel || cfg.model || 'claude-opus-4-6'
+    if (!cfg.modelFast) update.modelFast = 'claude-haiku-4-5'
+    if (!cfg.architectInterval) update.architectInterval = 5
   }
-  if (newState && !cfg.modelFast) {
-    cfg.modelFast = 'claude-haiku-4-5'
-  }
-  if (newState && !cfg.architectInterval) {
-    cfg.architectInterval = 5
-  }
-  await window.director.configWrite(current, cfg)
+  await window.director.configWrite(current, update)
   updateSmartModelToggle(newState)
   showToast(newState ? 'Smart Model ON — auto-routing by task complexity' : 'Smart Model OFF — single model')
 }
@@ -1394,7 +1389,7 @@ async function loadMixes() {
     const date = (_mDate && !isNaN(_mDate)) ? _mDate.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
     const ribbon = buildMixRibbon(m.focus)
 
-    const brainSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 5 12v2a2 2 0 0 1-2 2h-1v2a2 2 0 0 1-4 0v-2h-1a2 2 0 0 1-2-2v-2A7 7 0 0 1 12 2z"/><path d="M9 10h0M15 10h0M9 14c1 1 2.5 1.5 3 1.5s2-.5 3-1.5"/></svg>`
+    const brainSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C9.5 2 7.5 3.5 7 5.5c-1.5.5-3 2-3 4 0 1.5.5 2.5 1.5 3.5-.5 1-1 2.5-.5 4 .5 1.5 2 2.5 3.5 2.5h7c1.5 0 3-1 3.5-2.5.5-1.5 0-3-.5-4 1-1 1.5-2 1.5-3.5 0-2-1.5-3.5-3-4C16.5 3.5 14.5 2 12 2z"/><path d="M12 2v20"/><path d="M8 8c1 .5 2.5.5 4 0"/><path d="M8 14c1-.5 2.5-.5 4 0"/><path d="M12 8c1.5.5 3 .5 4 0"/><path d="M12 14c1.5-.5 3-.5 4 0"/></svg>`
 
     if (isActive) {
       const brainClass = 'mix-brain' + (!!cfg.smartMix ? ' mix-brain-active' : '')
@@ -1446,10 +1441,7 @@ async function _loadMix(m) {
   const normalized = normalizeMixerValues(m.focus, getAllSections())
   await window.director.mixerWrite(current, normalized)
   if (current) {
-    const cfg = await window.director.mixerRead(current) ?? {}
-    cfg.smartMix = !!m.smart
-    cfg.activeMix = m.id
-    await window.director.configWrite(current, cfg)
+    await window.director.configWrite(current, { focus: normalized, smartMix: !!m.smart, activeMix: m.id })
   }
   activeMixId = m.id
   loadMixer()
