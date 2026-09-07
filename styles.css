@@ -1885,11 +1885,8 @@ details.console-collapsible:not([open]) .collapsible-toggle { transform: rotate(
 
 /* ── Smart Mix Toggle — aurora mesh gradient ─────────────────────────────── */
 .smart-mix-bar {
-  display: flex; align-items: center; gap: 10px;
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--line);
-  flex-shrink: 0;
-  background: rgba(0,0,0,.12);
+  display: none !important;
+  padding: 0; height: 0; overflow: hidden; border: none;
 }
 .smart-label {
   font: 700 8px var(--sans); letter-spacing: 1.5px; color: var(--dim2);
