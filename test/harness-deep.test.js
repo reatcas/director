@@ -370,7 +370,7 @@ describe('json_val helper', () => {
   })
 
   it('provides default fallback', () => {
-    expect(runSh).toContain("d.get('$1','$2')")
+    expect(runSh).toContain("d.get(sys.argv[2],sys.argv[3])")
   })
 })
 

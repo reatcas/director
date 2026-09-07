@@ -1,7 +1,7 @@
 // Copyright (c) 2026 René Antonio Casaña Amaya. All rights reserved.
 // Licensed under the AGPL-3.0 License. See LICENSE in repository root.
 
-const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell, Notification } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell, Notification, safeStorage } = require('electron')
 const { spawn, execFile, execFileSync, spawnSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
@@ -27,6 +27,9 @@ const tailers = new Map()
 const resumeTimers   = new Map()   // dir → timer for auto-resume
 const metricsSamplers = new Map()  // dir → interval for telemetry sampling
 let win
+function _verifiedSender(e) { return !win || e.sender === win.webContents }
+const _ipcRateMap = new Map()
+function _rateLimit(ch, ms) { const n = Date.now(), l = _ipcRateMap.get(ch) ?? 0; if (n - l < ms) return true; _ipcRateMap.set(ch, n); if (_ipcRateMap.size > 500) _ipcRateMap.delete(_ipcRateMap.keys().next().value); return false }
 
 // ─── Log tailing ──────────────────────────────────────────────────────────────
 function startTailing(dir, logFile) {
@@ -634,7 +637,7 @@ function playOrchestra(dir, agent = 'claude') {
   const outFd = fs.openSync(outLog, 'a')
   const errFd = fs.openSync(outLog, 'a')
   const child = spawn('bash', ['run.sh'], {
-    cwd: dir, env: { ...process.env, DIRECTOR_AI_AGENT: agent }, detached: true,
+    cwd: dir, env: { PATH: process.env.PATH, HOME: process.env.HOME, USER: process.env.USER, SHELL: process.env.SHELL, LANG: process.env.LANG || 'en_US.UTF-8', TERM: process.env.TERM || 'xterm-256color', TMPDIR: process.env.TMPDIR, CI: 'true', DIRECTOR_AI_AGENT: agent }, detached: true,
     stdio: ['ignore', outFd, errFd]
   })
   child._directorFds = [outFd, errFd]
@@ -876,6 +879,7 @@ ipcMain.handle('repertoire:list', () => {
 })
 
 ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
+  if (!_verifiedSender(_e)) return null
   if (droppedPath !== undefined && droppedPath !== null && typeof droppedPath !== 'string') return null
   if (droppedPath && (droppedPath.length > 4096 || /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(droppedPath) || !path.isAbsolute(droppedPath))) return null
   let dir = droppedPath
@@ -898,6 +902,7 @@ ipcMain.handle('repertoire:add', async (_e, droppedPath) => {
 })
 
 ipcMain.handle('repertoire:remove', (_e, dir) => {
+  if (!_verifiedSender(_e)) return false
   if (typeof dir !== 'string' || dir.length === 0) return false
   let _rrProjects = []
   try { if (fs.statSync(store()).size <= 512_000) _rrProjects = readJSON(store(), []) } catch {}
@@ -1097,6 +1102,7 @@ ipcMain.handle('ai:login', (_e, id) => {
 })
 
 ipcMain.handle('orchestra:play', (_e, dir, agent) => {
+  if (!_verifiedSender(_e)) return { ok: false, err: 'unauthorized' }
   if (!isKnownProject(dir)) return { ok: false, err: 'Unknown project' }
   if (typeof agent !== 'string' || !Object.keys(AI_DEFAULTS).includes(agent)) return { ok: false, err: 'Select an AI developer first' }
   const state = aiState()
@@ -1122,6 +1128,7 @@ ipcMain.handle('orchestra:play', (_e, dir, agent) => {
 })
 
 ipcMain.handle('orchestra:fine', (_e, dir) => {
+  if (!_verifiedSender(_e)) return { ok: false }
   if (!isKnownProject(dir)) return { ok: false }
   snapshotMixer(dir, 'fine')
   fs.writeFileSync(path.join(dir, '.claude/ALTO'), '')
@@ -1149,6 +1156,7 @@ ipcMain.handle('orchestra:fine', (_e, dir) => {
 })
 
 ipcMain.handle('orchestra:kill', (_e, dir) => {
+  if (!_verifiedSender(_e)) return { ok: false }
   if (!isKnownProject(dir)) return { ok: false }
   // Write ALTO first so any surviving subprocess exits cleanly
   try { fs.writeFileSync(path.join(dir, '.claude/ALTO'), '') } catch {}
@@ -1576,6 +1584,7 @@ ipcMain.handle('notes:write', (_e, dir, content) => {
 // ─── Session export (F-23) ────────────────────────────────────────────────────
 let _exportSessionBusy = false
 ipcMain.handle('export:session', async (_e, dir) => {
+  if (_rateLimit('export', 2000)) return null
   if (!isKnownProject(dir)) return { ok: false }
   if (_exportSessionBusy) return { ok: false, err: 'Export in progress' }
   _exportSessionBusy = true
@@ -2072,6 +2081,7 @@ ipcMain.handle('system:claude-procs', () => {
 })
 
 ipcMain.handle('system:kill-proc', (_e, pid, signal = 'SIGTERM') => {
+  if (!_verifiedSender(_e)) return false
   if (typeof pid !== 'number' || !Number.isInteger(pid) || pid < 2 || pid > 4_194_304 || pid === process.pid) return { ok: false, err: 'invalid pid' }
   const allowed = ['SIGTERM', 'SIGKILL']
   if (!allowed.includes(signal)) return { ok: false, err: 'signal not allowed' }
@@ -2200,6 +2210,7 @@ ipcMain.handle('blueprint:save', (_e, dir, data) => {
 })
 
 ipcMain.handle('blueprint:generate-brief', (_e, dir) => {
+  if (_rateLimit('bp:gen', 3000)) return null
   if (!isKnownProject(dir)) return null
   const bpPath = blueprintFile(dir)
   let bp = null
@@ -2375,14 +2386,26 @@ ipcMain.handle('blueprint:readiness', (_e, dir) => {
 // ─── Integrations (Notion / Obsidian / Markdown) ────────────────────────────
 const integrationsFile = () => path.join(app.getPath('userData'), 'integrations.json')
 
+function _decryptKey(stored) {
+  if (!stored || typeof stored !== 'string') return stored
+  if (stored.startsWith('secret_') || stored.startsWith('ntn_')) return stored
+  try { return safeStorage.isEncryptionAvailable() ? safeStorage.decryptString(Buffer.from(stored, 'base64')) : stored } catch { return stored }
+}
+function _encryptKey(key) {
+  if (!key || typeof key !== 'string') return key
+  try { return safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(key).toString('base64') : key } catch { return key }
+}
 function readIntegrations() {
   const p = integrationsFile()
-  try { if (fs.statSync(p).size <= 512_000) return readJSON(p, {}) } catch {}
-  return {}
+  let cfg = {}
+  try { if (fs.statSync(p).size <= 512_000) cfg = readJSON(p, {}) } catch {}
+  if (cfg.notion && cfg.notion.apiKey) cfg.notion.apiKey = _decryptKey(cfg.notion.apiKey)
+  return cfg
 }
-
 function writeIntegrations(cfg) {
-  writeJSON(integrationsFile(), cfg)
+  const safe = JSON.parse(JSON.stringify(cfg))
+  if (safe.notion && safe.notion.apiKey) safe.notion.apiKey = _encryptKey(safe.notion.apiKey)
+  writeJSON(integrationsFile(), safe)
 }
 
 ipcMain.handle('integration:config:read', () => {
@@ -2395,6 +2418,7 @@ ipcMain.handle('integration:config:read', () => {
 })
 
 ipcMain.handle('integration:config:write', (_e, cfg) => {
+  if (!_verifiedSender(_e)) return false
   if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return false
   const allowed = new Set(['notion', 'obsidian', 'markdown'])
   if (Object.keys(cfg).some(k => !allowed.has(k))) return false
@@ -2432,6 +2456,7 @@ ipcMain.handle('integration:pick-folder', async () => {
 })
 
 ipcMain.handle('integration:notion:databases', async () => {
+  if (_rateLimit('notion:db', 2000)) return []
   const cfg = readIntegrations()
   if (!cfg.notion || !cfg.notion.apiKey) return { ok: false, error: 'No API key configured' }
   try {
@@ -2457,6 +2482,7 @@ ipcMain.handle('integration:notion:databases', async () => {
 })
 
 ipcMain.handle('integration:sync', async (_e, type, dir) => {
+  if (_rateLimit('int:sync', 5000)) return { ok: false, error: 'Rate limited' }
   if (typeof type !== 'string' || !['notion', 'obsidian', 'markdown'].includes(type)) return { ok: false, error: 'Invalid type' }
   if (dir && (typeof dir !== 'string' || dir.length > 4096)) return { ok: false, error: 'Invalid dir' }
 
@@ -2467,7 +2493,7 @@ ipcMain.handle('integration:sync', async (_e, type, dir) => {
     try {
       const pages = []
       let cursor = undefined
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 50 && pages.length < 5000; i++) {
         const body = { page_size: 100 }
         if (cursor) body.start_cursor = cursor
         const res = await fetch(`https://api.notion.com/v1/databases/${cfg.notion.databaseId}/query`, {
@@ -2650,7 +2676,7 @@ app.whenReady().then(() => {
       const _allowedDirs = []; for (const p of cachedProjects()) { if (p.path) _allowedDirs.push(p.path) }
       const allowedDirs = _allowedDirs
       allowedDirs.push(path.join(app.getPath('userData')))
-      if (!allowedDirs.some(d => filePath.startsWith(d + path.sep) || filePath.startsWith(d + '/'))) {
+      if (!allowedDirs.some(d => filePath.startsWith(path.resolve(d) + path.sep))) {
         return new Response('', { status: 403 })
       }
       const ext = path.extname(filePath).toLowerCase()
@@ -2674,11 +2700,12 @@ app.whenReady().then(() => {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
       webSecurity: true
     }
   })
   win.loadFile('index.html')
+  if (app.isPackaged) win.webContents.on('devtools-opened', () => win.webContents.closeDevTools())
 
   // Block external navigation — renderer must stay on local index.html
   win.webContents.on('will-navigate', (e, url) => {

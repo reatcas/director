@@ -14,7 +14,7 @@ mkdir -p "$LOG_DIR"
 
 # ── Read orchestra config ─────────────────────────────────────────────────────
 CFG=".claude/orchestra.json"
-json_val() { python3 -c "import json,sys;d=json.load(open('$CFG'));print(d.get('$1','$2'))" 2>/dev/null || echo "$2"; }
+json_val() { python3 -c "import json,sys;d=json.load(open(sys.argv[1]));print(d.get(sys.argv[2],sys.argv[3]))" "$CFG" "$1" "$2" 2>/dev/null || echo "$2"; }
 
 MODE=$(json_val mode perpetual)
 MAX_ITER=$(json_val maxIterations 0)
