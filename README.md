@@ -221,6 +221,12 @@ Director (Electron main)
 
 ---
 
+## Disclaimer
+
+This software is provided **"as is"**, without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement. The authors are not liable for any claim, damages, or other liability arising from the use of the software. Use at your own risk.
+
+AI-generated code is not guaranteed to be correct, secure, or production-ready. Always review commits before deploying to production.
+
 ## License
 
 [AGPL-3.0](LICENSE) — free to use, modify, and distribute. Derivative works must remain open source.
