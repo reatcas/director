@@ -12,5 +12,8 @@ scratch/
 screenshots/
 Captura*
 *.png
-!logo.svg
+!icon.png
+!logo.png
+!favicon.png
+!favicon-16.png
 userData/
