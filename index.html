@@ -456,7 +456,7 @@
               <button id="mixImportBtn" class="tp-action" aria-label="Importar mezcla desde JSON">IMPORT</button>
             </div>
           </div>
-          <div id="smartMixBar" class="smart-mix-bar">
+          <div id="smartMixBar" class="smart-mix-bar" hidden>
             <div id="smartMixToggle" class="smart-toggle" title="Smart Mix — self-regulating stands" role="switch" aria-label="Smart Mix — pesos auto-regulados" aria-checked="false" tabindex="0">
               <div class="smart-toggle-aurora" id="smartAurora"></div>
               <div class="smart-toggle-glass"></div>
@@ -552,6 +552,8 @@
 <script src="mixer-graph.js"></script>
 <script src="renderer.js"></script>
 <script src="mixer-chart.js"></script>
+<div id="mixContextMenu" class="mix-context-menu" hidden></div>
+<div id="standContextMenu" class="stand-context-menu" hidden></div>
 <div id="a11y-live" aria-live="assertive" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"></div>
 </body>
 </html>

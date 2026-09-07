@@ -121,6 +121,7 @@ const COLOR_PALETTE = [
 ]
 
 let customAtriles = []
+let activeMixId = null
 let _sectionsCache = null
 let _sectionsCacheKey = ''
 
@@ -746,7 +747,10 @@ if ($('#playBtn')) $('#playBtn').onclick = async () => {
   if (current) {
     const cfg = await window.director.mixerRead(current) ?? {}
     cfg.agent = agent
-    if (model) cfg.model = model
+    if (model) {
+      cfg.model = model
+      if (cfg.smartModel) cfg.modelComplex = model
+    }
     await window.director.configWrite(current, cfg)
   }
 
@@ -949,6 +953,11 @@ async function loadMixer() {
     inp.addEventListener('blur', () => {
       if (!document.querySelector('#mixerStrips input:focus')) activateMixerStand(null)
     })
+
+    const _builtinKeys = SECTIONS.map(s => s[0])
+    if (!_builtinKeys.includes(k)) {
+      strip.addEventListener('contextmenu', ev => { ev.preventDefault(); openStandMenu(ev, k) })
+    }
   }
   // Update aurora colors from the freshly built strips
   setTimeout(updateSmartAuroraColors, 50)
@@ -1155,11 +1164,17 @@ if ($('#saveMixer')) $('#saveMixer').onclick = async () => {
 // ─── Smart Mix Toggle (aurora mesh gradient) ────────────────────────────────
 function updateSmartMixIndicator(active) {
   const bar = $('#smartMixBar')
-  if (!bar) return
-  bar.classList.toggle('active', active)
+  if (bar) {
+    bar.classList.toggle('active', active)
+  }
   const toggle = $('#smartMixToggle')
   if (toggle) toggle.setAttribute('aria-checked', String(active))
   if (active) updateSmartAuroraColors()
+  const brain = document.querySelector('.mix-card-active .mix-brain')
+  if (brain) {
+    brain.classList.toggle('mix-brain-active', active)
+    brain.setAttribute('aria-checked', String(active))
+  }
 }
 
 function updateSmartAuroraColors() {
@@ -1218,8 +1233,9 @@ if ($('#smartModelToggle')) $('#smartModelToggle').onclick = async () => {
   const cfg = await window.director.mixerRead(current) ?? {}
   const newState = !cfg.smartModel
   cfg.smartModel = newState
-  if (newState && !cfg.modelComplex) {
-    cfg.modelComplex = 'claude-opus-4-6'
+  if (newState) {
+    const selModel = $('#modelSelect')?.value
+    cfg.modelComplex = selModel || cfg.model || 'claude-opus-4-6'
   }
   if (newState && !cfg.modelFast) {
     cfg.modelFast = 'claude-haiku-4-5'
@@ -1309,6 +1325,14 @@ function buildMixRibbon(focus) {
   return `<div class="mix-ribbon">${html}</div>`
 }
 
+function _isMixActive(mixFocus, currentFocus) {
+  if (!mixFocus || !currentFocus) return false
+  const mKeys = Object.keys(mixFocus).filter(k => mixFocus[k] > 0).sort()
+  const cKeys = Object.keys(currentFocus).filter(k => currentFocus[k] > 0).sort()
+  if (mKeys.length !== cKeys.length) return false
+  return mKeys.every((k, i) => k === cKeys[i] && mixFocus[k] === currentFocus[k])
+}
+
 async function loadMixes() {
   if (!current) return
   const container = $('#mixesList')
@@ -1318,14 +1342,35 @@ async function loadMixes() {
 
   const mixes = await window.director.mixerSavedList(current)
   if (!mixes || mixes.length === 0) {
+    activeMixId = null
     empty.hidden = false
     return
   }
 
   empty.hidden = true
+  const cfg = await window.director.mixerRead(current) ?? {}
+  const currentFocus = cfg?.focus ?? {}
+  const normalizedCurrent = normalizeMixerValues(currentFocus, getAllSections())
+
+  activeMixId = null
   for (const m of mixes) {
+    const normalizedMix = normalizeMixerValues(m.focus, getAllSections())
+    if (_isMixActive(normalizedMix, normalizedCurrent)) {
+      activeMixId = m.id
+      break
+    }
+  }
+
+  const sorted = [...mixes].sort((a, b) => {
+    if (a.id === activeMixId) return -1
+    if (b.id === activeMixId) return 1
+    return 0
+  })
+
+  for (const m of sorted) {
+    const isActive = m.id === activeMixId
     const card = document.createElement('div')
-    card.className = 'mix-card'
+    card.className = 'mix-card' + (isActive ? ' mix-card-active' : '')
     card.setAttribute('role', 'button')
     card.setAttribute('tabindex', '0')
     card.setAttribute('aria-label', `Cargar mezcla ${esc(m.name)}`)
@@ -1333,47 +1378,237 @@ async function loadMixes() {
     const date = (_mDate && !isNaN(_mDate)) ? _mDate.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
     const ribbon = buildMixRibbon(m.focus)
 
-    card.innerHTML = `
+    const brainSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 5 12v2a2 2 0 0 1-2 2h-1v2a2 2 0 0 1-4 0v-2h-1a2 2 0 0 1-2-2v-2A7 7 0 0 1 12 2z"/><path d="M9 10h0M15 10h0M9 14c1 1 2.5 1.5 3 1.5s2-.5 3-1.5"/></svg>`
+
+    if (isActive) {
+      const brainClass = 'mix-brain' + (!!cfg.smartMix ? ' mix-brain-active' : '')
+      card.innerHTML = `
+      <div class="mix-card-info">
+        <div class="${brainClass}" title="Smart Mix" role="switch" aria-label="Smart Mix toggle" aria-checked="${!!cfg.smartMix}" tabindex="0">${brainSvg}</div>
+        <div class="mix-card-name" title="${esc(m.name)}">${esc(m.name)}</div>
+        ${ribbon}
+        <div class="mix-card-meta">${date}</div>
+      </div>
+      <div class="mix-card-actions">
+        <button class="mix-menu-btn" aria-label="Opciones de ${esc(m.name)}">⋮</button>
+      </div>`
+
+      const brain = card.querySelector('.mix-brain')
+      brain.onclick = async e => {
+        e.stopPropagation()
+        if (!current) return
+        const c = await window.director.mixerRead(current) ?? {}
+        const newState = !c.smartMix
+        c.smartMix = newState
+        await window.director.configWrite(current, c)
+        updateSmartMixIndicator(newState)
+        brain.classList.toggle('mix-brain-active', newState)
+        brain.setAttribute('aria-checked', String(newState))
+        showToast(newState ? 'Smart Mix activated — stands will self-regulate' : 'Smart Mix disabled')
+      }
+      brain.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); brain.click() } })
+    } else {
+      card.innerHTML = `
       <div class="mix-card-info">
         <div class="mix-card-name" title="${esc(m.name)}">${esc(m.name)}</div>
         ${ribbon}
         <div class="mix-card-meta">${date}</div>
       </div>
       <div class="mix-card-actions">
-        <button class="mix-btn load" aria-label="Cargar mezcla ${esc(m.name)}">▶</button>
-        <button class="mix-btn share" aria-label="Copiar JSON de ${esc(m.name)}">⎘</button>
-        <button class="mix-btn del" aria-label="Eliminar mezcla ${esc(m.name)}">✕</button>
+        <button class="mix-menu-btn" aria-label="Opciones de ${esc(m.name)}">⋮</button>
       </div>`
+    }
 
-    card.querySelector('.load').onclick = async e => {
-      e.stopPropagation()
-      const normalized = normalizeMixerValues(m.focus, getAllSections())
-      await window.director.mixerWrite(current, normalized)
-      // Enable/disable smart mix based on preset flag
-      if (current) {
-        const cfg = await window.director.mixerRead(current) ?? {}
-        cfg.smartMix = !!m.smart
-        await window.director.configWrite(current, cfg)
-      }
-      loadMixer()
-      showToast(m.smart ? 'Smart Mix activated — self-regulating' : 'Mix "' + m.name + '" loaded')
-    }
-    card.querySelector('.share').onclick = async e => {
-      e.stopPropagation()
-      const json = await window.director.mixerSavedExport(current, m.id)
-      if (json) { navigator.clipboard.writeText(json); showToast('JSON copied to clipboard') }
-    }
-    card.querySelector('.del').onclick = async e => {
-      e.stopPropagation()
-      await window.director.mixerSavedDelete(current, m.id)
-      loadMixes()
-      showToast('Mix deleted')
-    }
-    card.addEventListener('click', () => card.querySelector('.load').click())
-    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.querySelector('.load').click() } })
+    card.querySelector('.mix-menu-btn').onclick = e => { e.stopPropagation(); openMixMenu(e, m) }
+    card.addEventListener('click', () => { if (m.id !== activeMixId) _loadMix(m) })
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (m.id !== activeMixId) _loadMix(m) } })
     container.appendChild(card)
   }
 }
+
+async function _loadMix(m) {
+  const normalized = normalizeMixerValues(m.focus, getAllSections())
+  await window.director.mixerWrite(current, normalized)
+  if (current) {
+    const cfg = await window.director.mixerRead(current) ?? {}
+    cfg.smartMix = !!m.smart
+    await window.director.configWrite(current, cfg)
+  }
+  loadMixer()
+  showToast(m.smart ? 'Smart Mix activated — self-regulating' : 'Mix "' + m.name + '" loaded')
+}
+
+function openMixMenu(e, m) {
+  closeMixMenu()
+  closeStandMenu()
+  const menu = $('#mixContextMenu')
+  if (!menu) return
+  menu.innerHTML = ''
+  menu.hidden = false
+
+  const items = [
+    { icon: '▶', label: 'Cargar', aria: `aria-label="Cargar mezcla ${esc(m.name)}"`, action: () => _loadMix(m) },
+    { icon: '⎘', label: 'Copiar JSON', aria: `aria-label="Copiar JSON de ${esc(m.name)}"`, action: async () => { const json = await window.director.mixerSavedExport(current, m.id); if (json) { navigator.clipboard.writeText(json); showToast('JSON copied to clipboard') } } },
+    { icon: '⧉', label: 'Duplicar', aria: `aria-label="Duplicar mezcla ${esc(m.name)}"`, action: async () => { await window.director.mixerSavedSave(current, m.name + ' (copia)', m.focus); loadMixes(); showToast('Mix duplicated') } },
+    { icon: '✕', label: 'Eliminar', aria: `aria-label="Eliminar mezcla ${esc(m.name)}"`, action: async () => { await window.director.mixerSavedDelete(current, m.id); loadMixes(); showToast('Mix deleted') }, danger: true },
+  ]
+
+  for (const item of items) {
+    const div = document.createElement('div')
+    div.className = 'mix-menu-item' + (item.danger ? ' danger' : '')
+    div.innerHTML = `<span class="mi-icon">${item.icon}</span>${esc(item.label)}`
+    div.setAttribute('aria-label', item.aria)
+    div.onclick = () => { closeMixMenu(); item.action() }
+    menu.appendChild(div)
+  }
+
+  const x = Math.min(e.clientX, window.innerWidth - 180)
+  const y = Math.min(e.clientY, window.innerHeight - (items.length * 30 + 16))
+  menu.style.left = x + 'px'
+  menu.style.top = y + 'px'
+
+  setTimeout(() => {
+    document.addEventListener('click', closeMixMenu, { once: true })
+    document.addEventListener('keydown', _mixMenuEsc)
+  }, 0)
+}
+
+function closeMixMenu() {
+  const menu = $('#mixContextMenu')
+  if (menu) { menu.hidden = true; menu.innerHTML = '' }
+  document.removeEventListener('keydown', _mixMenuEsc)
+}
+
+function _mixMenuEsc(e) { if (e.key === 'Escape') closeMixMenu() }
+
+// ─── Stand Context Menu ─────────────────────────────────────────────────────
+function openStandMenu(e, atrilId) {
+  closeMixMenu()
+  closeStandMenu()
+  const menu = $('#standContextMenu')
+  if (!menu) return
+  menu.innerHTML = ''
+  menu.hidden = false
+
+  const atril = customAtriles.find(a => a.id === atrilId)
+  if (!atril) { menu.hidden = true; return }
+
+  const nameItem = document.createElement('div')
+  nameItem.className = 'stand-menu-item'
+  nameItem.innerHTML = `<span class="mi-icon">✎</span>Editar nombre`
+  nameItem.onclick = () => {
+    nameItem.replaceWith(_standNameEditor(atril))
+  }
+  menu.appendChild(nameItem)
+
+  const colorItem = document.createElement('div')
+  colorItem.className = 'stand-menu-item'
+  colorItem.innerHTML = `<span class="mi-icon">◉</span>Cambiar color`
+  colorItem.onclick = () => {
+    const grid = document.createElement('div')
+    grid.className = 'stand-color-grid'
+    for (const c of COLOR_PALETTE) {
+      const sw = document.createElement('div')
+      sw.className = 'stand-color-swatch' + (c === atril.color ? ' selected' : '')
+      sw.style.background = c
+      sw.onclick = async () => {
+        atril.color = c
+        await window.director.atrilesSave(customAtriles)
+        _sectionsCache = null
+        closeStandMenu()
+        loadMixer()
+      }
+      grid.appendChild(sw)
+    }
+    colorItem.replaceWith(grid)
+  }
+  menu.appendChild(colorItem)
+
+  const iconItem = document.createElement('div')
+  iconItem.className = 'stand-menu-item'
+  iconItem.innerHTML = `<span class="mi-icon">❖</span>Cambiar icono`
+  iconItem.onclick = () => {
+    const grid = document.createElement('div')
+    grid.className = 'stand-icon-grid'
+    for (const [iName, iSvg] of ICON_LIBRARY) {
+      const opt = document.createElement('div')
+      opt.className = 'stand-icon-opt' + (iName === atril.icon ? ' selected' : '')
+      opt.innerHTML = iSvg
+      opt.title = iName
+      opt.onclick = async () => {
+        atril.icon = iName
+        await window.director.atrilesSave(customAtriles)
+        _sectionsCache = null
+        closeStandMenu()
+        loadMixer()
+      }
+      grid.appendChild(opt)
+    }
+    iconItem.replaceWith(grid)
+  }
+  menu.appendChild(iconItem)
+
+  const delItem = document.createElement('div')
+  delItem.className = 'stand-menu-item danger'
+  delItem.innerHTML = `<span class="mi-icon">✕</span>Eliminar stand`
+  delItem.onclick = async () => {
+    customAtriles = customAtriles.filter(a => a.id !== atrilId)
+    await window.director.atrilesSave(customAtriles)
+    _sectionsCache = null
+    closeStandMenu()
+    loadMixer()
+    showToast('Stand removed')
+  }
+  menu.appendChild(delItem)
+
+  const x = Math.min(e.clientX, window.innerWidth - 200)
+  const y = Math.min(e.clientY, window.innerHeight - 180)
+  menu.style.left = x + 'px'
+  menu.style.top = y + 'px'
+
+  setTimeout(() => {
+    document.addEventListener('click', _standMenuOutside)
+    document.addEventListener('keydown', _standMenuEsc)
+  }, 0)
+}
+
+function _standNameEditor(atril) {
+  const wrapper = document.createElement('div')
+  wrapper.className = 'stand-edit-inline'
+  const inp = document.createElement('input')
+  inp.type = 'text'
+  inp.value = atril.name
+  inp.setAttribute('aria-label', 'Nuevo nombre del stand')
+  const save = async () => {
+    const v = inp.value.trim()
+    if (v && v !== atril.name) {
+      atril.name = v
+      await window.director.atrilesSave(customAtriles)
+      _sectionsCache = null
+      loadMixer()
+    }
+    closeStandMenu()
+  }
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') closeStandMenu() })
+  inp.addEventListener('blur', save)
+  wrapper.appendChild(inp)
+  setTimeout(() => inp.focus(), 0)
+  return wrapper
+}
+
+function closeStandMenu() {
+  const menu = $('#standContextMenu')
+  if (menu) { menu.hidden = true; menu.innerHTML = '' }
+  document.removeEventListener('click', _standMenuOutside)
+  document.removeEventListener('keydown', _standMenuEsc)
+}
+
+function _standMenuOutside(e) {
+  const menu = $('#standContextMenu')
+  if (menu && !menu.contains(e.target)) closeStandMenu()
+}
+
+function _standMenuEsc(e) { if (e.key === 'Escape') closeStandMenu() }
 
 // ─── Compact Log Entry System ─────────────────────────────────────────────────
 // Raw log buffer for copy
@@ -3225,7 +3460,7 @@ if ($('#atrilSaveBtn')) $('#atrilSaveBtn').onclick = async () => {
   const desc = $('#atrilDesc')?.value.trim() || ''
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
 
-  customAtriles.push({ id, name, color: selectedAtrilColor, icon: selectedAtrilIcon, description: desc })
+  customAtriles.push({ id, name, path: id, color: selectedAtrilColor, icon: selectedAtrilIcon, description: desc })
   await window.director.atrilesSave(customAtriles)
 
   $('#atrilModal').hidden = true
