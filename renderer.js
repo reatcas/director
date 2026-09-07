@@ -1441,7 +1441,7 @@ async function _loadMix(m) {
   const normalized = normalizeMixerValues(m.focus, getAllSections())
   await window.director.mixerWrite(current, normalized)
   if (current) {
-    await window.director.configWrite(current, { focus: normalized, smartMix: !!m.smart, activeMix: m.id })
+    await window.director.configWrite(current, { smartMix: !!m.smart, activeMix: m.id })
   }
   activeMixId = m.id
   loadMixer()
