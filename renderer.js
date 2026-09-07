@@ -127,6 +127,7 @@ let _sectionsCacheKey = ''
 
 async function loadCustomAtriles() {
   customAtriles = await window.director.atrilesList() ?? []
+  for (const a of customAtriles) { if (!a.path) a.path = a.id || a.name || 'stand' }
   _sectionsCache = null
 }
 
@@ -1327,10 +1328,13 @@ function buildMixRibbon(focus) {
 
 function _isMixActive(mixFocus, currentFocus) {
   if (!mixFocus || !currentFocus) return false
-  const mKeys = Object.keys(mixFocus).filter(k => mixFocus[k] > 0).sort()
-  const cKeys = Object.keys(currentFocus).filter(k => currentFocus[k] > 0).sort()
-  if (mKeys.length !== cKeys.length) return false
-  return mKeys.every((k, i) => k === cKeys[i] && mixFocus[k] === currentFocus[k])
+  const allKeys = new Set([...Object.keys(mixFocus), ...Object.keys(currentFocus)])
+  for (const k of allKeys) {
+    const mv = Math.round(mixFocus[k] ?? 0)
+    const cv = Math.round(currentFocus[k] ?? 0)
+    if (mv !== cv) return false
+  }
+  return true
 }
 
 async function loadMixes() {
@@ -1435,6 +1439,7 @@ async function _loadMix(m) {
     await window.director.configWrite(current, cfg)
   }
   loadMixer()
+  loadMixes()
   showToast(m.smart ? 'Smart Mix activated — self-regulating' : 'Mix "' + m.name + '" loaded')
 }
 

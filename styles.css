@@ -2891,12 +2891,20 @@ html.light .collapsible-body textarea { background: var(--panel2); color: var(--
 .mix-brain-active {
   color: var(--ai-cyan);
   filter: drop-shadow(0 0 6px rgba(0,255,238,0.6));
-  animation: brainPulse 3s ease-in-out infinite;
+  animation: brainPulse 4s ease-in-out infinite, brainShimmer 6s linear infinite;
 }
 
 @keyframes brainPulse {
-  0%, 100% { filter: drop-shadow(0 0 6px rgba(0,255,238,0.4)); }
-  50% { filter: drop-shadow(0 0 12px rgba(0,255,238,0.8)); }
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(0,255,238,0.3)) drop-shadow(0 0 8px rgba(136,68,255,0.2)); }
+  33% { filter: drop-shadow(0 0 10px rgba(0,255,238,0.7)) drop-shadow(0 0 14px rgba(0,170,255,0.3)); }
+  66% { filter: drop-shadow(0 0 8px rgba(136,68,255,0.5)) drop-shadow(0 0 12px rgba(255,68,170,0.2)); }
+}
+
+@keyframes brainShimmer {
+  0%, 100% { color: var(--ai-cyan); }
+  25% { color: #4488ff; }
+  50% { color: #9955ee; }
+  75% { color: #00ffee; }
 }
 
 .mix-menu-btn {
@@ -3010,6 +3018,35 @@ html.light .collapsible-body textarea { background: var(--panel2); color: var(--
   transition: background .15s, color .15s;
 }
 .stand-icon-opt:hover, .stand-icon-opt.selected { background: rgba(255,255,255,0.1); color: var(--txt); }
+
+html.light .mix-context-menu,
+html.light .stand-context-menu {
+  background: rgba(255,255,255,0.96);
+  border-color: var(--line);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+html.light .mix-menu-item,
+html.light .stand-menu-item { color: var(--txt); }
+html.light .mix-menu-item:hover,
+html.light .stand-menu-item:hover { background: rgba(0,0,0,0.05); }
+html.light .mix-menu-item.danger { color: #cc2020; }
+html.light .mix-menu-item.danger:hover { background: rgba(204,32,32,0.06); }
+html.light .stand-menu-item.danger { color: #cc2020; }
+html.light .stand-menu-item.danger:hover { background: rgba(204,32,32,0.06); }
+html.light .stand-edit-inline input {
+  background: rgba(0,0,0,0.04);
+  border-color: var(--line);
+  color: var(--txt);
+}
+html.light .stand-color-swatch:hover,
+html.light .stand-color-swatch.selected { border-color: var(--txt); }
+html.light .stand-icon-opt:hover,
+html.light .stand-icon-opt.selected { background: rgba(0,0,0,0.06); color: var(--txt); }
+html.light .mix-card-active { background: rgba(0,122,110,0.06); border-left-color: var(--ai-cyan); }
+html.light .mix-brain { color: var(--dim); }
+html.light .mix-brain-active { color: var(--ai-cyan); filter: drop-shadow(0 0 4px rgba(0,122,110,0.4)); }
+html.light .mix-menu-btn { color: var(--dim); }
+html.light .mix-menu-btn:hover { background: rgba(0,0,0,0.06); color: var(--txt); }
 
 /* ── Reduced motion ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
